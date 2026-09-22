@@ -1,0 +1,169 @@
+.app {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-height: 170px;
+}
+
+.card {
+  width: 120px;
+  aspect-ratio: 5 / 7;
+  box-sizing: border-box;
+  border: 2px solid #555;
+  border-radius: 8px;
+  background: #333;
+  overflow: hidden;
+}
+
+.card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-text {
+  padding: 8px;
+}
+
+.clickable {
+  cursor: pointer;
+  border-color: #2196f3;
+}
+
+.clickable:hover {
+  filter: brightness(1.15);
+}
+
+.slot-empty {
+  width: 120px;
+  aspect-ratio: 5 / 7;
+  box-sizing: border-box;
+  border: 2px dashed #555;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+}
+
+button {
+  padding: 8px 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.debug {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+  padding: 10px;
+  border: 1px dashed #888;
+  border-radius: 6px;
+}
+
+.debug-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.debug input[type='number'] {
+  width: 50px;
+  padding: 4px;
+}
+
+.markers {
+  color: #ffb74d;
+  font-size: 14px;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.modal-content {
+  background: #222;
+  border-radius: 8px;
+  padding: 16px;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.card {
+  position: relative;
+}
+
+.zoom-button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 10;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1;
+  border: none;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  cursor: pointer;
+}
+
+.zoom-image {
+  max-width: 100%;
+  border-radius: 6px;
+}
+
+.zoom-content {
+  max-width: 500px;
+}
+
+.zoom-body {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.zoom-image {
+  width: 250px;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+
+.zoom-details p {
+  margin: 4px 0;
+}
+.close-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #d32f2f;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
