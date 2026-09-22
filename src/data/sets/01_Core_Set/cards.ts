@@ -77,11 +77,11 @@ export const DRDOOM: MastermindData = {
   ],
 }
 
-export const WOUND: CardData = { id: 'wound', name: 'Wound', img: '', kind: 'wound' }
+export const WOUND: CardData = { id: 'wound', name: 'Wound', img: '/cards/core-set/Core+Wound.webp', kind: 'wound' }
 
-export const BYSTANDER: CardData = { id: 'bystander', name: 'Bystander', img: '', kind: 'bystander', vp: 1 }
+export const BYSTANDER: CardData = { id: 'bystander', name: 'Bystander', img: '/cards/core-set/Core+Bystander.webp', kind: 'bystander', vp: 1 }
 
-export const SCHEME_TWIST: CardData = { id: 'scheme-twist', name: 'Scheme Twist', img: '', kind: 'twist' }
+export const SCHEME_TWIST: CardData = { id: 'scheme-twist', name: 'Scheme Twist', img: '/cards/core-set/Core+Scheme+Twist.webp', kind: 'twist' }
 
 export const BLACK_WIDOW_CARDS: DeckEntry[] = [
   {
