@@ -1,15 +1,21 @@
 import type { GameState, GameSetup, CardData, CardInstance } from './types'
+import type { UiAdapter } from './ui'
 import { registerScheme, getScheme } from './schemeRegistry'
+import { getCardAbility } from './cardAbilities'
 import { buildDeck } from './deck'
 import { shuffle } from './random'
-import type { UiAdapter } from './ui'
-import { getCardAbility } from './cardAbilities'
 
-const HAND_SIZE = 6        // ile kart dobiera gracz
-const ESCAPE_LIMIT = 3     // TEST: ilu uciekłych złoczyńców oznacza porażkę (sprawdź w instrukcji)
+const HAND_SIZE = 6
+const ESCAPE_LIMIT = 3 // TEST: sprawdź w instrukcji
 
 function assertPlaying(state: GameState): void {
   if (state.status !== 'playing') throw new Error('Gra jest już zakończona')
+}
+
+// Zapisuje zdarzenie do logu gry i do konsoli
+function logEvent(state: GameState, message: string): void {
+  state.log.push(message)
+  console.log(message)
 }
 
 // ---------- Przygotowanie gry ----------
@@ -18,9 +24,9 @@ export function createGameState(setup: GameSetup): GameState {
   const { startingCards, heroCards, villainCards, mastermind, scheme } = setup
   registerScheme(scheme)
 
-  // Słownik wszystkich kart w grze: id -> dane
   const allCards: CardData[] = [
     ...[...startingCards, ...heroCards, ...villainCards].map((e) => e.card),
+    setup.officerCards.card,
     setup.wounds.card,
     setup.bystanders.card,
     setup.twist,
@@ -32,7 +38,6 @@ export function createGameState(setup: GameSetup): GameState {
     cards[card.id] = card
   }
 
-  // Część bystanderów trafia do talii złoczyńców, reszta tworzy stos
   const bystanders = shuffle(buildDeck([setup.bystanders]))
   const bystandersForVillainDeck = bystanders.splice(0, setup.bystandersInVillainDeck)
   const twists = buildDeck([{ card: setup.twist, count: scheme.twistCount }])
@@ -41,11 +46,13 @@ export function createGameState(setup: GameSetup): GameState {
     cards,
     deck: shuffle(buildDeck(startingCards)),
     hand: [],
-    cardsPlayedThisTurn: [],
     played: [],
     discard: [],
+    cardsPlayedThisTurn: [],
     heroDeck: shuffle(buildDeck(heroCards)),
     hq: [null, null, null, null, null],
+    officerDeck: shuffle(buildDeck([setup.officerCards])),
+    officerCardId: setup.officerCards.card.id,
     villainDeck: shuffle([
       ...buildDeck(villainCards),
       ...bystandersForVillainDeck,
@@ -66,6 +73,7 @@ export function createGameState(setup: GameSetup): GameState {
     schemeId: scheme.id,
     counters: {},
     twistsRevealed: 0,
+    log: [],
     attack: 0,
     recruit: 0,
     turn: 1,
@@ -75,7 +83,7 @@ export function createGameState(setup: GameSetup): GameState {
   }
 
   refillHq(state)
-  scheme.setup?.(state) // scheme dokłada swoje przygotowanie
+  scheme.setup?.(state)
   return state
 }
 
@@ -91,12 +99,10 @@ export function startGame(setup: GameSetup): GameState {
 export function drawCards(state: GameState, count: number): void {
   for (let i = 0; i < count; i++) {
     if (state.deck.length === 0) {
-      // Talia pusta: przetasuj stos odrzuconych i zrób z niego nową talię
-      if (state.discard.length === 0) return // nie ma z czego dobierać
+      if (state.discard.length === 0) return
       state.deck = shuffle(state.discard)
       state.discard = []
     }
-
     const card = state.deck.pop()!
     state.hand.push(card)
   }
@@ -124,8 +130,6 @@ export async function playCard(
     await ability(state, { self: instance, ui })
   }
 
-  // Dopiero teraz karta liczy się jako "zagrana w tej turze" -
-  // efekty typu "if covert played this turn" nie widzą same siebie
   state.cardsPlayedThisTurn.push(instance)
 }
 
@@ -135,6 +139,7 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.discard.push(...state.hand, ...state.played)
   state.hand = []
   state.played = []
+  state.cardsPlayedThisTurn = []   // <-- NAPRAWA: tego brakowało, stąd błąd Dangerous Rescue
   state.attack = 0
   state.recruit = 0
 
@@ -142,7 +147,6 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.bonusDrawNextTurn = 0
 
   if (state.extraTurnsQueued > 0) {
-    // Dodatkowa tura: bez nowego numeru tury i bez fazy złoczyńcy
     state.extraTurnsQueued -= 1
     drawCards(state, drawAmount)
   } else {
@@ -156,10 +160,10 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
 
 export function villainPhase(state: GameState): void {
   const card = state.villainDeck.pop()
-  if (!card) return // talia złoczyńców pusta
+  if (!card) return
 
   const data = state.cards[card.cardId]
-  console.log(`Tura ${state.turn}: odkryto ${data.name}`)
+  logEvent(state, `Tura ${state.turn}: odkryto ${data.name}`)
 
   if (data.kind === 'bystander') {
     captureBystander(state, card)
@@ -175,33 +179,28 @@ export function villainPhase(state: GameState): void {
 function enterCity(state: GameState, villain: CardInstance): void {
   let moving: CardInstance | null = villain
 
-  // Idziemy od Bridge (ostatnie pole) w stronę Sewers (pierwsze)
   for (let i = state.city.length - 1; i >= 0 && moving; i--) {
     const occupant: CardInstance | null = state.city[i]
     state.city[i] = moving
-    moving = occupant // dotychczasowy lokator przesuwa się dalej
+    moving = occupant
   }
 
-  // Jeśli ktoś został wypchnięty poza Sewers, ucieka
   if (moving) {
     state.escaped.push(moving)
-    console.log(`Ucieka: ${state.cards[moving.cardId].name}`)
+    logEvent(state, `Ucieka: ${state.cards[moving.cardId].name}`)
 
-    // Jego bystanderzy przepadają. TODO: sprawdź w instrukcji, co dokładnie się z nimi dzieje
     const lost = state.captives[moving.instanceId] ?? []
     state.ko.push(...lost)
     delete state.captives[moving.instanceId]
 
-    // TODO: skutki ucieczki (m.in. KO bohatera z HQ), sprawdź w instrukcji
     getScheme(state).onVillainEscaped?.(state, moving)
   }
 
   getScheme(state).onVillainEntered?.(state, villain)
 }
 
-// ---------- HQ i kupowanie ----------
+// ---------- HQ, oficerowie i kupowanie ----------
 
-// Uzupełnia puste sloty HQ kartami z wierzchu talii bohaterów
 function refillHq(state: GameState): void {
   for (let i = 0; i < state.hq.length; i++) {
     if (state.hq[i] === null) {
@@ -222,14 +221,29 @@ export function recruitHero(state: GameState, instanceId: string): void {
   }
 
   state.recruit -= cost
-  state.discard.push(instance) // kupiona karta trafia na stos odrzuconych
+  state.discard.push(instance)
   state.hq[index] = null
-  refillHq(state) // puste miejsce zapełnia się od razu
+  refillHq(state)
+}
+
+// Werbunek S.H.I.E.L.D. Officera, zawsze dostępnego niezależnie od HQ
+export function recruitOfficer(state: GameState): void {
+  assertPlaying(state)
+  const data = state.cards[state.officerCardId]
+  const cost = data.cost ?? 0
+  if (state.recruit < cost) {
+    throw new Error(`Za mało recruit: masz ${state.recruit}, koszt ${cost}`)
+  }
+
+  const instance = state.officerDeck.pop()
+  if (!instance) throw new Error('Brak dostępnych oficerów')
+
+  state.recruit -= cost
+  state.discard.push(instance)
 }
 
 // ---------- Walka ----------
 
-// Usuwa złoczyńcę z miasta: trafia do stosu zwycięstwa razem z uratowanymi bystanderami
 function removeVillainFromCity(state: GameState, index: number): void {
   const villain = state.city[index]!
   state.defeated.push(villain)
@@ -254,7 +268,6 @@ export function fightVillain(state: GameState, instanceId: string): void {
   removeVillainFromCity(state, index)
 }
 
-// Pokonuje złoczyńcę bez płacenia attack (np. efekt Silent Sniper)
 export function defeatVillainFree(state: GameState, instanceId: string): void {
   const index = state.city.findIndex((c) => c?.instanceId === instanceId)
   if (index === -1) throw new Error(`Złoczyńcy ${instanceId} nie ma w mieście`)
@@ -263,7 +276,10 @@ export function defeatVillainFree(state: GameState, instanceId: string): void {
 
 async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
   const tactic = state.tactics.pop()
-  if (!tactic) throw new Error("Mastermind jest już pokonany")
+  if (!tactic) throw new Error('Mastermind jest już pokonany')
+
+  // Popup: pokaż odkrytą taktykę, zanim rozpatrzymy jej efekt
+  await ui.showInfo(tactic, `Odkryto taktykę: ${state.cards[tactic.cardId].name}`)
 
   const ability = getCardAbility(tactic.cardId)
   if (ability) {
@@ -273,7 +289,6 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
   state.defeated.push(tactic)
   if (state.tactics.length === 0) {
     state.status = 'won'
-    // TODO: Master Strike powinien rozpatrzyć się TUTAJ, przed wygraną
   }
 }
 
@@ -288,27 +303,23 @@ export async function fightMastermind(state: GameState, ui: UiAdapter): Promise<
   await claimTactic(state, ui)
 }
 
-// Zdobywa taktykę bez płacenia attack (np. efekt Silent Sniper)
 export async function claimTacticFree(state: GameState, ui: UiAdapter): Promise<void> {
   await claimTactic(state, ui)
 }
 
 // ---------- Rany i bystanderzy ----------
 
-// Zdobywa ranę: ze stosu ran na stos odrzuconych gracza
 export function gainWound(state: GameState): void {
   const wound = state.wounds.pop()
-  if (!wound) return // stos pusty. TODO: sprawdź w instrukcji, czy coś się wtedy dzieje
+  if (!wound) return
   state.discard.push(wound)
 }
 
-// Ratuje bystandera: ze stosu bystanderów do stosu zwycięstwa
 export function rescueBystander(state: GameState): void {
   const bystander = state.bystanders.pop()
   if (bystander) state.defeated.push(bystander)
 }
 
-// Bystander z talii złoczyńców trafia do złoczyńcy najbliższego Bridge'a
 function captureBystander(state: GameState, bystander: CardInstance): void {
   for (let i = state.city.length - 1; i >= 0; i--) {
     const villain = state.city[i]
@@ -319,7 +330,6 @@ function captureBystander(state: GameState, bystander: CardInstance): void {
       return
     }
   }
-  // W mieście nikogo nie ma. TODO: sprawdź w instrukcji. Na razie idzie na KO
   state.ko.push(bystander)
 }
 
@@ -327,9 +337,9 @@ function captureBystander(state: GameState, bystander: CardInstance): void {
 
 function resolveTwist(state: GameState, twist: CardInstance): void {
   state.twistsRevealed += 1
-  console.log(`Scheme Twist #${state.twistsRevealed}`)
+  logEvent(state, `Scheme Twist #${state.twistsRevealed}`)
   getScheme(state).onTwist?.(state, state.twistsRevealed)
-  state.ko.push(twist) // TODO: sprawdź w instrukcji, dokąd trafia Twist po rozpatrzeniu
+  state.ko.push(twist)
 }
 
 function checkEndConditions(state: GameState): void {

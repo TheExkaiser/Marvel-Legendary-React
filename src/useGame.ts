@@ -13,13 +13,22 @@ interface OptionPromptState {
   prompt: string
 }
 
+interface InfoPromptState {
+  card: CardInstance
+  message: string
+}
+
 export function useGame() {
   const [state] = useState<GameState>(() => startGame(TEST_SETUP))
   const [, setVersion] = useState(0)
+
   const [cardPrompt, setCardPrompt] = useState<CardPromptState | null>(null)
   const [optionPrompt, setOptionPrompt] = useState<OptionPromptState | null>(null)
+  const [infoPrompt, setInfoPrompt] = useState<InfoPromptState | null>(null)
+
   const resolveCardRef = useRef<((choice: CardInstance | null) => void) | null>(null)
   const resolveOptionRef = useRef<((choice: string | null) => void) | null>(null)
+  const resolveInfoRef = useRef<(() => void) | null>(null)
 
   const ui: UiAdapter = {
     choose(options, choiceOpts) {
@@ -32,6 +41,12 @@ export function useGame() {
       return new Promise((resolve) => {
         resolveOptionRef.current = resolve
         setOptionPrompt({ options, prompt })
+      })
+    },
+    showInfo(card, message) {
+      return new Promise((resolve) => {
+        resolveInfoRef.current = resolve
+        setInfoPrompt({ card, message })
       })
     },
   }
@@ -48,6 +63,12 @@ export function useGame() {
     setOptionPrompt(null)
   }
 
+  function closeInfoPrompt() {
+    resolveInfoRef.current?.()
+    resolveInfoRef.current = null
+    setInfoPrompt(null)
+  }
+
   async function act(action: (state: GameState, ui: UiAdapter) => void | Promise<void>) {
     try {
       await action(state, ui)
@@ -57,5 +78,14 @@ export function useGame() {
     setVersion((v) => v + 1)
   }
 
-  return { state, act, cardPrompt, answerCardPrompt, optionPrompt, answerOptionPrompt }
+  return {
+    state,
+    act,
+    cardPrompt,
+    answerCardPrompt,
+    optionPrompt,
+    answerOptionPrompt,
+    infoPrompt,
+    closeInfoPrompt,
+  }
 }

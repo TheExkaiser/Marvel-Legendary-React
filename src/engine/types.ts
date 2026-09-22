@@ -2,36 +2,32 @@
 // KARTY
 // ============================================================
 
-// Definicja karty: niezmienne dane, jedna na cały typ karty
 export interface CardData {
   id: string
   name: string
-  hero?: string    // NOWE: do jakiego bohatera należy karta (np. "Black Widow")  
   img: string
-  cost?: number       // koszt kupienia (recruit)
+  hero?: string
+  cost?: number
   attack?: number
   recruit?: number
-  strength?: number   // ile attack trzeba mieć, żeby pokonać złoczyńcę lub Mastermind
-  vp?: number   // NOWE: punkty zwycięstwa (drukowane na karcie)  
-  kind?: 'wound' | 'bystander' | 'twist'   // karty specjalne
-  text?: string        // NOWE: treść umiejętności (przyda się do popupu z lupą)
-  team?: string[]       // NOWE: drużyny na karcie, puste/brak = żadna
-  type?: string[]        // NOWE: typy na karcie (covert, tech...), puste/brak = żaden
+  strength?: number
+  vp?: number
+  kind?: 'wound' | 'bystander' | 'twist'
+  team?: string[]
+  type?: string[]
+  text?: string
 }
 
-// Konkretna kopia karty w grze (agentów masz 8, ale każdy to osobny egzemplarz)
 export interface CardInstance {
-  instanceId: string  // unikalne id egzemplarza, np. "shield-agent-3"
-  cardId: string      // odwołanie do CardData.id
+  instanceId: string
+  cardId: string
 }
 
-// Wpis w składzie talii: jaka karta i ile jej kopii
 export interface DeckEntry {
   card: CardData
   count: number
 }
 
-// Mastermind: sama karta plus jego taktyki (nagrody za pokonanie)
 export interface MastermindData {
   card: CardData
   tactics: CardData[]
@@ -44,48 +40,45 @@ export interface MastermindData {
 export type GameStatus = 'playing' | 'won' | 'lost'
 
 export interface GameState {
-  // Słownik danych kart: id -> definicja
   cards: Record<string, CardData>
 
-  // Talie i stosy gracza
   deck: CardInstance[]
   hand: CardInstance[]
-  cardsPlayedThisTurn: CardInstance[]   // NOWE: karty zagrane wcześniej w tej turze  
   played: CardInstance[]
   discard: CardInstance[]
+  cardsPlayedThisTurn: CardInstance[]
 
-  // Bohaterowie do kupienia
   heroDeck: CardInstance[]
   hq: (CardInstance | null)[]
 
-  // Złoczyńcy i miasto ([0] = Sewers ... [4] = Bridge)
+  officerDeck: CardInstance[]        // NOWE
+  officerCardId: string              // NOWE
+
   villainDeck: CardInstance[]
   city: (CardInstance | null)[]
-  cityMarkers: string[][]                    // znaczniki na polach miasta (równolegle do city)
-  escaped: CardInstance[]                    // złoczyńcy, którzy uciekli
-  captives: Record<string, CardInstance[]>   // id złoczyńcy -> przetrzymywani bystanderzy
+  cityMarkers: string[][]
+  escaped: CardInstance[]
+  captives: Record<string, CardInstance[]>
 
-  // Mastermind
   mastermind: CardInstance
-  tactics: CardInstance[]                    // taktyki, które zostały do zdobycia
+  tactics: CardInstance[]
 
-  // Pozostałe stosy
-  defeated: CardInstance[]                   // stos zwycięstwa
+  defeated: CardInstance[]
   wounds: CardInstance[]
   bystanders: CardInstance[]
-  ko: CardInstance[]                         // karty usunięte z gry (KO)
+  ko: CardInstance[]
 
-  // Scheme
   schemeId: string
-  counters: Record<string, number>           // liczniki scheme'u po nazwie
-  twistsRevealed: number                     // ile Twistów już odkryto
+  counters: Record<string, number>
+  twistsRevealed: number
 
-  // Bieżąca gra
+  log: string[]                      // NOWE
+
   attack: number
   recruit: number
   turn: number
-  extraTurnsQueued: number   // NOWE: ile dodatkowych tur bez fazy złoczyńcy czeka (Secrets of Time Travel)
-  bonusDrawNextTurn: number  // NOWE: ile dodatkowych kart dobrać przy najbliższym dobraniu ręki (Treasures of Latveria)
+  extraTurnsQueued: number
+  bonusDrawNextTurn: number
   status: GameStatus
 }
 
@@ -93,27 +86,26 @@ export interface GameState {
 // PRZYGOTOWANIE GRY I SCHEME
 // ============================================================
 
-// Wszystko, czego potrzeba do przygotowania gry
 export interface GameSetup {
   startingCards: DeckEntry[]
   heroCards: DeckEntry[]
+  officerCards: DeckEntry            // NOWE
   villainCards: DeckEntry[]
   mastermind: MastermindData
   wounds: DeckEntry
   bystanders: DeckEntry
-  bystandersInVillainDeck: number   // ile bystanderów trafia do talii złoczyńców
+  bystandersInVillainDeck: number
   scheme: SchemeDef
-  twist: CardData                   // karta Scheme Twist
+  twist: CardData
 }
 
 export interface SchemeDef {
   id: string
   name: string
   img: string
-  twistCount: number                // ile Twistów wchodzi do talii złoczyńców
-  escapeLimit?: number              // opcjonalnie: inny próg uciekłych niż domyślny
+  twistCount: number
+  escapeLimit?: number
 
-  // Haczyki: wszystkie opcjonalne, scheme wypełnia tylko potrzebne
   setup?: (state: GameState) => void
   onTwist?: (state: GameState, twistNumber: number) => void
   onVillainEntered?: (state: GameState, villain: CardInstance) => void
@@ -125,7 +117,6 @@ export interface SchemeDef {
 // ZESTAWY KART
 // ============================================================
 
-// Zestaw kart (Core Set, dodatek). Kolejne kategorie kart dojdą tu, gdy przeniesiemy resztę danych
 export interface SetData {
   id: string
   name: string

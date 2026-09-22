@@ -167,3 +167,38 @@ button {
   line-height: 1;
   cursor: pointer;
 }
+.officer-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-right: 12px;
+  border-right: 1px solid #555;
+  margin-right: 8px;
+}
+
+.log-bar {
+  cursor: pointer;
+  padding: 6px 10px;
+  background: #222;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.log-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  text-align: left;
+  font-size: 14px;
+}
+
+.log-list div {
+  padding: 2px 0;
+  border-bottom: 1px solid #333;
+}
+
+details summary {
+  cursor: pointer;
+  margin: 8px 0;
+}

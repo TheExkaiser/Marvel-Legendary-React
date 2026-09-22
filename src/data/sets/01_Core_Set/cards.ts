@@ -139,3 +139,13 @@ export const BLACK_WIDOW_CARDS: DeckEntry[] = [
     count: 1,
   },
 ]
+
+export const SHIELD_OFFICER: CardData = {
+  id: 'shield-officer',
+  name: 'S.H.I.E.L.D. Officer',
+  hero: 'Maria Hill',
+  img: '/cards/core-set/Core+Officer.webp',
+  team: ['S.H.I.E.L.D.'],
+  cost: 3,
+  recruit: 2,
+}

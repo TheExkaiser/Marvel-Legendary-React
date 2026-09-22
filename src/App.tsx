@@ -1,30 +1,43 @@
 import { useGame } from './useGame'
 import { getScheme } from './engine/schemeRegistry'
+import { sumVictoryPoints } from './engine/keywords'
 import {
   playCard,
   recruitHero,
+  recruitOfficer,
   fightVillain,
   fightMastermind,
   endTurn,
 } from './engine/game'
 import { CardView } from './components/CardView'
-import './App.css'
 import { ChoicePrompt } from './components/ChoicePrompt'
-import { DebugPanel } from './components/DebugPanel'
-import { sumVictoryPoints } from './engine/keywords'
 import { OptionPrompt } from './components/OptionPrompt'
+import { TacticPrompt } from './components/TacticPrompt'
+import { DebugPanel } from './components/DebugPanel'
+import { LogPanel } from './components/LogPanel'
+import './App.css'
 
 const CITY_NAMES = ['Sewers', 'Bank', 'Rooftops', 'Streets', 'Bridge']
-const SHOW_DEBUG = true // false ukrywa przyciski testowe
+const SHOW_DEBUG = true
 
 function App() {
-const { state, act, cardPrompt, answerCardPrompt, optionPrompt, answerOptionPrompt } = useGame()
+  const {
+    state,
+    act,
+    cardPrompt,
+    answerCardPrompt,
+    optionPrompt,
+    answerOptionPrompt,
+    infoPrompt,
+    closeInfoPrompt,
+  } = useGame()
   const scheme = getScheme(state)
 
   return (
     <div className="app">
-      {/* ==================== NAGŁÓWEK I WYNIK GRY ==================== */}
+      {/* ==================== NAGŁÓWEK, LOG I WYNIK GRY ==================== */}
       <h1>Marvel Legendary</h1>
+      <LogPanel log={state.log} />
       {state.status === 'won' && <h2>🎉 Wygrałeś! Mastermind pokonany.</h2>}
       {state.status === 'lost' && <h2>💀 Przegrałeś!</h2>}
 
@@ -45,8 +58,8 @@ const { state, act, cardPrompt, answerCardPrompt, optionPrompt, answerOptionProm
         KO: {state.ko.length}
       </p>
 
-      {/* ==================== PRZYCISKI TESTOWE ==================== */}
-      {SHOW_DEBUG && <DebugPanel act={act} />}
+      {/* ==================== PANEL DEBUG ==================== */}
+      {SHOW_DEBUG && <DebugPanel state={state} act={act} />}
 
       {/* ==================== MASTERMIND ==================== */}
       <h2>Mastermind (pozostałe taktyki: {state.tactics.length})</h2>
@@ -69,7 +82,6 @@ const { state, act, cardPrompt, answerCardPrompt, optionPrompt, answerOptionProm
             : 0
           return (
             <div key={i}>
-              {/* pole: złoczyńca albo pusty slot z nazwą */}
               {instance ? (
                 <CardView
                   data={state.cards[instance.cardId]}
@@ -78,9 +90,7 @@ const { state, act, cardPrompt, answerCardPrompt, optionPrompt, answerOptionProm
               ) : (
                 <div className="slot-empty">{CITY_NAMES[i]}</div>
               )}
-              {/* przetrzymywani bystanderzy */}
               {captiveCount > 0 && <div>Bystanderzy: {captiveCount}</div>}
-              {/* znaczniki scheme'u (np. portale) */}
               {state.cityMarkers[i].length > 0 && (
                 <div className="markers">{state.cityMarkers[i].join(', ')}</div>
               )}
@@ -89,9 +99,16 @@ const { state, act, cardPrompt, answerCardPrompt, optionPrompt, answerOptionProm
         })}
       </div>
 
-      {/* ==================== HQ (BOHATEROWIE DO KUPIENIA) ==================== */}
-      <h2>HQ</h2>
+      {/* ==================== REKRUTACJA: OFICER + HQ ==================== */}
+      <h2>Rekrutacja</h2>
       <div className="row">
+        <div className="officer-slot">
+          <CardView
+            data={state.cards[state.officerCardId]}
+            onClick={() => act((s) => recruitOfficer(s))}
+          />
+          <div>Pozostało: {state.officerDeck.length}</div>
+        </div>
         {state.hq.map((instance, i) =>
           instance ? (
             <CardView
@@ -125,15 +142,33 @@ const { state, act, cardPrompt, answerCardPrompt, optionPrompt, answerOptionProm
         ))}
       </div>
 
-      {/* ==================== TALIA GRACZA I KONIEC TURY ==================== */}
-      <p>
-        Talia: {state.deck.length} | Odrzucone: {state.discard.length}
-      </p>
+      {/* ==================== TALIA, ODRZUCONE, VICTORY POOL ==================== */}
+      <p>Talia: {state.deck.length}</p>
+
+      <details>
+        <summary>Stos odrzuconych ({state.discard.length})</summary>
+        <div className="row">
+          {state.discard.map((c) => (
+            <CardView key={c.instanceId} data={state.cards[c.cardId]} />
+          ))}
+        </div>
+      </details>
+
+      <details>
+        <summary>Victory Pool ({state.defeated.length})</summary>
+        <div className="row">
+          {state.defeated.map((c) => (
+            <CardView key={c.instanceId} data={state.cards[c.cardId]} />
+          ))}
+        </div>
+      </details>
+
       <button onClick={() => act(endTurn)} disabled={state.status !== 'playing'}>
         Zakończ turę
       </button>
-      
-                  {cardPrompt && (
+
+      {/* ==================== POPUPY ==================== */}
+      {cardPrompt && (
         <ChoicePrompt
           state={state}
           options={cardPrompt.options}
@@ -148,6 +183,9 @@ const { state, act, cardPrompt, answerCardPrompt, optionPrompt, answerOptionProm
           prompt={optionPrompt.prompt}
           onChoose={answerOptionPrompt}
         />
+      )}
+      {infoPrompt && (
+        <TacticPrompt state={state} card={infoPrompt.card} onClose={closeInfoPrompt} />
       )}
     </div>
   )

@@ -4,10 +4,11 @@ import type { UiAdapter } from '../engine/ui'
 import { gainWound, rescueBystander } from '../engine/game'
 
 interface DebugPanelProps {
+  state: GameState
   act: (action: (state: GameState, ui: UiAdapter) => void | Promise<void>) => void
 }
 
-export function DebugPanel({ act }: DebugPanelProps) {
+export function DebugPanel({ state, act }: DebugPanelProps) {
   const [attackAmount, setAttackAmount] = useState(1)
   const [recruitAmount, setRecruitAmount] = useState(1)
 
@@ -39,6 +40,15 @@ export function DebugPanel({ act }: DebugPanelProps) {
           Test: dodaj recruit
         </button>
       </span>
+
+      <details>
+        <summary>Podgląd talii gracza ({state.deck.length})</summary>
+        <ul>
+          {state.deck.map((c) => (
+            <li key={c.instanceId}>{state.cards[c.cardId].name}</li>
+          ))}
+        </ul>
+      </details>
     </div>
   )
 }

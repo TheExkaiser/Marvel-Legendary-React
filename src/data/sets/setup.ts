@@ -2,6 +2,7 @@ import type { GameSetup } from '../../engine/types'
 import {
   STARTING_CARDS,
   BLACK_WIDOW_CARDS,
+  SHIELD_OFFICER,
   TEST_VILLAINS,
   DRDOOM,
   WOUND,
@@ -13,6 +14,7 @@ import { findScheme } from './index'
 export const TEST_SETUP: GameSetup = {
   startingCards: STARTING_CARDS,
   heroCards: BLACK_WIDOW_CARDS,
+  officerCards: { card: SHIELD_OFFICER, count: 30 },
   villainCards: TEST_VILLAINS,
   mastermind: DRDOOM,
   wounds: { card: WOUND, count: 30 },
