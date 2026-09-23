@@ -1,8 +1,5 @@
 import type { GameState, CardInstance } from './types'
 
-// ---------- Zapytania ----------
-
-// Ile kart danego typu/drużyny zagrano WCZEŚNIEJ w tej turze
 export function countPlayedThisTurn(
   state: GameState,
   filter: { type?: string; team?: string },
@@ -23,9 +20,27 @@ export function hasCaptiveBystander(state: GameState, instance: CardInstance): b
   return (state.captives[instance.instanceId]?.length ?? 0) > 0
 }
 
-// ---------- Akcje ----------
+export function countDistinctTeams(state: GameState, pile: CardInstance[]): number {
+  const teams = new Set<string>()
+  for (const c of pile) {
+    for (const t of state.cards[c.cardId].team ?? []) teams.add(t)
+  }
+  return teams.size
+}
 
-// Usuwa kartę z ręki, stosu odrzuconych lub zagranych i wysyła ją na KO
+// "każdy kolor bohatera" = liczba różnych TYPÓW (nie drużyn) wśród kart w danym stosie
+export function countDistinctTypes(state: GameState, pile: CardInstance[]): number {
+  const types = new Set<string>()
+  for (const c of pile) {
+    for (const t of state.cards[c.cardId].type ?? []) types.add(t)
+  }
+  return types.size
+}
+
+export function sumVictoryPoints(state: GameState, pile: CardInstance[]): number {
+  return pile.reduce((total, c) => total + (state.cards[c.cardId].vp ?? 0), 0)
+}
+
 export function koCard(state: GameState, instanceId: string): void {
   for (const pile of [state.hand, state.discard, state.played]) {
     const index = pile.findIndex((c) => c.instanceId === instanceId)
@@ -37,6 +52,13 @@ export function koCard(state: GameState, instanceId: string): void {
   }
 }
 
-export function sumVictoryPoints(state: GameState, pile: CardInstance[]): number {
-  return pile.reduce((total, c) => total + (state.cards[c.cardId].vp ?? 0), 0)
+export function discardCard(state: GameState, instanceId: string): void {
+  for (const pile of [state.hand, state.played]) {
+    const index = pile.findIndex((c) => c.instanceId === instanceId)
+    if (index !== -1) {
+      const [card] = pile.splice(index, 1)
+      state.discard.push(card)
+      return
+    }
+  }
 }

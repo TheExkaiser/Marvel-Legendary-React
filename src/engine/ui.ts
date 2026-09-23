@@ -13,5 +13,5 @@ export interface TextOption {
 export interface UiAdapter {
   choose(options: CardInstance[], choiceOpts: ChoiceOptions): Promise<CardInstance | null>
   chooseOption(options: TextOption[], prompt: string): Promise<string | null>
-  showInfo(card: CardInstance, message: string): Promise<void>   // NOWE: popup informacyjny
+  showInfo(card: CardInstance, message: string): Promise<void>
 }

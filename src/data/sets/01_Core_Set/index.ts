@@ -1,7 +1,10 @@
 import type { SetData } from '../../../engine/types'
 import { CORE_SCHEMES } from './schemes'
-import './heroAbilities' // rejestruje umiejętności kart przy imporcie zestawu
+import './heroAbilities'
 import './tacticAbilities'
+import './masterStrikeAbilities'
+import './replacementAbilities'
+import './villainAbilities.ts'
 
 export const CORE_SET: SetData = {
   id: 'core_set',

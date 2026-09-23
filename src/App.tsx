@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useGame } from './useGame'
 import { getScheme } from './engine/schemeRegistry'
 import { sumVictoryPoints } from './engine/keywords'
@@ -13,6 +14,7 @@ import { CardView } from './components/CardView'
 import { ChoicePrompt } from './components/ChoicePrompt'
 import { OptionPrompt } from './components/OptionPrompt'
 import { TacticPrompt } from './components/TacticPrompt'
+import { CaptivesPrompt } from './components/CaptivesPrompt'
 import { DebugPanel } from './components/DebugPanel'
 import { LogPanel } from './components/LogPanel'
 import './App.css'
@@ -32,23 +34,21 @@ function App() {
     closeInfoPrompt,
   } = useGame()
   const scheme = getScheme(state)
+  const [viewingCaptivesOf, setViewingCaptivesOf] = useState<string | null>(null)
 
   return (
     <div className="app">
-      {/* ==================== NAGŁÓWEK, LOG I WYNIK GRY ==================== */}
       <h1>Marvel Legendary</h1>
       <LogPanel log={state.log} />
       {state.status === 'won' && <h2>🎉 Wygrałeś! Mastermind pokonany.</h2>}
       {state.status === 'lost' && <h2>💀 Przegrałeś!</h2>}
 
-      {/* ==================== SCHEME ==================== */}
       <h2>Scheme: {scheme.name}</h2>
       <p>
         Twisty: {state.twistsRevealed} / {scheme.twistCount}
         {Object.entries(state.counters).map(([name, value]) => ` | ${name}: ${value}`)}
       </p>
 
-      {/* ==================== STATYSTYKI TURY I STOSY ==================== */}
       <p>
         Tura {state.turn} | Attack: {state.attack} | Recruit: {state.recruit} |
         Punkty zwycięstwa: {sumVictoryPoints(state, state.defeated)}
@@ -58,19 +58,26 @@ function App() {
         KO: {state.ko.length}
       </p>
 
-      {/* ==================== PANEL DEBUG ==================== */}
       {SHOW_DEBUG && <DebugPanel state={state} act={act} />}
 
-      {/* ==================== MASTERMIND ==================== */}
       <h2>Mastermind (pozostałe taktyki: {state.tactics.length})</h2>
       <div className="row">
-        <CardView
-          data={state.cards[state.mastermind.cardId]}
-          onClick={() => act(fightMastermind)}
-        />
+        <div>
+          <CardView
+            data={state.cards[state.mastermind.cardId]}
+            onClick={() => act(fightMastermind)}
+          />
+          {(state.captives[state.mastermind.instanceId]?.length ?? 0) > 0 && (
+            <button
+              className="captive-badge"
+              onClick={() => setViewingCaptivesOf(state.mastermind.instanceId)}
+            >
+              👤 {state.captives[state.mastermind.instanceId]?.length}
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* ==================== MIASTO ==================== */}
       <h2>
         Miasto (talia: {state.villainDeck.length}, uciekło: {state.escaped.length},
         pokonani: {state.defeated.length})
@@ -85,12 +92,19 @@ function App() {
               {instance ? (
                 <CardView
                   data={state.cards[instance.cardId]}
-                  onClick={() => act((s) => fightVillain(s, instance.instanceId))}
+onClick={() => act((s, ui) => fightVillain(s, instance.instanceId, ui))}
                 />
               ) : (
                 <div className="slot-empty">{CITY_NAMES[i]}</div>
               )}
-              {captiveCount > 0 && <div>Bystanderzy: {captiveCount}</div>}
+              {captiveCount > 0 && (
+                <button
+                  className="captive-badge"
+                  onClick={() => setViewingCaptivesOf(instance!.instanceId)}
+                >
+                  👤 {captiveCount}
+                </button>
+              )}
               {state.cityMarkers[i].length > 0 && (
                 <div className="markers">{state.cityMarkers[i].join(', ')}</div>
               )}
@@ -99,7 +113,6 @@ function App() {
         })}
       </div>
 
-      {/* ==================== REKRUTACJA: OFICER + HQ ==================== */}
       <h2>Rekrutacja</h2>
       <div className="row">
         <div className="officer-slot">
@@ -122,7 +135,6 @@ function App() {
         )}
       </div>
 
-      {/* ==================== ZAGRANE KARTY ==================== */}
       <h2>Zagrane ({state.played.length})</h2>
       <div className="row">
         {state.played.map((c) => (
@@ -130,7 +142,6 @@ function App() {
         ))}
       </div>
 
-      {/* ==================== RĘKA ==================== */}
       <h2>Ręka ({state.hand.length})</h2>
       <div className="row">
         {state.hand.map((c) => (
@@ -142,7 +153,6 @@ function App() {
         ))}
       </div>
 
-      {/* ==================== TALIA, ODRZUCONE, VICTORY POOL ==================== */}
       <p>Talia: {state.deck.length}</p>
 
       <details>
@@ -167,7 +177,6 @@ function App() {
         Zakończ turę
       </button>
 
-      {/* ==================== POPUPY ==================== */}
       {cardPrompt && (
         <ChoicePrompt
           state={state}
@@ -186,6 +195,13 @@ function App() {
       )}
       {infoPrompt && (
         <TacticPrompt state={state} card={infoPrompt.card} onClose={closeInfoPrompt} />
+      )}
+      {viewingCaptivesOf && (
+        <CaptivesPrompt
+          state={state}
+          captives={state.captives[viewingCaptivesOf] ?? []}
+          onClose={() => setViewingCaptivesOf(null)}
+        />
       )}
     </div>
   )

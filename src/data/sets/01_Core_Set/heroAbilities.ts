@@ -1,7 +1,18 @@
-import type { CardInstance } from '../../../engine/types'
 import { registerCardAbility } from '../../../engine/cardAbilities'
 import { drawCards, rescueBystander, defeatVillainFree, claimTacticFree } from '../../../engine/game'
-import { countPlayedThisTurn, countBystandersInPile, hasCaptiveBystander, koCard } from '../../../engine/keywords'
+import {
+  countPlayedThisTurn,
+  countBystandersInPile,
+  hasCaptiveBystander,
+  countDistinctTypes,
+  discardCard,
+  koCard,
+} from '../../../engine/keywords'
+import { registerPlayRequirement } from '../../../engine/cardRequirements'
+import type { CardInstance, GameState } from '../../../engine/types'
+import type { UiAdapter } from '../../../engine/ui'
+
+// ---------- Black Widow ----------
 
 registerCardAbility('hero-black-widow-dangerous-rescue', async (state, { ui }) => {
   if (countPlayedThisTurn(state, { type: 'covert' }) === 0) return
@@ -44,8 +55,56 @@ registerCardAbility('hero-black-widow-silent-sniper', async (state, { ui }) => {
   if (!chosen) return
 
   if (chosen.instanceId === state.mastermind.instanceId) {
-    claimTacticFree(state, ui)
+    await claimTacticFree(state, ui) // <-- naprawione: teraz z drugim argumentem `ui`
   } else {
     defeatVillainFree(state, chosen.instanceId)
   }
+})
+
+// ---------- Captain America ----------
+
+registerCardAbility('hero-captain-america-avengers-assemble', async (state) => {
+  state.recruit += countDistinctTypes(state, state.played)
+})
+
+registerCardAbility('hero-captain-america-perfect-teamwork', async (state) => {
+  state.attack += countDistinctTypes(state, state.played)
+})
+
+registerCardAbility('hero-captain-america-day-unlike-any-other', async (state) => {
+  const count = countPlayedThisTurn(state, { team: 'avengers' })
+  if (count === 0) return
+  state.attack += 3 * count
+})
+
+// ---------- Cyclops ----------
+
+async function discardCost(state: GameState, ui: UiAdapter): Promise<void> {
+  const chosen = await ui.choose(state.hand, {
+    prompt: 'Wybierz kartę do odrzucenia (koszt zagrania)',
+    optional: false,
+  })
+  if (chosen) discardCard(state, chosen.instanceId)
+}
+
+// Karta wymaga odrzucenia innej karty z ręki - musisz mieć w ręce jeszcze coś poza nią samą
+function requiresAnotherCardInHand(state: GameState): boolean {
+  return state.hand.length >= 2 // sama karta jest jeszcze w ręce w momencie sprawdzania
+}
+
+registerPlayRequirement('hero-cyclops-determination', requiresAnotherCardInHand)
+registerPlayRequirement('hero-cyclops-optic-blast', requiresAnotherCardInHand)
+
+registerCardAbility('hero-cyclops-determination', async (state, { ui }) => {
+  await discardCost(state, ui)
+})
+
+registerCardAbility('hero-cyclops-optic-blast', async (state, { ui }) => {
+  await discardCost(state, ui)
+})
+
+registerCardAbility('hero-cyclops-x-men-united', async (state) => {
+  const count = countPlayedThisTurn(state, { team: 'x-men' })
+  if (count === 0) return
+  state.attack += 2 * count
 })

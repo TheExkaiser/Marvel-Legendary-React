@@ -42,15 +42,20 @@ export function CardView({ data, onClick }: CardViewProps) {
             <button className="close-button" onClick={() => setZoomed(false)}>✕</button>
             <div className="zoom-body">
               {data.img && <img src={data.img} alt={data.name} className="zoom-image" />}
-              <div className="zoom-details">
+                            <div className="zoom-details">
                 {data.hero !== undefined && (
                   <p><strong>Hero:</strong> {data.hero}</p>
                 )}
-                <p><strong>Team:</strong> {(data.team ?? []).join(', ')}</p>
-                <p><strong>Type:</strong> {(data.type ?? []).join(', ')}</p>
-                <p><strong>Attacks:</strong> {data.attack ?? 0}</p>
-                <p><strong>Cost:</strong> {data.cost ?? '—'}</p>
-                <p><strong>Text:</strong> {data.text ?? '—'}</p>
+                {(data.team ?? []).length > 0 && (
+                  <p><strong>Team:</strong> {(data.team ?? []).join(', ')}</p>
+                )}
+                {(data.type ?? []).length > 0 && (
+                  <p><strong>Type:</strong> {(data.type ?? []).join(', ')}</p>
+                )}
+                {data.strength !== undefined && <p><strong>Attacks:</strong> {data.strength}</p>}
+                {data.attack !== undefined && <p><strong>Attacks:</strong> {data.attack}</p>}
+                {data.cost !== undefined && <p><strong>Cost:</strong> {data.cost}</p>}
+                {data.text && <p><strong>Text:</strong> {data.text}</p>}
               </div>
             </div>
             

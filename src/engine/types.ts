@@ -1,7 +1,3 @@
-// ============================================================
-// KARTY
-// ============================================================
-
 export interface CardData {
   id: string
   name: string
@@ -12,7 +8,7 @@ export interface CardData {
   recruit?: number
   strength?: number
   vp?: number
-  kind?: 'wound' | 'bystander' | 'twist'
+  kind?: 'wound' | 'bystander' | 'twist' | 'masterstrike'
   team?: string[]
   type?: string[]
   text?: string
@@ -31,11 +27,8 @@ export interface DeckEntry {
 export interface MastermindData {
   card: CardData
   tactics: CardData[]
+  masterStrikeId: string   // id, pod którym zarejestrowana jest umiejętność Master Strike
 }
-
-// ============================================================
-// STAN GRY
-// ============================================================
 
 export type GameStatus = 'playing' | 'won' | 'lost'
 
@@ -51,8 +44,8 @@ export interface GameState {
   heroDeck: CardInstance[]
   hq: (CardInstance | null)[]
 
-  officerDeck: CardInstance[]        // NOWE
-  officerCardId: string              // NOWE
+  officerDeck: CardInstance[]
+  officerCardId: string
 
   villainDeck: CardInstance[]
   city: (CardInstance | null)[]
@@ -62,6 +55,7 @@ export interface GameState {
 
   mastermind: CardInstance
   tactics: CardInstance[]
+  masterStrikeId: string
 
   defeated: CardInstance[]
   wounds: CardInstance[]
@@ -72,7 +66,7 @@ export interface GameState {
   counters: Record<string, number>
   twistsRevealed: number
 
-  log: string[]                      // NOWE
+  log: string[]
 
   attack: number
   recruit: number
@@ -82,19 +76,17 @@ export interface GameState {
   status: GameStatus
 }
 
-// ============================================================
-// PRZYGOTOWANIE GRY I SCHEME
-// ============================================================
-
 export interface GameSetup {
   startingCards: DeckEntry[]
   heroCards: DeckEntry[]
-  officerCards: DeckEntry            // NOWE
+  officerCards: DeckEntry
   villainCards: DeckEntry[]
   mastermind: MastermindData
   wounds: DeckEntry
   bystanders: DeckEntry
   bystandersInVillainDeck: number
+  masterStrikeCard: CardData   // NOWE: generyczna karta "Master Strike" (jak Scheme Twist)
+  masterStrikeCount: number    // NOWE: standardowo 5
   scheme: SchemeDef
   twist: CardData
 }
@@ -112,10 +104,6 @@ export interface SchemeDef {
   onVillainEscaped?: (state: GameState, villain: CardInstance) => void
   checkLoss?: (state: GameState) => boolean
 }
-
-// ============================================================
-// ZESTAWY KART
-// ============================================================
 
 export interface SetData {
   id: string

@@ -2,6 +2,10 @@ import type { GameState, GameSetup, CardData, CardInstance } from './types'
 import type { UiAdapter } from './ui'
 import { registerScheme, getScheme } from './schemeRegistry'
 import { getCardAbility } from './cardAbilities'
+import { getWoundReplacement } from './replacements'
+import { canPlayCard } from './cardRequirements'
+import { getVillainAbilities } from './villainAbilities'
+import { canDefeatVillain } from './villainRequirements'
 import { buildDeck } from './deck'
 import { shuffle } from './random'
 
@@ -12,7 +16,6 @@ function assertPlaying(state: GameState): void {
   if (state.status !== 'playing') throw new Error('Gra jest już zakończona')
 }
 
-// Zapisuje zdarzenie do logu gry i do konsoli
 function logEvent(state: GameState, message: string): void {
   state.log.push(message)
   console.log(message)
@@ -30,6 +33,7 @@ export function createGameState(setup: GameSetup): GameState {
     setup.wounds.card,
     setup.bystanders.card,
     setup.twist,
+    setup.masterStrikeCard,
     mastermind.card,
     ...mastermind.tactics,
   ]
@@ -41,6 +45,9 @@ export function createGameState(setup: GameSetup): GameState {
   const bystanders = shuffle(buildDeck([setup.bystanders]))
   const bystandersForVillainDeck = bystanders.splice(0, setup.bystandersInVillainDeck)
   const twists = buildDeck([{ card: setup.twist, count: scheme.twistCount }])
+  const masterStrikes = buildDeck([
+    { card: setup.masterStrikeCard, count: setup.masterStrikeCount },
+  ])
 
   const state: GameState = {
     cards,
@@ -57,6 +64,7 @@ export function createGameState(setup: GameSetup): GameState {
       ...buildDeck(villainCards),
       ...bystandersForVillainDeck,
       ...twists,
+      ...masterStrikes,
     ]),
     city: [null, null, null, null, null],
     cityMarkers: [[], [], [], [], []],
@@ -70,6 +78,7 @@ export function createGameState(setup: GameSetup): GameState {
     tactics: shuffle(
       mastermind.tactics.map((t) => ({ instanceId: t.id, cardId: t.id })),
     ),
+    masterStrikeId: mastermind.masterStrikeId,
     schemeId: scheme.id,
     counters: {},
     twistsRevealed: 0,
@@ -87,11 +96,9 @@ export function createGameState(setup: GameSetup): GameState {
   return state
 }
 
-export function startGame(setup: GameSetup): GameState {
-  const state = createGameState(setup)
+export async function startGame(state: GameState, ui: UiAdapter): Promise<void> {
   drawCards(state, HAND_SIZE)
-  villainPhase(state)
-  return state
+  await villainPhase(state, ui)
 }
 
 // ---------- Ręka i talia gracza ----------
@@ -117,8 +124,12 @@ export async function playCard(
   const index = state.hand.findIndex((c) => c.instanceId === instanceId)
   if (index === -1) throw new Error(`Karty ${instanceId} nie ma w ręce`)
 
-  const data = state.cards[state.hand[index].cardId]
+  const cardId = state.hand[index].cardId
+  const data = state.cards[cardId]
   if (data.kind === 'wound') throw new Error('Rany nie da się zagrać')
+  if (!canPlayCard(state, cardId)) {
+    throw new Error('Nie można zagrać tej karty: nie da się zapłacić jej kosztu')
+  }
 
   const [instance] = state.hand.splice(index, 1)
   state.played.push(instance)
@@ -139,7 +150,7 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.discard.push(...state.hand, ...state.played)
   state.hand = []
   state.played = []
-  state.cardsPlayedThisTurn = []   // <-- NAPRAWA: tego brakowało, stąd błąd Dangerous Rescue
+  state.cardsPlayedThisTurn = []
   state.attack = 0
   state.recruit = 0
 
@@ -152,13 +163,13 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   } else {
     state.turn += 1
     drawCards(state, drawAmount)
-    villainPhase(state)
+    await villainPhase(state, ui)
   }
 }
 
-// ---------- Faza złoczyńcy i miasto ----------
+// ---------- Faza złoczyńcy, miasto, Master Strike ----------
 
-export function villainPhase(state: GameState): void {
+export async function villainPhase(state: GameState, ui: UiAdapter): Promise<void> {
   const card = state.villainDeck.pop()
   if (!card) return
 
@@ -169,14 +180,31 @@ export function villainPhase(state: GameState): void {
     captureBystander(state, card)
   } else if (data.kind === 'twist') {
     resolveTwist(state, card)
+  } else if (data.kind === 'masterstrike') {
+    await resolveMasterStrike(state, card, ui)
   } else {
-    enterCity(state, card)
+    await enterCity(state, card, ui)
   }
 
   checkEndConditions(state)
 }
 
-function enterCity(state: GameState, villain: CardInstance): void {
+async function resolveMasterStrike(
+  state: GameState,
+  card: CardInstance,
+  ui: UiAdapter,
+): Promise<void> {
+  await ui.showInfo(card, 'Odkryto: Master Strike!')
+
+  const ability = getCardAbility(state.masterStrikeId)
+  if (ability) {
+    await ability(state, { self: card, ui })
+  }
+
+  state.ko.push(card)
+}
+
+async function enterCity(state: GameState, villain: CardInstance, ui: UiAdapter): Promise<void> {
   let moving: CardInstance | null = villain
 
   for (let i = state.city.length - 1; i >= 0 && moving; i--) {
@@ -194,9 +222,19 @@ function enterCity(state: GameState, villain: CardInstance): void {
     delete state.captives[moving.instanceId]
 
     getScheme(state).onVillainEscaped?.(state, moving)
+
+    const abilities = getVillainAbilities(moving.cardId)
+    if (abilities?.onEscape) {
+      await abilities.onEscape(state, ui, moving)
+    }
   }
 
   getScheme(state).onVillainEntered?.(state, villain)
+
+  const abilities = getVillainAbilities(villain.cardId)
+  if (abilities?.onAmbush) {
+    await abilities.onAmbush(state, ui, villain)
+  }
 }
 
 // ---------- HQ, oficerowie i kupowanie ----------
@@ -226,7 +264,6 @@ export function recruitHero(state: GameState, instanceId: string): void {
   refillHq(state)
 }
 
-// Werbunek S.H.I.E.L.D. Officera, zawsze dostępnego niezależnie od HQ
 export function recruitOfficer(state: GameState): void {
   assertPlaying(state)
   const data = state.cards[state.officerCardId]
@@ -254,23 +291,45 @@ function removeVillainFromCity(state: GameState, index: number): void {
   delete state.captives[villain.instanceId]
 }
 
-export function fightVillain(state: GameState, instanceId: string): void {
+export async function fightVillain(
+  state: GameState,
+  instanceId: string,
+  ui: UiAdapter,
+): Promise<void> {
   assertPlaying(state)
   const index = state.city.findIndex((c) => c?.instanceId === instanceId)
   if (index === -1) throw new Error(`Złoczyńcy ${instanceId} nie ma w mieście`)
 
-  const strength = state.cards[state.city[index]!.cardId].strength ?? 0
+  const villain = state.city[index]!
+  if (!canDefeatVillain(state, villain.cardId)) {
+    throw new Error('Nie możesz teraz pokonać tego złoczyńcy (niespełniony warunek)')
+  }
+
+  const strength = state.cards[villain.cardId].strength ?? 0
   if (state.attack < strength) {
     throw new Error(`Za mało attack: masz ${state.attack}, siła ${strength}`)
   }
 
   state.attack -= strength
+
+  const abilities = getVillainAbilities(villain.cardId)
+  if (abilities?.onFight) {
+    await abilities.onFight(state, ui, villain)
+  }
+
   removeVillainFromCity(state, index)
 }
 
+// Darmowe pokonanie (np. Silent Sniper) - respektuje warunek pokonania, ale NIE odpala "Fight"
 export function defeatVillainFree(state: GameState, instanceId: string): void {
   const index = state.city.findIndex((c) => c?.instanceId === instanceId)
   if (index === -1) throw new Error(`Złoczyńcy ${instanceId} nie ma w mieście`)
+
+  const villain = state.city[index]!
+  if (!canDefeatVillain(state, villain.cardId)) {
+    throw new Error('Nie możesz teraz pokonać tego złoczyńcy (niespełniony warunek)')
+  }
+
   removeVillainFromCity(state, index)
 }
 
@@ -278,7 +337,6 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
   const tactic = state.tactics.pop()
   if (!tactic) throw new Error('Mastermind jest już pokonany')
 
-  // Popup: pokaż odkrytą taktykę, zanim rozpatrzymy jej efekt
   await ui.showInfo(tactic, `Odkryto taktykę: ${state.cards[tactic.cardId].name}`)
 
   const ability = getCardAbility(tactic.cardId)
@@ -309,7 +367,18 @@ export async function claimTacticFree(state: GameState, ui: UiAdapter): Promise<
 
 // ---------- Rany i bystanderzy ----------
 
-export function gainWound(state: GameState): void {
+export async function gainWound(state: GameState, ui: UiAdapter): Promise<void> {
+  for (const card of [...state.hand, ...state.played]) {
+    const replacement = getWoundReplacement(card.cardId)
+    if (replacement) {
+      const replaced = await replacement(state, ui, card)
+      if (replaced) return
+    }
+  }
+  gainWoundSilent(state)
+}
+
+export function gainWoundSilent(state: GameState): void {
   const wound = state.wounds.pop()
   if (!wound) return
   state.discard.push(wound)

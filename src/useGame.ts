@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react'
-import { startGame } from './engine/game'
+import { useEffect, useRef, useState } from 'react'
+import { createGameState, startGame } from './engine/game'
 import { TEST_SETUP } from './data/sets/setup'
 import type { GameState, CardInstance } from './engine/types'
 import type { UiAdapter, ChoiceOptions, TextOption } from './engine/ui'
@@ -19,8 +19,9 @@ interface InfoPromptState {
 }
 
 export function useGame() {
-  const [state] = useState<GameState>(() => startGame(TEST_SETUP))
+  const [state] = useState<GameState>(() => createGameState(TEST_SETUP))
   const [, setVersion] = useState(0)
+  const startedRef = useRef(false)
 
   const [cardPrompt, setCardPrompt] = useState<CardPromptState | null>(null)
   const [optionPrompt, setOptionPrompt] = useState<OptionPromptState | null>(null)
@@ -50,6 +51,17 @@ export function useGame() {
       })
     },
   }
+
+  // Uruchamia grę RAZ, po pierwszym wyrenderowaniu (dopiero wtedy `ui` może pokazywać popupy)
+  useEffect(() => {
+    if (startedRef.current) return // ochrona przed podwójnym wywołaniem w trybie deweloperskim
+    startedRef.current = true
+
+    startGame(state, ui).then(() => {
+      setVersion((v) => v + 1)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   function answerCardPrompt(choice: CardInstance | null) {
     resolveCardRef.current?.(choice)
