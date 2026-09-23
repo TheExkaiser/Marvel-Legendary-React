@@ -7,10 +7,12 @@ import {
   countDistinctTypes,
   discardCard,
   koCard,
+  haveZone
 } from '../../../engine/keywords'
 import { registerPlayRequirement } from '../../../engine/cardRequirements'
 import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
+import { registerDiscardReplacement } from '../../../engine/replacements'
 
 // ---------- Black Widow ----------
 
@@ -64,11 +66,11 @@ registerCardAbility('hero-black-widow-silent-sniper', async (state, { ui }) => {
 // ---------- Captain America ----------
 
 registerCardAbility('hero-captain-america-avengers-assemble', async (state) => {
-  state.recruit += countDistinctTypes(state, state.played)
+  state.recruit += countDistinctTypes(state, haveZone(state))
 })
 
 registerCardAbility('hero-captain-america-perfect-teamwork', async (state) => {
-  state.attack += countDistinctTypes(state, state.played)
+  state.recruit += countDistinctTypes(state, haveZone(state))
 })
 
 registerCardAbility('hero-captain-america-day-unlike-any-other', async (state) => {
@@ -84,7 +86,7 @@ async function discardCost(state: GameState, ui: UiAdapter): Promise<void> {
     prompt: 'Wybierz kartę do odrzucenia (koszt zagrania)',
     optional: false,
   })
-  if (chosen) discardCard(state, chosen.instanceId)
+  if (chosen) await discardCard(state, chosen.instanceId, ui)
 }
 
 // Karta wymaga odrzucenia innej karty z ręki - musisz mieć w ręce jeszcze coś poza nią samą
@@ -107,4 +109,12 @@ registerCardAbility('hero-cyclops-x-men-united', async (state) => {
   const count = countPlayedThisTurn(state, { team: 'x-men' })
   if (count === 0) return
   state.attack += 2 * count
+})
+
+registerDiscardReplacement('hero-cyclops-unending-energy', async (state, ui, self) => {
+  const chosen = await ui.choose([self], {
+    prompt: 'Unending Energy: chcesz zatrzymać tę kartę w ręce zamiast ją odrzucić?',
+    optional: true,
+  })
+  return !!chosen // true = gracz zostawia kartę, normalne odrzucenie jest pomijane
 })

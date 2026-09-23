@@ -1,4 +1,6 @@
 import type { GameState, CardInstance } from './types'
+import type { UiAdapter } from './ui'
+import { getDiscardReplacement } from './replacements'
 
 export function countPlayedThisTurn(
   state: GameState,
@@ -52,13 +54,61 @@ export function koCard(state: GameState, instanceId: string): void {
   }
 }
 
-export function discardCard(state: GameState, instanceId: string): void {
+export async function discardCard(
+  state: GameState,
+  instanceId: string,
+  ui: UiAdapter,
+): Promise<void> {
   for (const pile of [state.hand, state.played]) {
     const index = pile.findIndex((c) => c.instanceId === instanceId)
-    if (index !== -1) {
-      const [card] = pile.splice(index, 1)
-      state.discard.push(card)
-      return
+    if (index === -1) continue
+
+    const card = pile[index]
+    const replacement = getDiscardReplacement(card.cardId)
+    if (replacement) {
+      const replaced = await replacement(state, ui, card)
+      if (replaced) return
     }
+
+    pile.splice(index, 1)
+    state.discard.push(card)
+    return
   }
+}
+
+export type CardFilter = { type?: string; team?: string; hero?: string }
+
+function matchesFilter(state: GameState, instance: CardInstance, filter: CardFilter): boolean {
+  const data = state.cards[instance.cardId]
+  if (data.kind === 'wound') return false // rany nigdy nie są bohaterami
+  if (filter.type && !(data.type ?? []).includes(filter.type)) return false
+  if (filter.team && !(data.team ?? []).includes(filter.team)) return false
+  if (filter.hero && data.hero !== filter.hero) return false
+  return true
+}
+
+// HAVE = ręka + zagrane + discard
+export function haveZone(state: GameState): CardInstance[] {
+  return [...state.hand, ...state.played, ...state.discard]
+}
+
+// REVEAL = ręka + zagrane (bez discardu)
+export function revealZone(state: GameState): CardInstance[] {
+  return [...state.hand, ...state.played]
+}
+
+export function haveCards(state: GameState, filter: CardFilter = {}): CardInstance[] {
+  return haveZone(state).filter((c) => matchesFilter(state, c, filter))
+}
+
+export function revealCards(state: GameState, filter: CardFilter = {}): CardInstance[] {
+  return revealZone(state).filter((c) => matchesFilter(state, c, filter))
+}
+
+export function hasCard(state: GameState, filter: CardFilter): boolean {
+  return haveCards(state, filter).length > 0
+}
+
+export function canReveal(state: GameState, filter: CardFilter): boolean {
+  return revealCards(state, filter).length > 0
 }

@@ -1,6 +1,6 @@
 import { registerVillainAbilities } from '../../../engine/villainAbilities'
 import { registerDefeatRequirement } from '../../../engine/villainRequirements'
-import { koCard } from '../../../engine/keywords'
+import { koCard, hasCard, revealCards } from '../../../engine/keywords'
 import { gainWound } from '../../../engine/game'
 import { getScheme } from '../../../engine/schemeRegistry'
 import type { CardInstance, GameState } from '../../../engine/types'
@@ -8,9 +8,7 @@ import type { UiAdapter } from '../../../engine/ui'
 
 // ---------- Blob ----------
 
-registerDefeatRequirement('villain-blob', (state) =>
-  state.played.some((c) => (state.cards[c.cardId].team ?? []).includes('x-men')),
-)
+registerDefeatRequirement('villain-blob', (state) => hasCard(state, { team: 'x-men' }))
 
 // ---------- Juggernaut ----------
 
@@ -46,25 +44,22 @@ registerVillainAbilities('villain-juggernaut', {
 
 registerVillainAbilities('villain-mystique', {
   onEscape: async (state, ui, self) => {
-    // TODO: sprawdź w instrukcji, czy Mystique powinna zostać zdjęta ze stosu "uciekli"
     await ui.showInfo(self, 'Mystique zamienia się w Scheme Twist!')
     state.twistsRevealed += 1
-    getScheme(state).onTwist?.(state, state.twistsRevealed)
+    await getScheme(state).onTwist?.(state, state.twistsRevealed, ui)
   },
 })
 
 // ---------- Sabretooth ----------
 
 async function revealXMenOrWound(state: GameState, ui: UiAdapter, prompt: string): Promise<void> {
-  const xmenInHand = state.hand.filter((c) =>
-    (state.cards[c.cardId].team ?? []).includes('x-men'),
-  )
+  const xmenToReveal = revealCards(state, { team: 'x-men' })  
 
-  if (xmenInHand.length > 0) {
+  if (xmenToReveal.length > 0) {
     const chosen =
-      xmenInHand.length === 1
-        ? xmenInHand[0]
-        : await ui.choose(xmenInHand, { prompt, optional: false })
+      xmenToReveal.length === 1
+        ? xmenToReveal[0]
+        : await ui.choose(xmenToReveal, { prompt, optional: false })
     if (chosen) {
       await ui.showInfo(chosen, `${prompt}: ujawniono X-Men`)
       return

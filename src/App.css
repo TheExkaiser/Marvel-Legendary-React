@@ -1,7 +1,12 @@
+/* =========================================================
+   1. LAYOUT OGÓLNY
+   ========================================================= */
+
 .app {
   max-width: 1000px;
   margin: 0 auto;
   padding: 16px;
+  padding-bottom: 100px; /* miejsce na dole, żeby stałe panele nie zasłaniały treści */
 }
 
 .row {
@@ -12,11 +17,27 @@
   align-items: flex-start;
 }
 
+button {
+  padding: 8px 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+details summary {
+  cursor: pointer;
+  margin: 8px 0;
+}
+
+/* =========================================================
+   2. KARTY I SLOTY
+   ========================================================= */
+
 .card {
+  position: relative;
   width: 120px;
   aspect-ratio: 5 / 7;
   box-sizing: border-box;
-  border: 2px solid #555;
+  border: 0 solid #555;
   border-radius: 8px;
   background: #333;
   overflow: hidden;
@@ -54,11 +75,60 @@
   color: #777;
 }
 
-button {
-  padding: 8px 16px;
-  font-weight: bold;
+.captive-badge {
+  display: block;
+  margin: 4px auto 0;
+  padding: 2px 8px;
+  border: none;
+  border-radius: 4px;
+  background: #ffb74d;
+  color: #222;
+  font-size: 12px;
   cursor: pointer;
 }
+
+.markers {
+  color: #ffb74d;
+  font-size: 14px;
+}
+
+/* =========================================================
+   3. PLANSZA: MASTERMIND + MIASTO, REKRUTACJA
+   ========================================================= */
+
+.board-top {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.mastermind-slot {
+  flex-shrink: 0; /* kolumna mastermina nie ma się zwężać */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.zone-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 0 10px;
+  min-height: 44px; /* wspólna wysokość, żeby karty były na tym samym poziomie */
+}
+
+.officer-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-right: 12px;
+  margin-right: 8px;
+  border-right: 1px solid #555;
+}
+
+/* =========================================================
+   4. PANEL DEBUG
+   ========================================================= */
 
 .debug {
   display: flex;
@@ -82,77 +152,31 @@ button {
   padding: 4px;
 }
 
-.markers {
-  color: #ffb74d;
-  font-size: 14px;
-}
+/* =========================================================
+   5. MODALE (popupy, zoom karty)
+   ========================================================= */
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
   padding: 16px;
+  background: rgba(0, 0, 0, 0.7);
 }
 
 .modal-content {
-  background: #222;
-  border-radius: 8px;
-  padding: 16px;
+  position: relative;
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
-  position: relative;
-}
-
-.card {
-  position: relative;
-}
-
-.zoom-button {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  z-index: 10;
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  font-size: 12px;
-  line-height: 1;
-  border: none;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.6);
-  color: #fff;
-  cursor: pointer;
-}
-
-.zoom-image {
-  max-width: 100%;
-  border-radius: 6px;
-}
-
-.zoom-content {
-  max-width: 500px;
-}
-
-.zoom-body {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.zoom-image {
-  width: 250px;
-  flex-shrink: 0;
+  padding: 16px;
   border-radius: 8px;
+  background: #222;
 }
 
-.zoom-details p {
-  margin: 4px 0;
-}
 .close-button {
   position: absolute;
   top: 8px;
@@ -168,23 +192,58 @@ button {
   line-height: 1;
   cursor: pointer;
 }
-.officer-slot {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding-right: 12px;
-  border-right: 1px solid #555;
-  margin-right: 8px;
+
+/* Zoom karty (lupa w rogu karty + okno z obrazem i opisem) */
+
+.zoom-button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 10;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
 }
 
+.zoom-content {
+  max-width: 500px;
+}
+
+.zoom-body {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.zoom-image {
+  width: 250px;
+  max-width: 100%;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+
+.zoom-details p {
+  margin: 4px 0;
+}
+
+/* =========================================================
+   6. LOG
+   ========================================================= */
+
 .log-bar {
-  cursor: pointer;
-  padding: 6px 10px;
-  background: #222;
-  border-radius: 6px;
   margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #222;
   font-size: 14px;
+  cursor: pointer;
 }
 
 .log-list {
@@ -199,19 +258,80 @@ button {
   border-bottom: 1px solid #333;
 }
 
-details summary {
-  cursor: pointer;
-  margin: 8px 0;
+/* =========================================================
+   7. STAŁE PANELE PRZYKLEJONE DO EKRANU
+   (z-index 50: nad planszą, pod modalami = 100)
+   ========================================================= */
+
+/* --- Statystyki: lewy górny róg --- */
+
+.stats-panel {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1px solid #555;
+  border-radius: 8px;
+  background: rgba(34, 34, 34, 0.92);
 }
 
-.captive-badge {
-  display: block;
-  margin: 4px auto 0;
-  padding: 2px 8px;
-  border: none;
-  border-radius: 4px;
-  background: #ffb74d;
-  color: #222;
-  font-size: 12px;
-  cursor: pointer;
+.stat-turn {
+  margin-bottom: 2px;
+  font-weight: bold;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* --- Talia i stosy: lewy dolny róg --- */
+
+.piles-panel {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  z-index: 50;
+  width: 100px;
+  max-height: 60vh;
+  overflow-y: auto; /* po rozwinięciu stosu panel przewija się sam */
+  padding: 10px 14px;
+  border: 1px solid #555;
+  border-radius: 8px;
+  background: rgba(34, 34, 34, 0.92);
+}
+
+.pile-line {
+  font-weight: bold;
+}
+
+.piles-row {
+  min-height: 0; /* nadpisuje min-height z .row */
+}
+
+/* --- Zakończ turę: prawy dolny róg --- */
+
+.end-turn-button {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 50;
+  padding: 14px 24px;
+  font-size: 16px;
 }

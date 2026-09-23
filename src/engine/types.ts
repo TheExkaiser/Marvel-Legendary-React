@@ -1,3 +1,5 @@
+import type { UiAdapter } from './ui'
+
 export interface CardData {
   id: string
   name: string
@@ -99,7 +101,7 @@ export interface SchemeDef {
   escapeLimit?: number
 
   setup?: (state: GameState) => void
-  onTwist?: (state: GameState, twistNumber: number) => void
+  onTwist?: (state: GameState, twistNumber: number, ui: UiAdapter) => void | Promise<void>
   onVillainEntered?: (state: GameState, villain: CardInstance) => void
   onVillainEscaped?: (state: GameState, villain: CardInstance) => void
   checkLoss?: (state: GameState) => boolean

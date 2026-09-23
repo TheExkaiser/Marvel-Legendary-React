@@ -25,6 +25,6 @@ export const TEST_SETUP: GameSetup = {
   bystandersInVillainDeck: 1,
   masterStrikeCard: MASTER_STRIKE_CARD,
   masterStrikeCount: 5,
-  scheme: findScheme('coreset_test_scheme'),
+  scheme: findScheme('coreset_cosmic_cube'),
   twist: SCHEME_TWIST,
 }
