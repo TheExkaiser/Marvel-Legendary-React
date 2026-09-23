@@ -1,35 +1,156 @@
 /* =========================================================
+   MARVEL LEGENDARY: SZATA GRAFICZNA
+   Baza: #063A4F (głęboki teal). Akcenty: cyan (klikalne),
+   gold (VP/wyróżnienia), hot (zagrożenie/zamknij).
+   Fonty: Big Shoulders Display (nagłówki), Manrope (tekst).
+   Bez internetu wchodzą fonty zastępcze.
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Manrope:wght@400;600;800&display=swap');
+
+/* =========================================================
+   0. TOKENY
+   ========================================================= */
+
+:root {
+  --base: #063a4f;
+  --deep: #03212e;
+  --abyss: #01121a;
+  --panel: rgba(6, 58, 79, 0.62);
+  --panel-solid: #08445d;
+  --line: rgba(120, 220, 255, 0.2);
+  --cyan: #38e1ff;
+  --gold: #ffc145;
+  --hot: #ff3d57;
+  --text: #e8f6fb;
+  --muted: #8db4c2;
+
+  --font-display: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
+  --font-body: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --radius: 6px;
+  --glow-cyan: 0 0 0 2px var(--cyan), 0 0 22px rgba(56, 225, 255, 0.55);
+}
+
+/* =========================================================
    1. LAYOUT OGÓLNY
    ========================================================= */
+
+html,
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: block;
+  color: var(--text);
+  font-family: var(--font-body);
+  background-color: var(--abyss);
+  background-image:
+    radial-gradient(1100px 700px at 12% -10%, rgba(56, 225, 255, 0.22), transparent 62%),
+    radial-gradient(900px 650px at 105% 105%, rgba(255, 61, 87, 0.2), transparent 60%),
+    linear-gradient(170deg, var(--base) 0%, var(--deep) 55%, var(--abyss) 100%);
+  background-attachment: fixed;
+}
 
 .app {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 16px;
-  padding-bottom: 100px; /* miejsce na dole, żeby stałe panele nie zasłaniały treści */
+  padding: 16px 16px 280px; /* dół: miejsce na stałe panele */
+}
+
+h1 {
+  margin: 8px 0 12px;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(44px, 7vw, 76px);
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  font-style: italic;
+  background: linear-gradient(95deg, #fff 10%, var(--cyan) 55%, var(--hot) 110%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 4px 18px rgba(56, 225, 255, 0.35));
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 26px 0 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 0.02em;
+}
+
+h2::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, var(--line), transparent);
+}
+
+h3 {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: 26px;
+}
+
+p {
+  color: var(--muted);
+  line-height: 1.5;
 }
 
 .row {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
   min-height: 170px;
   align-items: flex-start;
 }
 
-button {
-  padding: 8px 16px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
 details summary {
   cursor: pointer;
   margin: 8px 0;
+  font-weight: 800;
+  color: var(--cyan);
 }
 
 /* =========================================================
-   2. KARTY I SLOTY
+   2. PRZYCISKI
+   ========================================================= */
+
+button {
+  padding: 9px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #0d5b7a, var(--base));
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(56, 225, 255, 0.35);
+  filter: brightness(1.15);
+}
+
+button:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   3. KARTY I SLOTY
    ========================================================= */
 
 .card {
@@ -37,10 +158,12 @@ details summary {
   width: 120px;
   aspect-ratio: 5 / 7;
   box-sizing: border-box;
-  border: 0 solid #555;
-  border-radius: 8px;
-  background: #333;
+  border: 0 solid transparent;
+  border-radius: var(--radius);
+  background: var(--deep);
   overflow: hidden;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+  transition: transform 0.18s, box-shadow 0.18s, filter 0.18s;
 }
 
 .card img {
@@ -52,82 +175,103 @@ details summary {
 
 .card-text {
   padding: 8px;
+  font-size: 13px;
 }
 
+/* Klikalna karta = neonowy obrys i uniesienie. To jest "sygnatura" całego UI. */
 .clickable {
   cursor: pointer;
-  border-color: #2196f3;
+  box-shadow: var(--glow-cyan);
 }
 
 .clickable:hover {
-  filter: brightness(1.15);
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 0 0 2px var(--gold), 0 0 30px rgba(255, 193, 69, 0.7);
+  filter: brightness(1.1);
+  z-index: 5;
 }
 
 .slot-empty {
   width: 120px;
   aspect-ratio: 5 / 7;
   box-sizing: border-box;
-  border: 2px dashed #555;
-  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #777;
+  border: 2px dashed var(--line);
+  border-radius: var(--radius);
+  background: rgba(3, 33, 46, 0.45);
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 18px;
 }
 
 .captive-badge {
   display: block;
-  margin: 4px auto 0;
-  padding: 2px 8px;
+  margin: 6px auto 0;
+  padding: 2px 10px;
   border: none;
-  border-radius: 4px;
-  background: #ffb74d;
-  color: #222;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffd76e, var(--gold));
+  color: #2a1b00;
   font-size: 12px;
-  cursor: pointer;
 }
 
 .markers {
-  color: #ffb74d;
+  color: var(--gold);
   font-size: 14px;
+  font-weight: 600;
 }
 
 /* =========================================================
-   3. PLANSZA: MASTERMIND + MIASTO, REKRUTACJA
+   4. PLANSZA: MASTERMIND + MIASTO, REKRUTACJA
    ========================================================= */
 
 .board-top {
   display: flex;
   gap: 24px;
   align-items: flex-start;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(56, 225, 255, 0.07), rgba(255, 61, 87, 0.06));
 }
 
 .mastermind-slot {
-  flex-shrink: 0; /* kolumna mastermina nie ma się zwężać */
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+/* Mastermind: czerwona poświata, bo to boss */
+.mastermind-slot .card {
+  box-shadow: 0 0 0 2px var(--hot), 0 0 28px rgba(255, 61, 87, 0.55);
+}
+
 .zone-title {
-  font-size: 18px;
-  font-weight: bold;
-  margin: 0 0 10px;
   min-height: 44px; /* wspólna wysokość, żeby karty były na tym samym poziomie */
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
 }
 
 .officer-slot {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding-right: 12px;
+  gap: 6px;
+  padding-right: 14px;
   margin-right: 8px;
-  border-right: 1px solid #555;
+  border-right: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
 }
 
 /* =========================================================
-   4. PANEL DEBUG
+   5. PANEL DEBUG
    ========================================================= */
 
 .debug {
@@ -136,9 +280,10 @@ details summary {
   gap: 12px;
   flex-wrap: wrap;
   margin: 12px 0;
-  padding: 10px;
-  border: 1px dashed #888;
-  border-radius: 6px;
+  padding: 10px 12px;
+  border: 1px dashed rgba(255, 193, 69, 0.5);
+  border-radius: var(--radius);
+  background: rgba(1, 18, 26, 0.5);
 }
 
 .debug-group {
@@ -148,12 +293,16 @@ details summary {
 }
 
 .debug input[type='number'] {
-  width: 50px;
-  padding: 4px;
+  width: 56px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--abyss);
+  color: var(--text);
 }
 
 /* =========================================================
-   5. MODALE (popupy, zoom karty)
+   6. MODALE (popupy, zoom karty)
    ========================================================= */
 
 .modal-overlay {
@@ -164,7 +313,8 @@ details summary {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(1, 12, 18, 0.78);
+  backdrop-filter: blur(8px);
 }
 
 .modal-content {
@@ -172,53 +322,65 @@ details summary {
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
-  padding: 16px;
-  border-radius: 8px;
-  background: #222;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(170deg, var(--panel-solid), var(--deep));
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(56, 225, 255, 0.08);
+}
+
+/* Okno pojawia się tylko po akcji gracza, więc animacja wejścia jest uzasadniona */
+.modal-content {
+  animation: pop 0.18s ease-out;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
 }
 
 .close-button {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 28px;
-  height: 28px;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   border: none;
   border-radius: 50%;
-  background: #d32f2f;
+  background: var(--hot);
   color: #fff;
   font-size: 14px;
   line-height: 1;
-  cursor: pointer;
 }
 
-/* Zoom karty (lupa w rogu karty + okno z obrazem i opisem) */
+/* Zoom karty */
 
 .zoom-button {
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: 5px;
+  right: 5px;
   z-index: 10;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   padding: 0;
   border: none;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.6);
-  color: #fff;
+  border-radius: 50%;
+  background: rgba(1, 18, 26, 0.7);
+  backdrop-filter: blur(4px);
   font-size: 12px;
   line-height: 1;
-  cursor: pointer;
 }
 
 .zoom-content {
-  max-width: 500px;
+  max-width: 520px;
 }
 
 .zoom-body {
   display: flex;
-  gap: 16px;
+  gap: 18px;
   align-items: flex-start;
 }
 
@@ -226,40 +388,54 @@ details summary {
   width: 250px;
   max-width: 100%;
   flex-shrink: 0;
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 
 .zoom-details p {
-  margin: 4px 0;
+  margin: 6px 0;
+  color: var(--text);
+}
+
+.zoom-details strong {
+  color: var(--gold);
 }
 
 /* =========================================================
-   6. LOG
+   7. LOG
    ========================================================= */
 
 .log-bar {
-  margin-bottom: 8px;
-  padding: 6px 10px;
-  border-radius: 6px;
-  background: #222;
+  margin-bottom: 10px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  backdrop-filter: blur(6px);
   font-size: 14px;
   cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.log-bar:hover {
+  border-color: var(--cyan);
 }
 
 .log-list {
   max-height: 60vh;
   overflow-y: auto;
+  margin-bottom: 12px;
   text-align: left;
   font-size: 14px;
 }
 
 .log-list div {
-  padding: 2px 0;
-  border-bottom: 1px solid #333;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line);
 }
 
 /* =========================================================
-   7. STAŁE PANELE PRZYKLEJONE DO EKRANU
+   8. STAŁE PANELE PRZYKLEJONE DO EKRANU
    (z-index 50: nad planszą, pod modalami = 100)
    ========================================================= */
 
@@ -272,16 +448,20 @@ details summary {
   z-index: 50;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px 14px;
-  border: 1px solid #555;
-  border-radius: 8px;
-  background: rgba(34, 34, 34, 0.92);
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 
 .stat-turn {
-  margin-bottom: 2px;
-  font-weight: bold;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--gold);
 }
 
 .stat {
@@ -296,9 +476,16 @@ details summary {
   object-fit: contain;
 }
 
+.stat-label {
+  color: var(--muted);
+  font-weight: 600;
+}
+
 .stat-value {
-  font-size: 18px;
-  font-weight: bold;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
 }
 
 /* --- Talia i stosy: lewy dolny róg --- */
@@ -310,28 +497,118 @@ details summary {
   z-index: 50;
   width: 100px;
   max-height: 60vh;
-  overflow-y: auto; /* po rozwinięciu stosu panel przewija się sam */
+  overflow-y: auto;
   padding: 10px 14px;
-  border: 1px solid #555;
-  border-radius: 8px;
-  background: rgba(34, 34, 34, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 
 .pile-line {
-  font-weight: bold;
+  font-weight: 800;
 }
 
 .piles-row {
-  min-height: 0; /* nadpisuje min-height z .row */
+  min-height: 0;
 }
 
-/* --- Zakończ turę: prawy dolny róg --- */
+/* --- Zakończ turę: prawy dolny róg, największy i najgorętszy przycisk --- */
 
 .end-turn-button {
   position: fixed;
   bottom: 16px;
   right: 16px;
   z-index: 50;
-  padding: 14px 24px;
-  font-size: 16px;
+  padding: 16px 30px;
+  border: none;
+  background: linear-gradient(135deg, #ff6a3d, var(--hot) 55%, #d61f5a);
+  box-shadow: 0 8px 30px rgba(255, 61, 87, 0.55);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+}
+
+.end-turn-button:hover:not(:disabled) {
+  box-shadow: 0 10px 40px rgba(255, 61, 87, 0.85);
+}
+
+/* =========================================================
+   9. WĄSKIE EKRANY I PREFERENCJE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .stats-panel {
+    padding: 8px 10px;
+  }
+  .stat-value {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 700px) {
+  .board-top {
+    flex-direction: column;
+  }
+  .zoom-body {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* =========================================================
+   RĘKA: WACHLARZ PRZYKLEJONY DO DOŁU EKRANU
+   ========================================================= */
+
+.hand-dock {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  z-index: 50;
+  pointer-events: none; /* pusty obszar nie blokuje klikania w planszę */
+}
+
+.hand-count {
+  margin-bottom: 4px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--muted);
+  text-shadow: 0 2px 8px #000;
+}
+
+.hand-fan {
+  display: flex;
+  justify-content: center;
+  padding: 0 40px 6px;
+}
+
+.hand-slot {
+  pointer-events: auto; /* same karty są klikalne */
+  margin-left: -34px; /* nakładanie kart */
+  transform-origin: 50% 130%;
+  transform: translateY(var(--drop)) rotate(var(--rot));
+  transition: transform 0.18s;
+}
+
+.hand-slot:first-child {
+  margin-left: 0;
+}
+
+.hand-slot:hover {
+  z-index: 20;
+  transform: translateY(-36px) rotate(0deg) scale(1.12);
+}
+
+/* uniesieniem zajmuje się teraz .hand-slot, więc wyłączamy podwójny efekt */
+.hand-slot .clickable:hover {
+  transform: none;
 }

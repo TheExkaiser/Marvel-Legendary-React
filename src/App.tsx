@@ -19,6 +19,7 @@ import { DebugPanel } from './components/DebugPanel'
 import { LogPanel } from './components/LogPanel'
 import { StatsPanel } from './components/StatsPanel'
 import './App.css'
+import type { CSSProperties } from 'react'
 
 // ---------- Stałe ----------
 
@@ -161,16 +162,27 @@ function App() {
         ))}
       </div>
 
-      {/* ===== Ręka ===== */}
-      <h2>Ręka ({state.hand.length})</h2>
-      <div className="row">
-        {state.hand.map((c) => (
-          <CardView
-            key={c.instanceId}
-            data={state.cards[c.cardId]}
-            onClick={() => act((s, ui) => playCard(s, c.instanceId, ui))}
-          />
-        ))}
+      {/* ===== Ręka: wachlarz przyklejony do dołu ekranu ===== */}
+      <div className="hand-dock">
+        <div className="hand-fan">
+          {state.hand.map((c, i) => {
+            const offset = i - (state.hand.length - 1) / 2 // 0 = środek wachlarza
+            const angle = offset * Math.min(2.5, 18 / state.hand.length)
+            const drop = offset * offset * 2 // krawędzie opadają, środek jest najwyżej
+            return (
+              <div
+                key={c.instanceId}
+                className="hand-slot"
+                style={{ '--rot': `${angle}deg`, '--drop': `${drop}px` } as React.CSSProperties}
+              >
+                <CardView
+                  data={state.cards[c.cardId]}
+                  onClick={() => act((s, ui) => playCard(s, c.instanceId, ui))}
+                />
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {/* ===== Panel stosów (przyklejony, lewy dolny róg) ===== */}
