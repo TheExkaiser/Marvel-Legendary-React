@@ -20,7 +20,9 @@ import { DebugPanel } from './components/DebugPanel'
 import { LogPanel } from './components/LogPanel'
 import { StatsPanel } from './components/StatsPanel'
 import { DeckPile } from './components/DeckPile'
+import { useCardFlip } from './useCardFlip'
 import './App.css'
+
 
 // ---------- Stałe ----------
 
@@ -52,7 +54,8 @@ function App() {
     infoPrompt,
     closeInfoPrompt,
   } = useGame()
-
+  useCardFlip()
+  
   const scheme = getScheme(state)
   const [viewingCaptivesOf, setViewingCaptivesOf] = useState<string | null>(null)
 
@@ -110,6 +113,7 @@ function App() {
                   {instance ? (
                     <CardView
                       data={state.cards[instance.cardId]}
+                      flipId={instance.instanceId}
                       onClick={() => act((s, ui) => fightVillain(s, instance.instanceId, ui))}
                     />
                   ) : (
@@ -138,6 +142,7 @@ function App() {
         <div className="officer-slot">
           <CardView
             data={state.cards[state.officerCardId]}
+            //flipId={instance.instanceId}
             onClick={() => act((s) => recruitOfficer(s))}
           />
           <div>Pozostało: {state.officerDeck.length}</div>
@@ -163,7 +168,8 @@ function App() {
       <div className="row-with-deck">
         <div className="row">
           {state.played.map((c) => (
-            <CardView key={c.instanceId} data={state.cards[c.cardId]} />
+            <CardView key={c.instanceId} data={state.cards[c.cardId]} flipId={c.instanceId} />
+
           ))}
         </div>
         <DeckPile count={state.deck.length} />
@@ -184,6 +190,7 @@ function App() {
               >
                 <CardView
                   data={state.cards[c.cardId]}
+                  flipId={c.instanceId}
                   onClick={() => act((s, ui) => playCard(s, c.instanceId, ui))}
                 />
               </div>
