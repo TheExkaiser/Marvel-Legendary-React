@@ -5,14 +5,13 @@ const BACK_SOURCES = ['cardback.webp', 'cardback.png']
 const EDGE_COLORS = ['#f4eedb', '#d8d0b8'] // na przemian jasny i ciemny = wrażenie stosu kartek
 const MAX_THICKNESS = 9 // px
 
-export function DeckPile({ count }: { count: number }) {
-  // Numer aktualnie próbowanego pliku z BACK_SOURCES (po ostatnim = brak obrazka)
+export function DeckPile({ count, deckId }: { count: number; deckId?: string }) {  // Numer aktualnie próbowanego pliku z BACK_SOURCES (po ostatnim = brak obrazka)
   const [srcIndex, setSrcIndex] = useState(0)
 
   // Pusta talia: przerywany kontur zamiast rewersu
   if (count === 0) {
     return (
-      <div className="deck-pile deck-empty">
+      <div className="deck-pile deck-empty" data-deck-id={deckId}>
         <span className="deck-count">0</span>
       </div>
     )
@@ -29,7 +28,7 @@ export function DeckPile({ count }: { count: number }) {
   const dropShadow = `${-thickness - 2}px ${thickness + 10}px 24px rgba(0, 0, 0, 0.5)`
 
   return (
-    <div className="deck-pile">
+    <div className="deck-pile" data-deck-id={deckId}>
       <div className="deck-face" style={{ boxShadow: [...edges, dropShadow].join(', ') }}>
         {srcIndex < BACK_SOURCES.length ? (
           <img

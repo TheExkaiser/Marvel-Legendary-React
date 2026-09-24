@@ -142,7 +142,6 @@ function App() {
         <div className="officer-slot">
           <CardView
             data={state.cards[state.officerCardId]}
-            //flipId={instance.instanceId}
             onClick={() => act((s) => recruitOfficer(s))}
           />
           <div>Pozostało: {state.officerDeck.length}</div>
@@ -152,6 +151,8 @@ function App() {
             <CardView
               key={instance.instanceId}
               data={state.cards[instance.cardId]}
+              flipId={instance.instanceId}
+              flipFrom="hero-deck"
               onClick={() => act((s) => recruitHero(s, instance.instanceId))}
             />
           ) : (
@@ -159,7 +160,7 @@ function App() {
           ),
         )}
         <div className="deck-end">
-          <DeckPile count={state.heroDeck.length} />
+          <DeckPile count={state.heroDeck.length} deckId="hero-deck" />
         </div>
       </div>
 

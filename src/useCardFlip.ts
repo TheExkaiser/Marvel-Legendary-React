@@ -55,9 +55,20 @@ export function useCardFlip(): void {
 
       for (const el of elements) {
         const id = el.dataset.flipId!
-        const before = previous.current.cards.get(id)
         const after = current.get(id)!
-        if (!before) continue // nowa karta (np. dobrana): animacje dobierania to osobny etap
+        let before = previous.current.cards.get(id)
+
+        if (!before) {
+          // Nowa karta: jeśli wie, skąd przyjeżdża, startuje ze środka tej talii
+          const from = el.dataset.flipFrom
+          const source = from
+            ? document.querySelector<HTMLElement>(`[data-deck-id="${from}"]`)
+            : null
+          if (!source) continue
+          const rect = source.getBoundingClientRect()
+          // Talia zmierzona teraz, więc nie trzeba korygować o przewijanie
+          before = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, fixed: true }
+        }
 
         // Karty zwykłe przesunęły się razem z przewijaniem strony, przyklejone nie
         const beforeX = before.fixed ? before.x : before.x - scrolledX

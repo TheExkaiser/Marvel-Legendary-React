@@ -4,20 +4,23 @@ import type { CardData } from '../engine/types'
 interface CardViewProps {
   data: CardData
   onClick?: () => void
-  flipId?: string // id karty do animacji ruchu; nie podajemy w popupach
+  flipId?: string
+  flipFrom?: string // id talii (data-deck-id), z której nowa karta ma przyjechać
 }
 
-export function CardView({ data, onClick, flipId }: CardViewProps) {
+export function CardView({ data, onClick, flipId, flipFrom }: CardViewProps) {
   const [zoomed, setZoomed] = useState(false)
 
   return (
     <>
       <div
-  className={onClick ? 'card clickable' : 'card'}
-  onClick={onClick}
-  title={data.name}
-  data-flip-id={flipId}
->
+        className={onClick ? 'card clickable' : 'card'}
+        onClick={onClick}
+        title={data.name}
+        data-flip-id={flipId}
+        data-flip-from={flipFrom}
+        
+      >
         <button
           className="zoom-button"
           onClick={(e) => {
