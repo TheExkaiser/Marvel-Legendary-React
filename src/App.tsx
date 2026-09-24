@@ -21,6 +21,7 @@ import { LogPanel } from './components/LogPanel'
 import { StatsPanel } from './components/StatsPanel'
 import { DeckPile } from './components/DeckPile'
 import { useCardFlip } from './useCardFlip'
+import { PilePrompt } from './components/PilePrompt'
 import './App.css'
 
 
@@ -54,10 +55,13 @@ function App() {
     infoPrompt,
     closeInfoPrompt,
   } = useGame()
-  useCardFlip()
+    const discardIds = new Set(state.discard.map((c) => c.instanceId))
+  useCardFlip(discardIds)
   
   const scheme = getScheme(state)
   const [viewingCaptivesOf, setViewingCaptivesOf] = useState<string | null>(null)
+  
+  const [viewingPile, setViewingPile] = useState<'victory' | 'ko' | null>(null)
 
   const mastermindCaptives = state.captives[state.mastermind.instanceId]?.length ?? 0
   
@@ -200,6 +204,7 @@ function App() {
                 <CardView
                   data={state.cards[c.cardId]}
                   flipId={c.instanceId}
+                  flipFrom="deck"
                   onClick={() => act((s, ui) => playCard(s, c.instanceId, ui))}
                 />
               </div>
@@ -210,23 +215,12 @@ function App() {
 
       {/* ===== Panel stosów (przyklejony, lewy dolny róg) ===== */}
       <div className="piles-panel">
-        <details>
-          <summary>Stos odrzuconych ({state.discard.length})</summary>
-          <div className="row piles-row">
-            {state.discard.map((c) => (
-              <CardView key={c.instanceId} data={state.cards[c.cardId]} />
-            ))}
-          </div>
-        </details>
-
-        <details>
-          <summary>Victory Pool ({state.defeated.length})</summary>
-          <div className="row piles-row">
-            {state.defeated.map((c) => (
-              <CardView key={c.instanceId} data={state.cards[c.cardId]} />
-            ))}
-          </div>
-        </details>
+        <button onClick={() => setViewingPile('victory')}>
+          Victory Pool ({state.defeated.length})
+        </button>
+        <button onClick={() => setViewingPile('ko')}>
+          KO ({state.ko.length})
+        </button>
       </div>
 
       {/* ===== Zakończ turę (przyklejony, prawy dolny róg) ===== */}
@@ -263,6 +257,14 @@ function App() {
           state={state}
           captives={state.captives[viewingCaptivesOf] ?? []}
           onClose={() => setViewingCaptivesOf(null)}
+        />
+      )}
+      {viewingPile && (
+        <PilePrompt
+          title={viewingPile === 'victory' ? 'Victory Pool' : "KO"}
+          cards={viewingPile === 'victory' ? state.defeated : state.ko}
+          cardsById={state.cards}
+          onClose={() => setViewingPile(null)}
         />
       )}
     </div>

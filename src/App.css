@@ -544,6 +544,9 @@ button:disabled {
   background: var(--panel);
   backdrop-filter: blur(10px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column; /* przyciski jeden pod drugim */
+  gap: 8px;
 }
 
 .pile-line {
@@ -552,6 +555,14 @@ button:disabled {
 
 .piles-row {
   min-height: 0;
+}
+
+.pile-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  max-height: 70vh;
+  overflow-y: auto; /* przewijanie, gdy kart jest dużo */
 }
 
 /* --- Zakończ turę: prawy dolny róg, największy i najgorętszy przycisk --- */

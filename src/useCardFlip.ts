@@ -13,7 +13,10 @@ const FLYING_Z_INDEX = '60' // nad ręką (50), pod oknami modalnymi (100)
 interface Snapshot {
   x: number // środek karty, współrzędne okna przeglądarki
   y: number
+  width: number
+  height: number
   fixed: boolean // karta w ręce jest przyklejona do ekranu, reszta przewija się ze stroną
+  el: HTMLElement // z niego robimy kopię, gdy karta zniknie z DOM
 }
 
 interface Frame {
@@ -22,7 +25,7 @@ interface Frame {
   scrollY: number
 }
 
-export function useCardFlip(): void {
+export function useCardFlip(discardIds: ReadonlySet<string>): void {
   const previous = useRef<Frame>({ cards: new Map(), scrollX: 0, scrollY: 0 })
 
   // Bez tablicy zależności: odpala się po każdym renderze, zanim przeglądarka narysuje klatkę
@@ -43,9 +46,12 @@ export function useCardFlip(): void {
       current.set(el.dataset.flipId!, {
         x: rect.left + rect.width / 2,
         y: rect.top + rect.height / 2,
+        width: rect.width,
+        height: rect.height,
         fixed: el.closest('.hand-dock') !== null,
+        el,
       })
-    }
+    } // <-- tej klamry brakowało
 
     // 3. Dla kart, które się przesunęły, odpal animację od starej pozycji do nowej
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -67,7 +73,12 @@ export function useCardFlip(): void {
           if (!source) continue
           const rect = source.getBoundingClientRect()
           // Talia zmierzona teraz, więc nie trzeba korygować o przewijanie
-          before = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, fixed: true }
+          before = {
+            ...after,
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+            fixed: true,
+          }
         }
 
         // Karty zwykłe przesunęły się razem z przewijaniem strony, przyklejone nie
@@ -92,6 +103,47 @@ export function useCardFlip(): void {
         }
         animation.onfinish = cleanup
         animation.oncancel = cleanup
+      }
+
+      // 3b. Karty, które zniknęły z ekranu i wylądowały na discardzie:
+      // "duch" (kopia) leci ze starej pozycji na stos i sam znika
+      const pile = document.querySelector<HTMLElement>('[data-deck-id="discard"]')
+      if (pile) {
+        const target = pile.getBoundingClientRect()
+        const targetX = target.left + target.width / 2
+        const targetY = target.top + target.height / 2
+
+        for (const [id, before] of previous.current.cards) {
+          if (current.has(id) || !discardIds.has(id)) continue
+
+          const startX = before.fixed ? before.x : before.x - scrolledX
+          const startY = before.fixed ? before.y : before.y - scrolledY
+
+          const ghost = before.el.cloneNode(true) as HTMLElement
+          ghost.removeAttribute('data-flip-id') // żeby hook nie brał kopii za prawdziwą kartę
+          ghost.removeAttribute('data-flip-from')
+          Object.assign(ghost.style, {
+            position: 'fixed',
+            left: `${startX - before.width / 2}px`,
+            top: `${startY - before.height / 2}px`,
+            width: `${before.width}px`,
+            height: `${before.height}px`,
+            margin: '0',
+            zIndex: FLYING_Z_INDEX,
+            pointerEvents: 'none',
+          })
+          document.body.appendChild(ghost)
+
+          const flight = ghost.animate(
+            [
+              { transform: 'translate(0, 0)' },
+              { transform: `translate(${targetX - startX}px, ${targetY - startY}px) scale(0.9)` },
+            ],
+            { duration: DURATION, easing: EASING, fill: 'forwards' },
+          )
+          flight.onfinish = () => ghost.remove()
+          flight.oncancel = () => ghost.remove()
+        }
       }
     }
 
