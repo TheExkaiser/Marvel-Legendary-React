@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { CardData } from '../engine/types'
 
 interface CardViewProps {
@@ -19,7 +20,6 @@ export function CardView({ data, onClick, flipId, flipFrom }: CardViewProps) {
         title={data.name}
         data-flip-id={flipId}
         data-flip-from={flipFrom}
-        
       >
         <button
           className="zoom-button"
@@ -44,34 +44,35 @@ export function CardView({ data, onClick, flipId, flipFrom }: CardViewProps) {
         )}
       </div>
 
-      {zoomed && (
-        <div className="modal-overlay" onClick={() => setZoomed(false)}>
-          <div className="modal-content zoom-content" onClick={(e) => e.stopPropagation()}>
-            <h3>{data.name}</h3>
-            <button className="close-button" onClick={() => setZoomed(false)}>✕</button>
-            <div className="zoom-body">
-              {data.img && <img src={data.img} alt={data.name} className="zoom-image" />}
-                            <div className="zoom-details">
-                {data.hero !== undefined && (
-                  <p><strong>Hero:</strong> {data.hero}</p>
-                )}
-                {(data.team ?? []).length > 0 && (
-                  <p><strong>Team:</strong> {(data.team ?? []).join(', ')}</p>
-                )}
-                {(data.type ?? []).length > 0 && (
-                  <p><strong>Type:</strong> {(data.type ?? []).join(', ')}</p>
-                )}
-                {data.strength !== undefined && <p><strong>Attacks:</strong> {data.strength}</p>}
-                {data.attack !== undefined && <p><strong>Attacks:</strong> {data.attack}</p>}
-                {data.cost !== undefined && <p><strong>Cost:</strong> {data.cost}</p>}
-                {data.vp !== undefined && <p><strong>VP:</strong> {data.vp}</p>}
-                {data.text && <p><strong>Text:</strong> {data.text}</p>}
+      {zoomed &&
+        createPortal(
+          <div className="modal-overlay" onClick={() => setZoomed(false)}>
+            <div className="modal-content zoom-content" onClick={(e) => e.stopPropagation()}>
+              <h3>{data.name}</h3>
+              <button className="close-button" onClick={() => setZoomed(false)}>✕</button>
+              <div className="zoom-body">
+                {data.img && <img src={data.img} alt={data.name} className="zoom-image" />}
+                <div className="zoom-details">
+                  {data.hero !== undefined && (
+                    <p><strong>Hero:</strong> {data.hero}</p>
+                  )}
+                  {(data.team ?? []).length > 0 && (
+                    <p><strong>Team:</strong> {(data.team ?? []).join(', ')}</p>
+                  )}
+                  {(data.type ?? []).length > 0 && (
+                    <p><strong>Type:</strong> {(data.type ?? []).join(', ')}</p>
+                  )}
+                  {data.strength !== undefined && <p><strong>Attacks:</strong> {data.strength}</p>}
+                  {data.attack !== undefined && <p><strong>Attacks:</strong> {data.attack}</p>}
+                  {data.cost !== undefined && <p><strong>Cost:</strong> {data.cost}</p>}
+                  {data.vp !== undefined && <p><strong>VP:</strong> {data.vp}</p>}
+                  {data.text && <p><strong>Text:</strong> {data.text}</p>}
+                </div>
               </div>
             </div>
-            
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   )
 }

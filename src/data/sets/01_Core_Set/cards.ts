@@ -347,3 +347,118 @@ export const DOOMBOT_LEGION_CARDS: DeckEntry[] = [
     count: 3,
   },
 ]
+
+export const DEADPOOL_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'hero-deadpool-here-hold-this-for-a-second',
+      name: 'Here, Hold This for a Second',
+      hero: 'Deadpool',
+      img: '/cards/core-set/hero-deadpool-here-hold-this-for-a-second.webp',
+      type: ['tech'],
+      recruit: 2,
+      cost: 3,
+      text: 'A Villain of your choice captures a Bystander.',
+    },
+    count: 5,
+  },
+  {
+    card: {
+      id: 'hero-deadpool-oddball',
+      name: 'Oddball',
+      hero: 'Deadpool',
+      img: '/cards/core-set/hero-deadpool-oddball.webp',
+      type: ['covert'],
+      attack: 2,
+      cost: 5,
+      text: 'You get +1 Attack for each other Hero with an odd-numbered Cost you played this turn.',
+    },
+    count: 5,
+  },
+  {
+    card: {
+      id: 'hero-deadpool-hey-can-i-get-a-do-over',
+      name: 'Hey, Can I Get a Do-Over?',
+      hero: 'Deadpool',
+      img: '/cards/core-set/hero-deadpool-hey-can-i-get-a-do-over.webp',
+      type: ['instinct'],
+      attack: 2,
+      cost: 3,
+      text: 'If this is the first Hero you played this turn, you may discard the rest of your hand and draw four cards.',
+    },
+    count: 3,
+  },
+  {
+    card: {
+      id: 'hero-deadpool-random-acts-of-unkindness',
+      name: 'Random Acts of Unkindness',
+      hero: 'Deadpool',
+      img: '/cards/core-set/hero-deadpool-random-acts-of-unkindness.webp',
+      type: ['instinct'],
+      attack: 6,
+      cost: 7,
+      text: 'You may gain a Wound to your hand. Then draw a card.',
+    },
+    count: 1,
+  },
+]
+
+export const EMMA_FROST_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'hero-emma-frost-mental-discipline',
+      name: 'Mental Discipline',
+      hero: 'Emma Frost',
+      img: '/cards/core-set/hero-emma-frost-mental-discipline.webp',
+      team: ['x-men'],
+      type: ['ranged'],
+      recruit: 1,
+      cost: 3,
+      text: 'Draw a card.',
+    },
+    count: 5,
+  },
+  {
+    card: {
+      id: 'hero-emma-frost-shadowed-thoughts',
+      name: 'Shadowed Thoughts',
+      hero: 'Emma Frost',
+      img: '/cards/core-set/hero-emma-frost-shadowed-thoughts.webp',
+      team: ['x-men'],
+      type: ['covert'],
+      attack: 2,
+      cost: 4,
+      text: 'If a Covert card was played this turn: You may play the top card of the Villain Deck. If you do, you get +2 Attack.',
+    },
+    count: 5,
+  },
+  {
+    card: {
+      id: 'hero-emma-frost-psychic-link',
+      name: 'Psychic Link',
+      hero: 'Emma Frost',
+      img: '/cards/core-set/hero-emma-frost-psychic-link.webp',
+      team: ['x-men'],
+      type: ['instinct'],
+      attack: 3,
+      cost: 5,
+      text: 'You may reveal another X-Men Hero. If you do, draw a card.',
+    },
+    count: 3,
+  },
+  {
+    card: {
+      id: 'hero-emma-frost-diamond-form',
+      name: 'Diamond Form',
+      hero: 'Emma Frost',
+      img: '/cards/core-set/hero-emma-frost-diamond-form.webp',
+      team: ['x-men'],
+      type: ['strength'],
+      recruit: 0,
+      attack: 5,
+      cost: 7,
+      text: 'Whenever you defeat a Villain or Mastermind this turn, you get +3 Recruit.',
+    },
+    count: 1,
+  },
+]

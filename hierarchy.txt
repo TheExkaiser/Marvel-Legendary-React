@@ -3,6 +3,7 @@ Volume serial number is F61C-D8DD
 C:\USERS\THEEX\DESKTOP\REACT\MARVELLEGENDARYREACT\SRC
 |   App.css
 |   App.tsx
+|   GameScreen.tsx
 |   index.css
 |   main.tsx
 |   useCardFlip.ts
@@ -22,6 +23,8 @@ C:\USERS\THEEX\DESKTOP\REACT\MARVELLEGENDARYREACT\SRC
 |       LogPanel.tsx
 |       OptionPrompt.tsx
 |       PilePrompt.tsx
+|       SetupMenu.css
+|       SetupMenu.tsx
 |       StatsPanel.tsx
 |       TacticPrompt.tsx
 |       
@@ -32,6 +35,7 @@ C:\USERS\THEEX\DESKTOP\REACT\MARVELLEGENDARYREACT\SRC
 |       |   
 |       \---01_Core_Set
 |               cards.ts
+|               content.ts
 |               heroAbilities.ts
 |               index.ts
 |               masterStrikeAbilities.ts
@@ -41,6 +45,7 @@ C:\USERS\THEEX\DESKTOP\REACT\MARVELLEGENDARYREACT\SRC
 |               villainAbilities.ts
 |               
 \---engine
+        buildSetup.ts
         cardAbilities.ts
         cardRequirements.ts
         combat.ts
@@ -55,6 +60,8 @@ C:\USERS\THEEX\DESKTOP\REACT\MARVELLEGENDARYREACT\SRC
         replacements.ts
         schemeRegistry.ts
         setup.ts
+        setupChoices.ts
+        setupRules.ts
         turn.ts
         types.ts
         ui.ts

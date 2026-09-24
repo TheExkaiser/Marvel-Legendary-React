@@ -74,6 +74,7 @@ export interface GameState {
 
   attack: number
   recruit: number
+  defeatRecruitBonus?: number
   turn: number
   extraTurnsQueued: number
   bonusDrawNextTurn: number
@@ -107,10 +108,56 @@ export interface SchemeDef {
   onVillainEntered?: (state: GameState, villain: CardInstance) => void
   onVillainEscaped?: (state: GameState, villain: CardInstance) => void
   checkLoss?: (state: GameState) => boolean
+
+  // Nadpisania domyślnych reguł setupu (patrz engine/setupRules.ts)
+  setupRules?: Partial<SetupRules>
+}
+
+/** Grupa kart wybierana w setupie: bohater, grupa villainów albo grupa henchmenów. */
+export interface CardGroup {
+  id: string
+  name: string
+  cards: DeckEntry[]
+}
+
+/** Karty wspólne dla całej gry (zwykle z Core Setu). */
+export interface SharedCards {
+  startingCards: DeckEntry[]
+  officer: DeckEntry
+  wounds: DeckEntry
+  bystanders: DeckEntry
+  twist: CardData
+  masterStrikeCard: CardData
+  masterStrikeCount: number
 }
 
 export interface SetData {
   id: string
   name: string
   schemes: SchemeDef[]
+  heroes: CardGroup[]
+  villainGroups: CardGroup[]
+  henchmenGroups: CardGroup[]
+  masterminds: MastermindData[]
+  shared?: SharedCards   // tylko zestawy, które je dostarczają (Core Set)
+}
+
+/** Ile czego trzeba wybrać w setupie. Scheme może nadpisać część pól. */
+export interface SetupRules {
+  heroes: number
+  villainGroups: number
+  henchmenGroups: number
+  bystandersInVillainDeck: number
+  requiredHeroes: string[]
+  requiredVillainGroups: string[]
+  requiredHenchmenGroups: string[]
+}
+
+/** Wybory gracza z menu (albo preset debug). Same id, żadnych kart. */
+export interface SetupChoices {
+  schemeId: string
+  mastermindId: string
+  heroIds: string[]
+  villainGroupIds: string[]
+  henchmenGroupIds: string[]
 }

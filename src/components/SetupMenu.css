@@ -1,0 +1,58 @@
+.setup-menu {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  text-align: left;
+}
+
+.setup-menu section {
+  margin-bottom: 16px;
+}
+
+.setup-menu h3 {
+  margin: 0 0 6px;
+}
+
+.setup-menu select {
+  width: 100%;
+  padding: 6px;
+  font-size: 1rem;
+}
+
+.pick-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid rgba(128, 128, 128, 0.5);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.pick.checked {
+  border-color: #e23636;
+  background: rgba(226, 54, 54, 0.15);
+}
+
+.setup-problems {
+  color: #e2a136;
+  padding-left: 20px;
+}
+
+.setup-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.setup-start {
+  margin-left: auto;
+  font-weight: bold;
+}

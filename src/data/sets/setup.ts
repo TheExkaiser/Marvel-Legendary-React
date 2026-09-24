@@ -1,31 +1,11 @@
-import type { GameSetup } from '../../engine/types'
-import {
-  STARTING_CARDS,
-  BLACK_WIDOW_CARDS,
-  CAPTAIN_AMERICA_CARDS,
-  CYCLOPS_CARDS,
-  SHIELD_OFFICER,
-  BROTHERHOOD_CARDS,
-  DOOMBOT_LEGION_CARDS,
-  DRDOOM,
-  WOUND,
-  BYSTANDER,
-  SCHEME_TWIST,
-  MASTER_STRIKE_CARD,
-} from './01_Core_Set/cards'
-import { findScheme } from './index'
+import type { SetupChoices } from '../../engine/types'
+import { DRDOOM } from './01_Core_Set/cards'
 
-export const TEST_SETUP: GameSetup = {
-  startingCards: STARTING_CARDS,
-  heroCards: [...BLACK_WIDOW_CARDS, ...CAPTAIN_AMERICA_CARDS, ...CYCLOPS_CARDS],
-  officerCards: { card: SHIELD_OFFICER, count: 30 },
-  villainCards: [...BROTHERHOOD_CARDS, ...DOOMBOT_LEGION_CARDS],
-  mastermind: DRDOOM,
-  wounds: { card: WOUND, count: 30 },
-  bystanders: { card: BYSTANDER, count: 30 },
-  bystandersInVillainDeck: 1,
-  masterStrikeCard: MASTER_STRIKE_CARD,
-  masterStrikeCount: 5,
-  scheme: findScheme('coreset_cosmic_cube'),
-  twist: SCHEME_TWIST,
+// Preset debug: szybki start znanego zestawu (przycisk w menu, tylko w trybie dev)
+export const DEBUG_PRESET: SetupChoices = {
+  schemeId: 'coreset_cosmic_cube',
+  mastermindId: DRDOOM.card.id,
+  heroIds: ['coreset_black_widow', 'coreset_captain_america', 'coreset_cyclops'],
+  villainGroupIds: ['coreset_brotherhood'],
+  henchmenGroupIds: ['coreset_doombot_legion'],
 }

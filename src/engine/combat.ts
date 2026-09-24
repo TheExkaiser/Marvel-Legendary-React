@@ -10,6 +10,7 @@ function removeVillainFromCity(state: GameState, index: number): void {
   const villain = state.city[index]!
   state.defeated.push(villain)
   state.city[index] = null
+  state.recruit += state.defeatRecruitBonus ?? 0
 
   const rescued = state.captives[villain.instanceId] ?? []
   state.defeated.push(...rescued)
@@ -72,6 +73,7 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
   }
 
   state.defeated.push(tactic)
+  state.recruit += state.defeatRecruitBonus ?? 0
   if (state.tactics.length === 0) {
     state.status = 'won'
   }

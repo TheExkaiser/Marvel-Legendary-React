@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createGameState, startGame } from './engine/game'
-import { TEST_SETUP } from './data/sets/setup'
-import type { GameState, CardInstance } from './engine/types'
+import type { GameSetup, GameState, CardInstance } from './engine/types'
 import type { UiAdapter, ChoiceOptions, TextOption } from './engine/ui'
 
 interface CardPromptState extends ChoiceOptions {
@@ -18,8 +17,8 @@ interface InfoPromptState {
   message: string
 }
 
-export function useGame() {
-  const [state] = useState<GameState>(() => createGameState(TEST_SETUP))
+export function useGame(setup: GameSetup) {
+  const [state] = useState<GameState>(() => createGameState(setup))
   const [, setVersion] = useState(0)
   const startedRef = useRef(false)
 
