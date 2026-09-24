@@ -1,0 +1,1 @@
+tree src /f /a > hierarchy.txt

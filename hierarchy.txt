@@ -1,0 +1,65 @@
+Folder PATH listing
+Volume serial number is F61C-D8DD
+C:\USERS\THEEX\DESKTOP\REACT\MARVELLEGENDARYREACT\SRC
+|   App.css
+|   App.tsx
+|   index.css
+|   main.tsx
+|   useCardFlip.ts
+|   useGame.ts
+|   
++---assets
+|       hero.png
+|       react.svg
+|       vite.svg
+|       
++---components
+|       CaptivesPrompt.tsx
+|       CardView.tsx
+|       ChoicePrompt.tsx
+|       DebugPanel.tsx
+|       DeckPile.tsx
+|       LogPanel.tsx
+|       OptionPrompt.tsx
+|       PilePrompt.tsx
+|       StatsPanel.tsx
+|       TacticPrompt.tsx
+|       
++---data
+|   \---sets
+|       |   index.ts
+|       |   setup.ts
+|       |   
+|       \---01_Core_Set
+|               cards.ts
+|               heroAbilities.ts
+|               index.ts
+|               masterStrikeAbilities.ts
+|               replacementAbilities.ts
+|               schemes.ts
+|               tacticAbilities.ts
+|               villainAbilities.ts
+|               
+\---engine
+        cardAbilities.ts
+        cardRequirements.ts
+        combat.ts
+        common.ts
+        constants.ts
+        deck.ts
+        deckOps.ts
+        game.ts
+        keywords.ts
+        random.ts
+        recruit.ts
+        replacements.ts
+        schemeRegistry.ts
+        setup.ts
+        turn.ts
+        types.ts
+        ui.ts
+        villainAbilities.ts
+        villainPhase.ts
+        villainRequirements.ts
+        wounds.ts
+        
