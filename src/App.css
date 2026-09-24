@@ -737,3 +737,7 @@ button:disabled {
   left: 100%;
   margin-left: 32px;
 }
+
+.deck-pile.clickable {
+  cursor: pointer;
+}

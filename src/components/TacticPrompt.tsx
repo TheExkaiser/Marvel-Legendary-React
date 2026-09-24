@@ -16,7 +16,7 @@ export function TacticPrompt({ state, card, onClose }: TacticPromptProps) {
         <div className="zoom-body">
           {data.img && <img src={data.img} alt={data.name} className="zoom-image" />}
           <div className="zoom-details">
-            <p>{data.text ?? '—'}</p>
+            {data.text && <p>{data.text}</p>}
           </div>
         </div>
         <button onClick={onClose}>Zamknij</button>

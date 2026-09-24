@@ -1,7 +1,7 @@
 import { registerVillainAbilities } from '../../../engine/villainAbilities'
 import { registerDefeatRequirement } from '../../../engine/villainRequirements'
 import { koCard, hasCard, revealCards } from '../../../engine/keywords'
-import { gainWound } from '../../../engine/game'
+import { gainWound, takeTopCards } from '../../../engine/game'
 import { getScheme } from '../../../engine/schemeRegistry'
 import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
@@ -75,5 +75,29 @@ registerVillainAbilities('villain-sabretooth', {
   },
   onEscape: async (state, ui) => {
     await revealXMenOrWound(state, ui, 'Sabretooth (Escape): ujawnij X-Men lub zdobądź ranę')
+  },
+})
+
+// ---------- Doombot Legion ----------
+
+registerVillainAbilities('henchmen-doombot-legion', {
+  onFight: async (state, ui) => {
+    const topTwo = takeTopCards(state, 2)
+    if (topTwo.length === 0) return
+
+    const chosen =
+      topTwo.length === 1
+        ? topTwo[0]
+        : await ui.choose(topTwo, {
+            prompt: 'Doombot Legion (Fight): wybierz kartę do KO, druga wróci na wierzch talii',
+            optional: false,
+          })
+    if (!chosen) return
+
+    // Wybrana karta idzie do KO, druga wraca na wierzch talii
+    state.ko.push(chosen)
+    for (const card of topTwo) {
+      if (card.instanceId !== chosen.instanceId) state.deck.push(card)
+    }
   },
 })

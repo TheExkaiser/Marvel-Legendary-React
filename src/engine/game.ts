@@ -48,6 +48,13 @@ function buildCardIndex(setup: GameSetup): Record<string, CardData> {
   for (const card of allCards) {
     cards[card.id] = card
   }
+
+  // Generyczna karta Master Strike dostaje opis efektu aktualnego mastermina
+  cards[setup.masterStrikeCard.id] = {
+    ...setup.masterStrikeCard,
+    text: mastermind.masterStrikeText,
+  }
+
   return cards
 }
 
@@ -143,6 +150,20 @@ export function drawCards(state: GameState, count: number): void {
     const card = state.deck.pop()!
     state.hand.push(card)
   }
+}
+
+/** Zdejmuje karty z wierzchu talii (tasując discard, gdy trzeba), ale NIE dodaje ich do ręki. */
+export function takeTopCards(state: GameState, count: number): CardInstance[] {
+  const taken: CardInstance[] = []
+  for (let i = 0; i < count; i++) {
+    if (state.deck.length === 0) {
+      if (state.discard.length === 0) break
+      state.deck = shuffle(state.discard)
+      state.discard = []
+    }
+    taken.push(state.deck.pop()!)
+  }
+  return taken
 }
 
 /** Zagrywa kartę z ręki: dolicza attack/recruit i odpala jej zdolność. */

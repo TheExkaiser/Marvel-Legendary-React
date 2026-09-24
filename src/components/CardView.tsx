@@ -64,6 +64,7 @@ export function CardView({ data, onClick, flipId, flipFrom }: CardViewProps) {
                 {data.strength !== undefined && <p><strong>Attacks:</strong> {data.strength}</p>}
                 {data.attack !== undefined && <p><strong>Attacks:</strong> {data.attack}</p>}
                 {data.cost !== undefined && <p><strong>Cost:</strong> {data.cost}</p>}
+                {data.vp !== undefined && <p><strong>VP:</strong> {data.vp}</p>}
                 {data.text && <p><strong>Text:</strong> {data.text}</p>}
               </div>
             </div>

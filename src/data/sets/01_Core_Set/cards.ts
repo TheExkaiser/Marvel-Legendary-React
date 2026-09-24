@@ -39,6 +39,7 @@ export const DRDOOM: MastermindData = {
     vp: 5,
   },
   masterStrikeId: 'mastermind-drdoom-master-strike',
+  masterStrikeText: 'Master Strike: Each player reveals a Tech Hero or gains a Wound.',
   tactics: [
     {
       id: 'drdoom-dark-technology',
@@ -329,5 +330,20 @@ export const BROTHERHOOD_CARDS: DeckEntry[] = [
       text: 'Fight: Each player reveals an X-Men Hero or gains a Wound. Escape: Same effect.',
     },
     count: 2,
+  },
+]
+
+export const DOOMBOT_LEGION_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'henchmen-doombot-legion',
+      name: 'Doombot Legion',
+      img: '/cards/core-set/henchmen-doombot-legion.webp',
+      strength: 3,
+      vp: 1,
+      henchman: true,
+      text: 'Fight: Look at the top two cards of your deck. KO one of them and put the other back.',
+    },
+    count: 3,
   },
 ]

@@ -61,7 +61,7 @@ function App() {
   const scheme = getScheme(state)
   const [viewingCaptivesOf, setViewingCaptivesOf] = useState<string | null>(null)
   
-  const [viewingPile, setViewingPile] = useState<'victory' | 'ko' | null>(null)
+  const [viewingPile, setViewingPile] = useState<'victory' | 'ko' | 'discard' | null>(null)
 
   const mastermindCaptives = state.captives[state.mastermind.instanceId]?.length ?? 0
   
@@ -69,6 +69,12 @@ function App() {
     state.discard.length > 0
       ? state.cards[state.discard[state.discard.length - 1].cardId]
       : undefined
+
+  const pileViews = {
+    victory: { title: 'Victory Pool', cards: state.defeated },
+    ko: { title: "KO'd cards", cards: state.ko },
+    discard: { title: 'Discard', cards: state.discard },
+  }
 
   return (
     <div className="app">
@@ -184,7 +190,12 @@ function App() {
         </div>
         <div className="deck-group">
           <DeckPile count={state.deck.length} deckId="deck" />
-          <DeckPile count={state.discard.length} deckId="discard" topCard={discardTop} />
+          <DeckPile
+            count={state.discard.length}
+            deckId="discard"
+            topCard={discardTop}
+            onClick={() => setViewingPile('discard')}
+          />
         </div>
       </div>
 
@@ -261,8 +272,8 @@ function App() {
       )}
       {viewingPile && (
         <PilePrompt
-          title={viewingPile === 'victory' ? 'Victory Pool' : "KO"}
-          cards={viewingPile === 'victory' ? state.defeated : state.ko}
+          title={pileViews[viewingPile].title}
+          cards={pileViews[viewingPile].cards}
           cardsById={state.cards}
           onClose={() => setViewingPile(null)}
         />

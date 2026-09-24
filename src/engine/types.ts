@@ -14,6 +14,7 @@ export interface CardData {
   team?: string[]
   type?: string[]
   text?: string
+  henchman?: boolean   // podtyp villaina: grupa 3 identycznych kart
 }
 
 export interface CardInstance {
@@ -30,6 +31,7 @@ export interface MastermindData {
   card: CardData
   tactics: CardData[]
   masterStrikeId: string   // id, pod którym zarejestrowana jest umiejętność Master Strike
+  masterStrikeText?: string   // opis efektu Master Strike, pokazywany w podglądzie
 }
 
 export type GameStatus = 'playing' | 'won' | 'lost'
