@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { CSSProperties } from 'react'
 import { useGame } from './useGame'
 import { getScheme } from './engine/schemeRegistry'
 import { sumVictoryPoints } from './engine/keywords'
@@ -18,8 +19,8 @@ import { CaptivesPrompt } from './components/CaptivesPrompt'
 import { DebugPanel } from './components/DebugPanel'
 import { LogPanel } from './components/LogPanel'
 import { StatsPanel } from './components/StatsPanel'
+import { DeckPile } from './components/DeckPile'
 import './App.css'
-import type { CSSProperties } from 'react'
 
 // ---------- Stałe ----------
 
@@ -86,10 +87,10 @@ function App() {
         victoryPoints={sumVictoryPoints(state, state.defeated)}
       />
 
-      {/* ===== Mastermind (po lewej) + Miasto ===== */}
+      {/* ===== Mastermind (po lewej) + Miasto + talia villainów (po prawej) ===== */}
       <div className="board-top">
         <div className="mastermind-slot">
-          <div className="zone-title">Taktyki: {state.tactics.length}</div>
+          <div className="zone-title">Tactics: {state.tactics.length}</div>
           <CardView
             data={state.cards[state.mastermind.cardId]}
             onClick={() => act(fightMastermind)}
@@ -101,39 +102,39 @@ function App() {
         </div>
 
         <div className="city-slot">
-          <div className="zone-title">
-            Miasto (talia: {state.villainDeck.length}, uciekło: {state.escaped.length},
-            pokonani: {state.defeated.length})
-          </div>
-          <div className="row">
-            {state.city.map((instance, i) => (
-              <div key={i}>
-                {instance ? (
-                  <CardView
-                    data={state.cards[instance.cardId]}
-                    onClick={() => act((s, ui) => fightVillain(s, instance.instanceId, ui))}
-                  />
-                ) : (
-                  <div className="slot-empty">{CITY_NAMES[i]}</div>
-                )}
-                {instance && (
-                  <CaptiveBadge
-                    count={state.captives[instance.instanceId]?.length ?? 0}
-                    onClick={() => setViewingCaptivesOf(instance.instanceId)}
-                  />
-                )}
-                {state.cityMarkers[i].length > 0 && (
-                  <div className="markers">{state.cityMarkers[i].join(', ')}</div>
-                )}
-              </div>
-            ))}
+          <div className="zone-title">City (Escaped: {state.escaped.length})</div>
+          <div className="city-row">
+            <div className="row">
+              {state.city.map((instance, i) => (
+                <div key={i}>
+                  {instance ? (
+                    <CardView
+                      data={state.cards[instance.cardId]}
+                      onClick={() => act((s, ui) => fightVillain(s, instance.instanceId, ui))}
+                    />
+                  ) : (
+                    <div className="slot-empty">{CITY_NAMES[i]}</div>
+                  )}
+                  {instance && (
+                    <CaptiveBadge
+                      count={state.captives[instance.instanceId]?.length ?? 0}
+                      onClick={() => setViewingCaptivesOf(instance.instanceId)}
+                    />
+                  )}
+                  {state.cityMarkers[i].length > 0 && (
+                    <div className="markers">{state.cityMarkers[i].join(', ')}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <DeckPile count={state.villainDeck.length} />
           </div>
         </div>
       </div>
 
-      {/* ===== Rekrutacja: oficer + HQ ===== */}
-      <h2>Rekrutacja</h2>
-      <div className="row">
+      {/* ===== Rekrutacja: oficer + HQ + talia bohaterów (po prawej) ===== */}
+      <h2>HQ</h2>
+      <div className="row recruit-row">
         <div className="officer-slot">
           <CardView
             data={state.cards[state.officerCardId]}
@@ -152,14 +153,20 @@ function App() {
             <div key={i} className="slot-empty" />
           ),
         )}
+        <div className="deck-end">
+          <DeckPile count={state.heroDeck.length} />
+        </div>
       </div>
 
-      {/* ===== Zagrane karty ===== */}
-      <h2>Zagrane ({state.played.length})</h2>
-      <div className="row">
-        {state.played.map((c) => (
-          <CardView key={c.instanceId} data={state.cards[c.cardId]} />
-        ))}
+      {/* ===== Zagrane karty + talia gracza (po prawej) ===== */}
+      <h2>Played ({state.played.length})</h2>
+      <div className="row-with-deck">
+        <div className="row">
+          {state.played.map((c) => (
+            <CardView key={c.instanceId} data={state.cards[c.cardId]} />
+          ))}
+        </div>
+        <DeckPile count={state.deck.length} />
       </div>
 
       {/* ===== Ręka: wachlarz przyklejony do dołu ekranu ===== */}
@@ -173,7 +180,7 @@ function App() {
               <div
                 key={c.instanceId}
                 className="hand-slot"
-                style={{ '--rot': `${angle}deg`, '--drop': `${drop}px` } as React.CSSProperties}
+                style={{ '--rot': `${angle}deg`, '--drop': `${drop}px` } as CSSProperties}
               >
                 <CardView
                   data={state.cards[c.cardId]}
@@ -187,8 +194,6 @@ function App() {
 
       {/* ===== Panel stosów (przyklejony, lewy dolny róg) ===== */}
       <div className="piles-panel">
-        <div className="pile-line">Talia: {state.deck.length}</div>
-
         <details>
           <summary>Stos odrzuconych ({state.discard.length})</summary>
           <div className="row piles-row">
