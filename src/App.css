@@ -13,17 +13,17 @@
    ========================================================= */
 
 :root {
-  --base: #063a4f;
-  --deep: #03212e;
-  --abyss: #01121a;
-  --panel: rgba(6, 58, 79, 0.62);
-  --panel-solid: #08445d;
-  --line: rgba(120, 220, 255, 0.2);
+  --base: #183561;
+  --deep: #111f3f;
+  --abyss: #090f26;
+  --panel: rgba(24, 53, 97, 0.62);
+  --panel-solid: #1f4172;
+  --line: rgba(150, 185, 255, 0.2);
   --cyan: #38e1ff;
   --gold: #ffc145;
   --hot: #ff3d57;
-  --text: #e8f6fb;
-  --muted: #8db4c2;
+  --text: #eaf1fb;
+  --muted: #9fb3d1;
 
   --font-display: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
   --font-body: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
