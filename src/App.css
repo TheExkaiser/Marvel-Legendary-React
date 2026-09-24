@@ -715,3 +715,14 @@ button:disabled {
 .deck-end {
   margin-left: auto;
 }
+
+.deck-group {
+  position: relative;
+}
+
+.deck-group > .deck-pile:nth-child(2) {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin-left: 32px;
+}

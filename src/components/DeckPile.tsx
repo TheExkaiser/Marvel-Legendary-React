@@ -1,11 +1,12 @@
 import { useState } from 'react'
+import type { CardData } from '../engine/types'
 
 // Rewers próbujemy wczytać w tej kolejności; jeśli oba pliki zawiodą, pokazujemy gradient
 const BACK_SOURCES = ['cardback.webp', 'cardback.png']
 const EDGE_COLORS = ['#f4eedb', '#d8d0b8'] // na przemian jasny i ciemny = wrażenie stosu kartek
 const MAX_THICKNESS = 9 // px
 
-export function DeckPile({ count, deckId }: { count: number; deckId?: string }) {  // Numer aktualnie próbowanego pliku z BACK_SOURCES (po ostatnim = brak obrazka)
+export function DeckPile({ count, deckId, topCard }: { count: number; deckId?: string; topCard?: CardData }) {  // Numer aktualnie próbowanego pliku z BACK_SOURCES (po ostatnim = brak obrazka)
   const [srcIndex, setSrcIndex] = useState(0)
 
   // Pusta talia: przerywany kontur zamiast rewersu
@@ -30,15 +31,23 @@ export function DeckPile({ count, deckId }: { count: number; deckId?: string }) 
   return (
     <div className="deck-pile" data-deck-id={deckId}>
       <div className="deck-face" style={{ boxShadow: [...edges, dropShadow].join(', ') }}>
-        {srcIndex < BACK_SOURCES.length ? (
-          <img
-            src={`${import.meta.env.BASE_URL}${BACK_SOURCES[srcIndex]}`}
-            alt=""
-            onError={() => setSrcIndex(srcIndex + 1)}
-          />
-        ) : (
-          <div className="deck-back-fallback" />
-        )}
+        {topCard ? (
+  topCard.img ? (
+    <img src={topCard.img} alt={topCard.name} />
+  ) : (
+    <div className="deck-back-fallback">
+      <strong>{topCard.name}</strong>
+    </div>
+  )
+) : srcIndex < BACK_SOURCES.length ? (
+  <img
+    src={`${import.meta.env.BASE_URL}${BACK_SOURCES[srcIndex]}`}
+    alt=""
+    onError={() => setSrcIndex(srcIndex + 1)}
+  />
+) : (
+  <div className="deck-back-fallback" />
+)}
         <span className="deck-count">{count}</span>
       </div>
     </div>

@@ -60,6 +60,11 @@ function App() {
   const [viewingCaptivesOf, setViewingCaptivesOf] = useState<string | null>(null)
 
   const mastermindCaptives = state.captives[state.mastermind.instanceId]?.length ?? 0
+  
+  const discardTop =
+    state.discard.length > 0
+      ? state.cards[state.discard[state.discard.length - 1].cardId]
+      : undefined
 
   return (
     <div className="app">
@@ -173,7 +178,10 @@ function App() {
 
           ))}
         </div>
-        <DeckPile count={state.deck.length} />
+        <div className="deck-group">
+          <DeckPile count={state.deck.length} deckId="deck" />
+          <DeckPile count={state.discard.length} deckId="discard" topCard={discardTop} />
+        </div>
       </div>
 
       {/* ===== Ręka: wachlarz przyklejony do dołu ekranu ===== */}
