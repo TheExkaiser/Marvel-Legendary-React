@@ -14,6 +14,23 @@ export function countPlayedThisTurn(
   }).length
 }
 
+// Dystynktywni (po "hero") INNI bohaterowie zagrani w tej turze, pasujący do filtra.
+export function countDistinctHeroesPlayedThisTurn(
+  state: GameState,
+  filter: { type?: string; team?: string },
+  excludeInstanceId: string,
+): number {
+  const heroes = new Set<string>()
+  for (const instance of state.cardsPlayedThisTurn) {
+    if (instance.instanceId === excludeInstanceId) continue
+    const data = state.cards[instance.cardId]
+    if (filter.type && !(data.type ?? []).includes(filter.type)) continue
+    if (filter.team && !(data.team ?? []).includes(filter.team)) continue
+    if (data.hero) heroes.add(data.hero)
+  }
+  return heroes.size
+}
+
 export function countBystandersInPile(state: GameState, pile: CardInstance[]): number {
   return pile.filter((c) => state.cards[c.cardId].kind === 'bystander').length
 }

@@ -77,6 +77,7 @@ export interface GameState {
   attack: number
   recruit: number
   defeatRecruitBonus?: number
+  defeatRescueBonus?: number
   turn: number
   extraTurnsQueued: number
   bonusDrawNextTurn: number

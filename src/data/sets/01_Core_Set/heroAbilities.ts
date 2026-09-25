@@ -2,9 +2,11 @@ import { registerCardAbility } from '../../../engine/cardAbilities'
 import { drawCards, rescueBystander, defeatVillainFree, claimTacticFree } from '../../../engine/game'
 import {
   countPlayedThisTurn,
+  countDistinctHeroesPlayedThisTurn,
   countBystandersInPile,
   hasCaptiveBystander,
   countDistinctTypes,
+  hasCard,
   discardCard,
   koCard,
   haveZone,
@@ -107,8 +109,8 @@ registerCardAbility('hero-cyclops-optic-blast', async (state, { ui }) => {
   await discardCost(state, ui)
 })
 
-registerCardAbility('hero-cyclops-x-men-united', async (state) => {
-  const count = countPlayedThisTurn(state, { team: 'x-men' })
+registerCardAbility('hero-cyclops-x-men-united', async (state, { self }) => {
+  const count = countDistinctHeroesPlayedThisTurn(state, { team: 'x-men' }, self.instanceId)
   if (count === 0) return
   state.attack += 2 * count
 })
@@ -208,3 +210,69 @@ registerCardAbility('hero-emma-frost-psychic-link', async (state, { self }) => {
 registerCardAbility('hero-emma-frost-diamond-form', async (state) => {
   state.defeatRecruitBonus = (state.defeatRecruitBonus ?? 0) + 3
 })
+
+// ---------- Gambit ----------
+
+registerCardAbility('hero-gambit-card-shark', async (state) => {
+  const top = state.deck[state.deck.length - 1]
+  if (!top) return
+  const data = state.cards[top.cardId]
+  if (data.team?.includes('x-men')) {
+    drawCards(state, 1)
+  }
+})
+
+registerCardAbility('hero-gambit-stack-the-deck', async (state, { ui }) => {
+  drawCards(state, 2)
+  const chosen = await ui.choose(state.hand, {
+    prompt: 'Stack the Deck: wybierz kartę do odłożenia na wierzch talii',
+    optional: false,
+  })
+  if (!chosen) return
+  const index = state.hand.findIndex((c) => c.instanceId === chosen.instanceId)
+  if (index === -1) return
+  const [card] = state.hand.splice(index, 1)
+  state.deck.push(card)
+})
+
+registerCardAbility('hero-gambit-hypnotic-charm', async (state, { ui }) => {
+  const top = state.deck[state.deck.length - 1]
+  if (!top) return
+  const chosen = await ui.choose([top], {
+    prompt: 'Hypnotic Charm: odkrytą kartę odrzucić czy odłożyć z powrotem?',
+    optional: true,
+  })
+  if (chosen) {
+    state.deck.pop()
+    state.discard.push(chosen)
+  }
+  // "if instinct played this turn: to samo dla talii innych graczy" — gra jest solo-only, pomijamy.
+})
+
+registerCardAbility('hero-gambit-high-stakes-jackpot', async (state) => {
+  const top = state.deck[state.deck.length - 1]
+  if (!top) return
+  state.attack += state.cards[top.cardId].cost ?? 0
+})
+
+// ---------- Hawkeye ----------
+
+registerCardAbility('hero-hawkeye-quick-draw', async (state) => {
+  drawCards(state, 1)
+})
+
+registerCardAbility('hero-hawkeye-team-player', async (state) => {
+  if (hasCard(state, { team: 'avengers' })) {
+    state.attack += 1
+  }
+})
+
+registerCardAbility('hero-hawkeye-impossible-trick-shot', async (state) => {
+  state.defeatRescueBonus = (state.defeatRescueBonus ?? 0) + 3
+})
+
+// Covering Fire: "if tech played this turn: choose... each other player ..." — gra solo-only,
+// nie ma kogo dotknąć efektem, więc bez rejestracji ability (karta i tak daje bazowe 3 Attack).
+
+// Impossible Trick Shot: potrzebuje hooka "po pokonaniu Villaina/Mastermind w tej turze",
+// analogicznego do state.defeatRecruitBonus (Diamond Form) — dokończę po combat.ts.

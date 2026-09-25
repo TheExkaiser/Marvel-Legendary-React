@@ -20,11 +20,14 @@ C:\USERS\THEEX\DESKTOP\REACT\MARVELLEGENDARYREACT\SRC
 |       ChoicePrompt.tsx
 |       DebugPanel.tsx
 |       DeckPile.tsx
+|       GameInfoPanel.tsx
+|       HamburgerMenu.tsx
 |       LogPanel.tsx
 |       OptionPrompt.tsx
 |       PilePrompt.tsx
 |       SetupMenu.css
 |       SetupMenu.tsx
+|       SlideDrawer.tsx
 |       StatsPanel.tsx
 |       TacticPrompt.tsx
 |       

@@ -4,6 +4,7 @@ import { getCardAbility } from './cardAbilities'
 import { getVillainAbilities } from './villainAbilities'
 import { canDefeatVillain } from './villainRequirements'
 import { assertPlaying } from './common'
+import { rescueBystander } from './wounds' // <- podmień na właściwy plik, jeśli to nie ten
 
 /** Zdejmuje złoczyńcę z miasta do stosu pokonanych razem z uratowanymi jeńcami. */
 function removeVillainFromCity(state: GameState, index: number): void {
@@ -74,6 +75,7 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
 
   state.defeated.push(tactic)
   state.recruit += state.defeatRecruitBonus ?? 0
+  for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) rescueBystander(state)
   if (state.tactics.length === 0) {
     state.status = 'won'
   }
