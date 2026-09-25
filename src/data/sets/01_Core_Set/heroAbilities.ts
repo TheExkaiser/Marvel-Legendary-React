@@ -213,9 +213,10 @@ registerCardAbility('hero-emma-frost-diamond-form', async (state) => {
 
 // ---------- Gambit ----------
 
-registerCardAbility('hero-gambit-card-shark', async (state) => {
+registerCardAbility('hero-gambit-card-shark', async (state, { ui }) => {
   const top = state.deck[state.deck.length - 1]
   if (!top) return
+  await ui.showInfo(top, 'Card Shark: odkryto wierzchnią kartę talii')
   const data = state.cards[top.cardId]
   if (data.team?.includes('x-men')) {
     drawCards(state, 1)
@@ -249,9 +250,10 @@ registerCardAbility('hero-gambit-hypnotic-charm', async (state, { ui }) => {
   // "if instinct played this turn: to samo dla talii innych graczy" — gra jest solo-only, pomijamy.
 })
 
-registerCardAbility('hero-gambit-high-stakes-jackpot', async (state) => {
+registerCardAbility('hero-gambit-high-stakes-jackpot', async (state, { ui }) => {
   const top = state.deck[state.deck.length - 1]
   if (!top) return
+  await ui.showInfo(top, 'High Stakes Jackpot: odkryto wierzchnią kartę talii')
   state.attack += state.cards[top.cardId].cost ?? 0
 })
 

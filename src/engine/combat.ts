@@ -12,6 +12,7 @@ function removeVillainFromCity(state: GameState, index: number): void {
   state.defeated.push(villain)
   state.city[index] = null
   state.recruit += state.defeatRecruitBonus ?? 0
+  for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) rescueBystander(state)
 
   const rescued = state.captives[villain.instanceId] ?? []
   state.defeated.push(...rescued)
