@@ -14,6 +14,8 @@ export interface CardData {
   team?: string[]
   type?: string[]
   text?: string
+  conditionIcons?: string[]   // ikony warunku "jeśli zagrano X w tej turze" (może być kilka, np. ['strength','strength'])
+  conditionText?: string      // efekt, który zachodzi przy spełnionym warunku
   henchman?: boolean   // podtyp villaina: grupa 3 identycznych kart
 }
 

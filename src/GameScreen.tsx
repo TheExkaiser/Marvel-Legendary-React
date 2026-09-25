@@ -106,6 +106,7 @@ function GameScreen({ setup, onExit }: { setup: GameSetup; onExit: () => void })
         attack={state.attack}
         recruit={state.recruit}
         victoryPoints={sumVictoryPoints(state, state.defeated)}
+        onVictoryClick={() => setViewingPile('victory')}
       />
 
       {/* ===== Mastermind (po lewej) + Miasto + talia villainów (po prawej) ===== */}
@@ -158,10 +159,13 @@ function GameScreen({ setup, onExit }: { setup: GameSetup; onExit: () => void })
       <h2>HQ</h2>
       <div className="row recruit-row">
         <div className="officer-slot">
-          <CardView
-            data={state.cards[state.officerCardId]}
-            onClick={() => act((s) => recruitOfficer(s))}
-          />
+          {state.officerDeck.length > 0 && (
+            <CardView
+              data={state.cards[state.officerCardId]}
+              flipId={state.officerDeck[state.officerDeck.length - 1].instanceId}
+              onClick={() => act((s) => recruitOfficer(s))}
+            />
+          )}
           <div>Pozostało: {state.officerDeck.length}</div>
         </div>
         {state.hq.map((instance, i) =>
@@ -229,9 +233,6 @@ function GameScreen({ setup, onExit }: { setup: GameSetup; onExit: () => void })
 
       {/* ===== Panel stosów (przyklejony, lewy dolny róg) ===== */}
       <div className="piles-panel">
-        <button onClick={() => setViewingPile('victory')}>
-          Victory Pool ({state.defeated.length})
-        </button>
         <button onClick={() => setViewingPile('ko')}>
           KO ({state.ko.length})
         </button>

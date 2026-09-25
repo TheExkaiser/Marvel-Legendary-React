@@ -9,6 +9,23 @@ interface CardViewProps {
   flipFrom?: string // id talii (data-deck-id), z której nowa karta ma przyjechać
 }
 
+function ConditionLine({ data }: { data: CardData }) {
+  if (!data.conditionIcons?.length || !data.conditionText) return null
+  return (
+    <div className="condition-line">
+      {data.conditionIcons.map((icon, i) => (
+        <img
+          key={i}
+          className="condition-icon"
+          src={`${import.meta.env.BASE_URL}icons/${icon}.png`}
+          alt={icon}
+        />
+      ))}
+      <span>: {data.conditionText}</span>
+    </div>
+  )
+}
+
 export function CardView({ data, onClick, flipId, flipFrom }: CardViewProps) {
   const [zoomed, setZoomed] = useState(false)
 
@@ -40,6 +57,7 @@ export function CardView({ data, onClick, flipId, flipFrom }: CardViewProps) {
             {data.strength !== undefined && <div>Siła: {data.strength}</div>}
             <div>Attack: {data.attack ?? 0}</div>
             <div>Recruit: {data.recruit ?? 0}</div>
+            <ConditionLine data={data} />
           </div>
         )}
       </div>
@@ -67,6 +85,7 @@ export function CardView({ data, onClick, flipId, flipFrom }: CardViewProps) {
                   {data.cost !== undefined && <p><strong>Cost:</strong> {data.cost}</p>}
                   {data.vp !== undefined && <p><strong>VP:</strong> {data.vp}</p>}
                   {data.text && <p><strong>Text:</strong> {data.text}</p>}
+                  <ConditionLine data={data} />
                 </div>
               </div>
             </div>
