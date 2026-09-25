@@ -21,6 +21,8 @@ import { DebugPanel } from './components/DebugPanel'
 import { LogPanel } from './components/LogPanel'
 import { StatsPanel } from './components/StatsPanel'
 import { DeckPile } from './components/DeckPile'
+import { HamburgerMenu } from './components/HamburgerMenu'
+import { SlideDrawer } from './components/SlideDrawer'
 import { useCardFlip } from './useCardFlip'
 import { PilePrompt } from './components/PilePrompt'
 import './App.css'
@@ -46,7 +48,15 @@ function CaptiveBadge({ count, onClick }: { count: number; onClick: () => void }
 
 // ---------- Główny komponent ----------
 
-function GameScreen({ setup, onExit }: { setup: GameSetup; onExit: () => void }) {
+function GameScreen({
+  setup,
+  onExit,
+  onRestart = onExit, // dopóki App.tsx nie dostarczy prawdziwego restartu, zachowuje się jak Main Menu
+}: {
+  setup: GameSetup
+  onExit: () => void
+  onRestart?: () => void
+}) {
   const {
     state,
     act,
@@ -80,25 +90,19 @@ function GameScreen({ setup, onExit }: { setup: GameSetup; onExit: () => void })
 
   return (
     <div className="app">
-      {/* ===== Nagłówek, log, wynik gry ===== */}
-      <h1>Marvel Legendary</h1>
-      <button onClick={onExit}>Nowa gra</button>
+      {/* ===== Górny pasek: log (na całą szerokość) + hamburger menu ===== */}
       <LogPanel log={state.log} />
+      <HamburgerMenu onMainMenu={onExit} onRestart={onRestart} />
+
       {state.status === 'won' && <h2>🎉 Wygrałeś! Mastermind pokonany.</h2>}
       {state.status === 'lost' && <h2>💀 Przegrałeś!</h2>}
 
-      {/* ===== Scheme i liczniki ===== */}
-      <h2>Scheme: {scheme.name}</h2>
-      <p>
-        Twisty: {state.twistsRevealed} / {scheme.twistCount}
-        {Object.entries(state.counters).map(([name, value]) => ` | ${name}: ${value}`)}
-      </p>
-      <p>
-        Stos ran: {state.wounds.length} | Stos bystanderów: {state.bystanders.length} |
-        KO: {state.ko.length}
-      </p>
-
-      {SHOW_DEBUG && <DebugPanel state={state} act={act} />}
+      {/* ===== Wysuwany panel: debug (znika całkowicie po ustawieniu SHOW_DEBUG=false) ===== */}
+      {SHOW_DEBUG && (
+        <SlideDrawer edge="left" tabLabel="Debug">
+          <DebugPanel state={state} act={act} />
+        </SlideDrawer>
+      )}
 
       {/* ===== Panel statystyk (przyklejony, lewy górny róg) ===== */}
       <StatsPanel
@@ -107,6 +111,13 @@ function GameScreen({ setup, onExit }: { setup: GameSetup; onExit: () => void })
         recruit={state.recruit}
         victoryPoints={sumVictoryPoints(state, state.defeated)}
         onVictoryClick={() => setViewingPile('victory')}
+        scheme={scheme}
+        twistsRevealed={state.twistsRevealed}
+        twistCount={scheme.twistCount}
+        counters={state.counters}
+        wounds={state.wounds.length}
+        bystanders={state.bystanders.length}
+        ko={state.ko.length}
       />
 
       {/* ===== Mastermind (po lewej) + Miasto + talia villainów (po prawej) ===== */}
@@ -229,13 +240,6 @@ function GameScreen({ setup, onExit }: { setup: GameSetup; onExit: () => void })
             )
           })}
         </div>
-      </div>
-
-      {/* ===== Panel stosów (przyklejony, lewy dolny róg) ===== */}
-      <div className="piles-panel">
-        <button onClick={() => setViewingPile('ko')}>
-          KO ({state.ko.length})
-        </button>
       </div>
 
       {/* ===== Zakończ turę (przyklejony, prawy dolny róg) ===== */}

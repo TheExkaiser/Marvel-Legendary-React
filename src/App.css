@@ -57,7 +57,7 @@ body {
 .app {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 16px 16px 280px; /* dół: miejsce na stałe panele */
+  padding: 60px 16px 280px; /* góra: pasek logu, dół: miejsce na stałe panele */
 }
 
 h1 {
@@ -446,19 +446,35 @@ button:disabled {
    ========================================================= */
 
 .log-bar {
-  margin-bottom: 10px;
-  padding: 8px 14px;
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1000px;
+  max-width: calc(100vw - 80px);
+  z-index: 55;
+  margin-bottom: 0;
+  padding: 10px 16px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-top: none;
+  border-radius: 0 0 14px 14px;
   background: var(--panel);
   backdrop-filter: blur(6px);
   font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
   transition: border-color 0.15s;
 }
 
 .log-bar:hover {
   border-color: var(--cyan);
+}
+
+.log-modal {
+  max-width: 900px;
+  width: 90vw;
 }
 
 .log-list {
@@ -502,6 +518,50 @@ button:disabled {
   font-size: 22px;
   font-weight: 900;
   color: var(--gold);
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.stat-info-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--cyan);
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 900;
+  font-size: 14px;
+  color: var(--cyan);
+}
+
+/* Dodatkowe dane rozgrywki: ukryte, wysuwają się po najechaniu na cały .stats-panel */
+.stats-panel-extra {
+  width: 220px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.25s ease, opacity 0.2s ease;
+}
+
+.stats-panel:hover .stats-panel-extra {
+  max-height: 420px;
+  opacity: 1;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.stats-panel-extra p {
+  margin: 4px 0;
+  color: var(--text);
+  font-size: 13px;
 }
 
 .stat {
@@ -747,6 +807,133 @@ button:disabled {
 }
 .stat-clickable:hover {
   opacity: 0.8;
+}
+
+/* =========================================================
+   10. HAMBURGER MENU (prawy górny róg)
+   ========================================================= */
+
+.hamburger-wrap {
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  z-index: 60; /* nad paskiem logu */
+}
+
+.hamburger-button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 12px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.hamburger-menu {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel-solid);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  min-width: 160px;
+}
+
+.hamburger-menu button {
+  width: 100%;
+}
+
+/* =========================================================
+   11. WYSUWANE PANELE (drawer): Info (prawa krawędź), Debug (lewa krawędź)
+   z-index 54/55: nad planszą (50), pod hamburgerem (60) i modalami (100)
+   ========================================================= */
+
+.drawer-tab {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 56;
+  padding: 14px 8px;
+  writing-mode: vertical-rl;
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  background: var(--panel-solid);
+  border: 1px solid var(--line);
+  cursor: default;
+  user-select: none;
+  transition: filter 0.15s;
+}
+
+.drawer-tab:hover {
+  filter: brightness(1.2);
+}
+
+.drawer-tab-left {
+  left: 0;
+  border-radius: 0 10px 10px 0;
+  border-left: none;
+}
+
+.drawer-tab-right {
+  right: 0;
+  border-radius: 10px 0 0 10px;
+  border-right: none;
+}
+
+.drawer-panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: 54;
+  width: 280px;
+  max-width: 85vw;
+  padding: 70px 18px 18px;
+  overflow-y: auto;
+  background: var(--panel-solid);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.55);
+  transition: transform 0.22s ease;
+}
+
+.drawer-panel-left {
+  left: 0;
+  border-right: 1px solid var(--line);
+  transform: translateX(-100%);
+}
+
+.drawer-panel-right {
+  right: 0;
+  border-left: 1px solid var(--line);
+  transform: translateX(100%);
+}
+
+.drawer-panel-open {
+  transform: translateX(0);
+}
+
+.drawer-panel h3 {
+  margin-top: 0;
+}
+
+.drawer-panel p {
+  margin: 6px 0;
+}
+
+.info-scheme-button {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  text-align: left;
+  white-space: normal;
 }
 
 .condition-line {

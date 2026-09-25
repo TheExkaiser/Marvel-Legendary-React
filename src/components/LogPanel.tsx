@@ -16,7 +16,7 @@ export function LogPanel({ log }: LogPanelProps) {
 
       {open && (
         <div className="modal-overlay" onClick={() => setOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content log-modal" onClick={(e) => e.stopPropagation()}>
             <h3>Log zdarzeń</h3>
             <div className="log-list">
               {[...log].reverse().map((line, i) => (
