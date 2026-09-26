@@ -497,6 +497,51 @@ export const DOOMBOT_LEGION_CARDS: DeckEntry[] = [
   },
 ]
 
+export const HAND_NINJAS_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'henchmen-hand-ninjas',
+      name: 'Hand Ninjas',
+      img: '/cards/core-set/henchmen-hand-ninjas.webp',
+      strength: 3,
+      vp: 1,
+      henchman: true,
+      text: 'Fight: You get +1 Recruit.',
+    },
+    count: 3,
+  },
+]
+
+export const SAVAGE_LAND_MUTATES_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'henchmen-savage-land-mutates',
+      name: 'Savage Land Mutates',
+      img: '/cards/core-set/henchmen-savage-land-mutates.webp',
+      strength: 3,
+      vp: 1,
+      henchman: true,
+      text: 'Fight: When you draw a new hand of cards at the end of this turn, draw an extra card.',
+    },
+    count: 3,
+  },
+]
+
+export const SENTINEL_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'henchmen-sentinel',
+      name: 'Sentinel',
+      img: '/cards/core-set/henchmen-sentinel.webp',
+      strength: 3,
+      vp: 1,
+      henchman: true,
+      text: 'Fight: KO one of your Heroes.',
+    },
+    count: 3,
+  },
+]
+
 export const DEADPOOL_CARDS: DeckEntry[] = [
   {
     card: {

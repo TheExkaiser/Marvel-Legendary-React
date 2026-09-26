@@ -172,3 +172,38 @@ registerVillainAbilities('villain-ymir', {
     }
   },
 })
+
+// ---------- Hand Ninjas ----------
+
+registerVillainAbilities('henchmen-hand-ninjas', {
+  onFight: async (state) => {
+    state.recruit += 1
+  },
+})
+
+// ---------- Savage Land Mutates ----------
+
+registerVillainAbilities('henchmen-savage-land-mutates', {
+  onFight: async (state) => {
+    state.bonusDrawNextTurn += 1
+  },
+})
+
+// ---------- Sentinel ----------
+
+registerVillainAbilities('henchmen-sentinel', {
+  onFight: async (state, ui) => {
+    const heroes = haveCards(state).filter((c) => state.cards[c.cardId].hero !== undefined)
+    if (heroes.length === 0) return
+
+    const chosen =
+      heroes.length === 1
+        ? heroes[0]
+        : await ui.choose(heroes, {
+            prompt: 'Sentinel (Fight): KO a Hero from your hand, played cards, or discard pile',
+            optional: false,
+          })
+    if (!chosen) return
+    koCard(state, chosen.instanceId)
+  },
+})

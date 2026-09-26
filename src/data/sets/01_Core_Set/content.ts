@@ -17,6 +17,9 @@ import {
   BROTHERHOOD_CARDS,
   ENEMIES_OF_ASGARD_CARDS,
   DOOMBOT_LEGION_CARDS,
+  HAND_NINJAS_CARDS,
+  SAVAGE_LAND_MUTATES_CARDS,
+  SENTINEL_CARDS,
   DRDOOM,
   LOKI,
   MAGNETO,
@@ -49,6 +52,9 @@ export const CORE_VILLAIN_GROUPS: CardGroup[] = [
 
 export const CORE_HENCHMEN_GROUPS: CardGroup[] = [
   { id: 'coreset_doombot_legion', name: 'Doombot Legion', cards: DOOMBOT_LEGION_CARDS },
+  { id: 'coreset_hand_ninjas', name: 'Hand Ninjas', cards: HAND_NINJAS_CARDS },
+  { id: 'coreset_savage_land_mutates', name: 'Savage Land Mutates', cards: SAVAGE_LAND_MUTATES_CARDS },
+  { id: 'coreset_sentinel', name: 'Sentinel', cards: SENTINEL_CARDS },
 ]
 
 export const CORE_MASTERMINDS: MastermindData[] = [DRDOOM, LOKI, MAGNETO, RED_SKULL]
