@@ -84,8 +84,18 @@ export function CardView({ data, onClick, flipId, flipFrom }: CardViewProps) {
                   {data.attack !== undefined && <p><strong>Attacks:</strong> {data.attack}</p>}
                   {data.cost !== undefined && <p><strong>Cost:</strong> {data.cost}</p>}
                   {data.vp !== undefined && <p><strong>VP:</strong> {data.vp}</p>}
-                  {data.text && <p><strong>Text:</strong> {data.text}</p>}
+                  {data.text && (
+                    <div className="card-text-block">
+                      <strong>Text:</strong>
+                      <p>{data.text}</p>
+                    </div>
+                  )}
                   <ConditionLine data={data} />
+                  {data.flavor && (
+                    <p className="card-flavor-text" style={{ fontStyle: 'italic' }}>
+                      {data.flavor}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

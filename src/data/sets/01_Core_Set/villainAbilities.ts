@@ -1,7 +1,7 @@
 import { registerVillainAbilities } from '../../../engine/villainAbilities'
 import { registerDefeatRequirement } from '../../../engine/villainRequirements'
-import { koCard, hasCard, revealCards } from '../../../engine/keywords'
-import { gainWound, takeTopCards } from '../../../engine/game'
+import { koCard, hasCard, revealCards, haveCards, isShieldHero } from '../../../engine/keywords'
+import { gainWound, takeTopCards, drawCards } from '../../../engine/game'
 import { getScheme } from '../../../engine/schemeRegistry'
 import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
@@ -94,10 +94,81 @@ registerVillainAbilities('henchmen-doombot-legion', {
           })
     if (!chosen) return
 
-    // Wybrana karta idzie do KO, druga wraca na wierzch talii
     state.ko.push(chosen)
     for (const card of topTwo) {
       if (card.instanceId !== chosen.instanceId) state.deck.push(card)
+    }
+  },
+})
+
+// ---------- Destroyer ----------
+
+registerVillainAbilities('villain-destroyer', {
+  onFight: async (state) => {
+    const shieldHeroes = haveCards(state).filter((c) => isShieldHero(state.cards[c.cardId]))
+    for (const c of shieldHeroes) {
+      koCard(state, c.instanceId)
+    }
+  },
+  onEscape: async (state, ui) => {
+    await koTwoHeroesFrom(state, ui, state.hand, 'Destroyer (Escape): KO a Hero from your hand')
+  },
+})
+
+// ---------- Enchantress ----------
+
+registerVillainAbilities('villain-enchantress', {
+  onFight: async (state) => {
+    drawCards(state, 3)
+  },
+})
+
+// ---------- Frost Giant ----------
+
+async function revealRangedOrWound(state: GameState, ui: UiAdapter, prompt: string): Promise<void> {
+  const rangedToReveal = revealCards(state, { type: 'ranged' })
+
+  if (rangedToReveal.length > 0) {
+    const chosen =
+      rangedToReveal.length === 1
+        ? rangedToReveal[0]
+        : await ui.choose(rangedToReveal, { prompt, optional: false })
+    if (chosen) {
+      await ui.showInfo(chosen, `${prompt}: revealed a Ranged Hero`)
+      return
+    }
+  }
+
+  await gainWound(state, ui)
+}
+
+registerVillainAbilities('villain-frost-giant', {
+  onFight: async (state, ui) => {
+    await revealRangedOrWound(state, ui, 'Frost Giant (Fight): reveal a Ranged Hero or gain a Wound')
+  },
+  onEscape: async (state, ui) => {
+    await revealRangedOrWound(state, ui, 'Frost Giant (Escape): reveal a Ranged Hero or gain a Wound')
+  },
+})
+
+// ---------- Ymir, Frost Giant King ----------
+
+registerVillainAbilities('villain-ymir', {
+  onAmbush: async (state, ui) => {
+    await revealRangedOrWound(state, ui, 'Ymir (Ambush): reveal a Ranged Hero or gain a Wound')
+  },
+  onFight: async (state, ui) => {
+    let wounds = [...state.hand, ...state.discard].filter(
+      (c) => state.cards[c.cardId].kind === 'wound',
+    )
+    while (wounds.length > 0) {
+      const chosen = await ui.choose(wounds, {
+        prompt: 'Ymir (Fight): KO a Wound from your hand or discard pile',
+        optional: true,
+      })
+      if (!chosen) break
+      koCard(state, chosen.instanceId)
+      wounds = wounds.filter((c) => c.instanceId !== chosen.instanceId)
     }
   },
 })

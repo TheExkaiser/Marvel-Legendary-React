@@ -60,6 +60,7 @@ function GameScreen({
   const {
     state,
     act,
+    beginGame,
     cardPrompt,
     answerCardPrompt,
     optionPrompt,
@@ -94,8 +95,18 @@ function GameScreen({
       <LogPanel log={state.log} />
       <HamburgerMenu onMainMenu={onExit} onRestart={onRestart} />
 
-      {state.status === 'won' && <h2>🎉 Wygrałeś! Mastermind pokonany.</h2>}
-      {state.status === 'lost' && <h2>💀 Przegrałeś!</h2>}
+      {(state.status === 'won' || state.status === 'lost') && (
+        <div className="modal-overlay">
+          <div className="modal-content game-over-content">
+            <h2>{state.status === 'won' ? '🎉 You Win!' : '💀 You Lose'}</h2>
+            <p>{state.status === 'won' ? 'Mastermind defeated.' : 'Evil wins.'}</p>
+            <div className="game-over-buttons">
+              <button onClick={onRestart}>Restart</button>
+              <button onClick={onExit}>Main Menu</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ===== Wysuwany panel: debug (znika całkowicie po ustawieniu SHOW_DEBUG=false) ===== */}
       {SHOW_DEBUG && (
@@ -119,6 +130,8 @@ function GameScreen({
         bystanders={state.bystanders.length}
         ko={state.ko.length}
         onKoClick={() => setViewingPile('ko')}
+        initialSchemeOpen
+        onSchemeIntroClose={beginGame}
       />
 
       {/* ===== Mastermind (po lewej) + Miasto + talia villainów (po prawej) ===== */}
@@ -267,6 +280,7 @@ function GameScreen({
           options={optionPrompt.options}
           prompt={optionPrompt.prompt}
           onChoose={answerOptionPrompt}
+          cardData={optionPrompt.card ? state.cards[optionPrompt.card.cardId] : undefined}
         />
       )}
       {infoPrompt && (

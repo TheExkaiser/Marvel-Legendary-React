@@ -15,15 +15,17 @@ import {
   SPIDER_MAN_CARDS,
   SHIELD_OFFICER,
   BROTHERHOOD_CARDS,
+  ENEMIES_OF_ASGARD_CARDS,
   DOOMBOT_LEGION_CARDS,
   DRDOOM,
+  LOKI,
+  MAGNETO,
+  RED_SKULL,
   WOUND,
   BYSTANDER,
   SCHEME_TWIST,
   MASTER_STRIKE_CARD,
 } from './cards'
-
-// Nowy bohater / grupa = nowy wpis w odpowiedniej liście poniżej
 
 export const CORE_HEROES: CardGroup[] = [
   { id: 'coreset_black_widow', name: 'Black Widow', cards: BLACK_WIDOW_CARDS },
@@ -38,18 +40,18 @@ export const CORE_HEROES: CardGroup[] = [
   { id: 'coreset_nick_fury', name: 'Nick Fury', cards: NICK_FURY_CARDS },
   { id: 'coreset_rogue', name: 'Rogue', cards: ROGUE_CARDS },
   { id: 'coreset_spider_man', name: 'Spider-Man', cards: SPIDER_MAN_CARDS },
-
 ]
 
 export const CORE_VILLAIN_GROUPS: CardGroup[] = [
   { id: 'coreset_brotherhood', name: 'Brotherhood', cards: BROTHERHOOD_CARDS },
+  { id: 'coreset_enemies_of_asgard', name: 'Enemies of Asgard', cards: ENEMIES_OF_ASGARD_CARDS },
 ]
 
 export const CORE_HENCHMEN_GROUPS: CardGroup[] = [
   { id: 'coreset_doombot_legion', name: 'Doombot Legion', cards: DOOMBOT_LEGION_CARDS },
 ]
 
-export const CORE_MASTERMINDS: MastermindData[] = [DRDOOM]
+export const CORE_MASTERMINDS: MastermindData[] = [DRDOOM, LOKI, MAGNETO, RED_SKULL]
 
 export const CORE_SHARED: SharedCards = {
   startingCards: STARTING_CARDS,

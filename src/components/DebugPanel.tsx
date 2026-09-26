@@ -16,6 +16,11 @@ export function DebugPanel({ state, act }: DebugPanelProps) {
     <div className="debug">
       <strong>Debug</strong>
 
+      <span className="debug-group">
+        <button onClick={() => act((s) => { s.status = 'won' })}>Instant Win</button>
+        <button onClick={() => act((s) => { s.status = 'lost' })}>Instant Lose</button>
+      </span>
+
       <button onClick={() => act(gainWound)}>Gain Wound</button>
       <button onClick={() => act(rescueBystander)}>Rescue Bystander</button>
       <button onClick={() => act(debugReplaceAllHeroesInHq)}>Replace all heroes in HQ</button>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { createGameState, startGame } from './engine/game'
 import type { GameSetup, GameState, CardInstance } from './engine/types'
 import type { UiAdapter, ChoiceOptions, TextOption } from './engine/ui'
@@ -32,42 +32,43 @@ export function useGame(setup: GameSetup) {
   const resolveInfoRef = useRef<(() => void) | null>(null)
 
   const ui: UiAdapter = {
-  choose(options, choiceOpts) {
-    return new Promise((resolve) => {
-      resolveCardRef.current = resolve
-      setCardPrompt({ options, ...choiceOpts })
-    })
-  },
-  chooseOption(options, prompt) {
-    return new Promise((resolve) => {
-      resolveOptionRef.current = resolve
-      setOptionPrompt({ options, prompt })
-    })
-  },
-  chooseOptionWithCard(card, options, prompt) {
-    return new Promise((resolve) => {
-      resolveOptionRef.current = resolve
-      setOptionPrompt({ options, prompt, card })
-    })
-  },
-  showInfo(card, message) {
-    return new Promise((resolve) => {
-      resolveInfoRef.current = resolve
-      setInfoPrompt({ card, message })
-    })
-  },
-}
+    choose(options, choiceOpts) {
+      return new Promise((resolve) => {
+        resolveCardRef.current = resolve
+        setCardPrompt({ options, ...choiceOpts })
+      })
+    },
+    chooseOption(options, prompt) {
+      return new Promise((resolve) => {
+        resolveOptionRef.current = resolve
+        setOptionPrompt({ options, prompt })
+      })
+    },
+    chooseOptionWithCard(card, options, prompt) {
+      return new Promise((resolve) => {
+        resolveOptionRef.current = resolve
+        setOptionPrompt({ options, prompt, card })
+      })
+    },
+    showInfo(card, message) {
+      return new Promise((resolve) => {
+        resolveInfoRef.current = resolve
+        setInfoPrompt({ card, message })
+      })
+    },
+  }
 
-  // Uruchamia grę RAZ, po pierwszym wyrenderowaniu (dopiero wtedy `ui` może pokazywać popupy)
-  useEffect(() => {
-    if (startedRef.current) return // ochrona przed podwójnym wywołaniem w trybie deweloperskim
+  // Woła się dopiero, gdy gracz zamknie popup ze schematem na starcie (patrz GameScreen).
+  // Dzięki temu villainPhase() (pierwsza karta villaina) nie odpala się, dopóki
+  // gracz nie zobaczył i nie zamknął opisu schematu.
+  function beginGame() {
+    if (startedRef.current) return // ochrona przed podwójnym wywołaniem
     startedRef.current = true
 
     startGame(state, ui).then(() => {
       setVersion((v) => v + 1)
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }
 
   function answerCardPrompt(choice: CardInstance | null) {
     resolveCardRef.current?.(choice)
@@ -99,6 +100,7 @@ export function useGame(setup: GameSetup) {
   return {
     state,
     act,
+    beginGame,
     cardPrompt,
     answerCardPrompt,
     optionPrompt,

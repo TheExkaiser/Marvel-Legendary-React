@@ -38,6 +38,19 @@ export async function playCard(
   state.cardsPlayedThisTurn.push(instance)
 }
 
+/** Wkłada do nowej ręki kartę zarezerwowaną przez Electromagnetic Bubble (jeśli jest). */
+function addReservedCardToHand(state: GameState): void {
+  const instanceId = state.extraCardToHand
+  if (!instanceId) return
+  state.extraCardToHand = undefined
+
+  const index = state.discard.findIndex((c) => c.instanceId === instanceId)
+  if (index === -1) return
+
+  const [card] = state.discard.splice(index, 1)
+  state.hand.push(card)
+}
+
 /** Koniec tury: sprzątanie, nowa ręka, a potem faza złoczyńcy (chyba że jest dodatkowa tura). */
 export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   assertPlaying(state)
@@ -58,9 +71,11 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   if (state.extraTurnsQueued > 0) {
     state.extraTurnsQueued -= 1
     drawCards(state, drawAmount)
+    addReservedCardToHand(state)
   } else {
     state.turn += 1
     drawCards(state, drawAmount)
+    addReservedCardToHand(state)
     await villainPhase(state, ui)
   }
 }

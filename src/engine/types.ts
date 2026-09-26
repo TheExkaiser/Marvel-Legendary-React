@@ -14,9 +14,11 @@ export interface CardData {
   team?: string[]
   type?: string[]
   text?: string
+  flavor?: string
   conditionIcons?: string[]   // ikony warunku "jeśli zagrano X w tej turze" (może być kilka, np. ['strength','strength'])
   conditionText?: string      // efekt, który zachodzi przy spełnionym warunku
   henchman?: boolean   // podtyp villaina: grupa 3 identycznych kart
+  villainGroup?: string
 }
 
 export interface CardInstance {
@@ -82,6 +84,7 @@ export interface GameState {
   turn: number
   extraTurnsQueued: number
   bonusDrawNextTurn: number
+  extraCardToHand?: string // instanceId karty zarezerwowanej przez Electromagnetic Bubble
   status: GameStatus
 }
 
@@ -106,6 +109,7 @@ export interface SchemeDef {
   img: string
   twistCount: number
   escapeLimit?: number
+  text?: string
 
   setup?: (state: GameState) => void
   onTwist?: (state: GameState, twistNumber: number, ui: UiAdapter) => void | Promise<void>

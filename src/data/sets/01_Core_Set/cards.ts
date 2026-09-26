@@ -72,6 +72,94 @@ export const DRDOOM: MastermindData = {
   ],
 }
 
+// TODO: "Always Leads: Enemies of Asgard" — na razie tylko komentarz/placeholder.
+// Docelowo ma być opcjonalne (np. pole w MastermindData albo w SetupChoices,
+// wymuszające dobór konkretnej grupy złoczyńców przy tym mastermindzie).
+export const LOKI: MastermindData = {
+  card: {
+    id: 'mastermind-loki',
+    name: 'Loki',
+    img: '/cards/core-set/mastermind-loki.webp',
+    strength: 10,
+    vp: 5,
+  },
+  masterStrikeId: 'mastermind-loki-master-strike',
+  masterStrikeText: 'Master Strike: Each player reveals a Strength Hero or gains a Wound.',
+  tactics: [
+    {
+      id: 'loki-cruel-ruler',
+      name: 'Cruel Ruler',
+      img: '/cards/core-set/loki-cruel-ruler.webp',
+      vp: 5,
+      text: 'Fight: Defeat a Villain in the City for free.',
+    },
+    {
+      id: 'loki-maniacal-tyrant',
+      name: 'Maniacal Tyrant',
+      img: '/cards/core-set/loki-maniacal-tyrant.webp',
+      vp: 5,
+      text: 'Fight: KO up to four cards from your discard pile.',
+    },
+    {
+      id: 'loki-vanishing-illusions',
+      name: 'Vanishing Illusions',
+      img: '/cards/core-set/loki-vanishing-illusions.webp',
+      vp: 5,
+      text: 'Fight: KO a Villain from your Victory Pile.',
+    },
+    {
+      id: 'loki-whispers-and-lies',
+      name: 'Whispers and Lies',
+      img: '/cards/core-set/loki-whispers-and-lies.webp',
+      vp: 5,
+      text: 'Fight: KO two Bystanders from your Victory Pile.',
+    },
+  ],
+}
+
+// TODO: "Always Leads: Brotherhood" — na razie tylko komentarz/placeholder, jak przy Lokim.
+export const MAGNETO: MastermindData = {
+  card: {
+    id: 'mastermind-magneto',
+    name: 'Magneto',
+    img: '/cards/core-set/mastermind-magneto.webp',
+    strength: 8,
+    vp: 5,
+  },
+  masterStrikeId: 'mastermind-magneto-master-strike',
+  masterStrikeText: 'Master Strike: Each player reveals an X-Men Hero or discards down to four cards.',
+  tactics: [
+    {
+      id: 'magneto-bitter-captor',
+      name: 'Bitter Captor',
+      img: '/cards/core-set/magneto-bitter-captor.webp',
+      vp: 5,
+      text: 'Fight: Recruit an X-Men Hero from the HQ for free.',
+    },
+    {
+      id: 'magneto-crushing-shockwave',
+      name: 'Crushing Shockwave',
+      img: '/cards/core-set/magneto-crushing-shockwave.webp',
+      vp: 5,
+      text: 'Fight: Each other player reveals an X-Men Hero or gains two Wounds.',
+    },
+    {
+      id: 'magneto-electromagnetic-bubble',
+      name: 'Electromagnetic Bubble',
+      img: '/cards/core-set/magneto-electromagnetic-bubble.webp',
+      vp: 5,
+      text: "Fight: Choose one of your X-Men Heroes. When you draw a new hand of cards at the end of this turn, add that Hero to your hand as a seventh card.",
+    },
+    {
+      id: 'magneto-xaviers-nemesis',
+      name: "Xavier's Nemesis",
+      img: '/cards/core-set/magneto-xaviers-nemesis.webp',
+      vp: 5,
+      text: 'Fight: For each of your X-Men Heroes, rescue a Bystander.',
+    },
+  ],
+}
+
 export const SHIELD_OFFICER: CardData = {
   id: 'shield-officer',
   name: 'S.H.I.E.L.D. Officer',
@@ -299,6 +387,7 @@ export const BROTHERHOOD_CARDS: DeckEntry[] = [
       img: '/cards/core-set/villain-blob.webp',
       strength: 4,
       vp: 2,
+      villainGroup: 'Brotherhood',
       text: "You can't defeat Blob unless you have an X-Men Hero.",
     },
     count: 2,
@@ -310,6 +399,7 @@ export const BROTHERHOOD_CARDS: DeckEntry[] = [
       img: '/cards/core-set/villain-juggernaut.webp',
       strength: 6,
       vp: 4,
+      villainGroup: 'Brotherhood',
       text: 'Ambush: Each player KOs two Heroes from their discard pile. Escape: Each player KOs two Heroes from their hand.',
     },
     count: 2,
@@ -321,6 +411,7 @@ export const BROTHERHOOD_CARDS: DeckEntry[] = [
       img: '/cards/core-set/villain-mystique.webp',
       strength: 5,
       vp: 3,
+      villainGroup: 'Brotherhood',
       text: 'Escape: Mystique becomes a Scheme Twist that takes effect immediately.',
     },
     count: 2,
@@ -332,7 +423,60 @@ export const BROTHERHOOD_CARDS: DeckEntry[] = [
       img: '/cards/core-set/villain-sabretooth.webp',
       strength: 5,
       vp: 3,
+      villainGroup: 'Brotherhood',
       text: 'Fight: Each player reveals an X-Men Hero or gains a Wound. Escape: Same effect.',
+    },
+    count: 2,
+  },
+]
+
+export const ENEMIES_OF_ASGARD_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'villain-destroyer',
+      name: 'Destroyer',
+      img: '/cards/core-set/villain-destroyer.webp',
+      strength: 7,
+      vp: 5,
+      villainGroup: 'Enemies of Asgard',
+      text: 'Fight: KO all your S.H.I.E.L.D. Heroes. Escape: Each player KOs two of their Heroes.',
+    },
+    count: 1,
+  },
+  {
+    card: {
+      id: 'villain-enchantress',
+      name: 'Enchantress',
+      img: '/cards/core-set/villain-enchantress.webp',
+      strength: 6,
+      vp: 4,
+      villainGroup: 'Enemies of Asgard',
+      text: 'Fight: Draw three cards.',
+      flavor: 'Illusions fade in time. Time fades in mind. Minds fade in my illusion.',
+    },
+    count: 2,
+  },
+  {
+    card: {
+      id: 'villain-frost-giant',
+      name: 'Frost Giant',
+      img: '/cards/core-set/villain-frost-giant.webp',
+      strength: 4,
+      vp: 2,
+      villainGroup: 'Enemies of Asgard',
+      text: 'Fight: Each player reveals a Ranged Hero or gains a Wound. Escape: Same effect.',
+    },
+    count: 3,
+  },
+  {
+    card: {
+      id: 'villain-ymir',
+      name: 'Ymir, Frost Giant King',
+      img: '/cards/core-set/villain-ymir.webp',
+      strength: 6,
+      vp: 4,
+      villainGroup: 'Enemies of Asgard',
+      text: 'Ambush: Each player reveals a Ranged Hero or gains a Wound. Fight: Choose a player. That player KOs any number of Wounds from their hand and discard pile.',
     },
     count: 2,
   },
@@ -816,7 +960,7 @@ export const ROGUE_CARDS: DeckEntry[] = [
     },
     count: 3,
   },
-  
+
   {
     card: {
       id: 'hero-rogue-steal-abilities',
@@ -889,3 +1033,48 @@ export const SPIDER_MAN_CARDS: DeckEntry[] = [
     count: 1,
   },
 ]
+
+// TODO: "Always Leads: HYDRA" — na razie tylko komentarz/placeholder, jak przy Lokim i Magneto.
+export const RED_SKULL: MastermindData = {
+  card: {
+    id: 'mastermind-redskull',
+    name: 'Red Skull',
+    img: '/cards/core-set/mastermind-redskull.webp',
+    strength: 7,
+    vp: 5,
+  },
+  masterStrikeId: 'mastermind-redskull-master-strike',
+  masterStrikeText: 'Master Strike: Each player KOs a Hero from their hand.',
+  tactics: [
+    {
+      id: 'redskull-endless-resources',
+      name: 'Endless Resources',
+      img: '/cards/core-set/redskull-endless-resources.webp',
+      vp: 5,
+      text: 'Fight: You get +4 Recruit.',
+      flavor: "You'd be surprised how many people are willing to donate to a madman with no skin.",
+    },
+    {
+      id: 'redskull-hydra-conspiracy',
+      name: 'HYDRA Conspiracy',
+      img: '/cards/core-set/redskull-hydra-conspiracy.webp',
+      vp: 5,
+      text: 'Fight: Draw two cards. Then draw another card for each HYDRA Villain in your Victory Pile.',
+    },
+    {
+      id: 'redskull-negablast-grenades',
+      name: 'Negablast Grenades',
+      img: '/cards/core-set/redskull-negablast-grenades.webp',
+      vp: 5,
+      text: 'Fight: You get +3 Attack.',
+      flavor: 'The only pure act of creation is destruction.',
+    },
+    {
+      id: 'redskull-ruthless-dictator',
+      name: 'Ruthless Dictator',
+      img: '/cards/core-set/redskull-ruthless-dictator.webp',
+      vp: 5,
+      text: 'Fight: Look at the top three cards of your deck. KO one, discard one and put one back on top of your deck.',
+    },
+  ],
+}

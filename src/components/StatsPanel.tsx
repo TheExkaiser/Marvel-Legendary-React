@@ -1,14 +1,14 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 
 type StatProps = {
-  icon: string // nazwa pliku w public/icons, np. 'attack.png'
-  label: string // tekst zastępczy, gdy ikony nie ma
+  icon: string
+  label: string
   value: number
   onClick?: () => void
 }
 
 function Stat({ icon, label, value, onClick }: StatProps) {
-  // useState = "pamięć" komponentu. Zaczynamy od false, a gdy obrazek się nie wczyta, ustawiamy true
   const [iconFailed, setIconFailed] = useState(false)
 
   return (
@@ -29,9 +29,7 @@ function Stat({ icon, label, value, onClick }: StatProps) {
   )
 }
 
-// Uwaga: nie mam schemeRegistry.ts, więc zgaduję pole z opisem (text / description).
-// Jeśli w Twoim typie Scheme nazywa się inaczej, podmień w schemeText poniżej.
-type SchemeInfo = { name: string; text?: string; description?: string }
+type SchemeInfo = { name: string; img?: string; text?: string; description?: string }
 
 type StatsPanelProps = {
   turn: number
@@ -47,6 +45,8 @@ type StatsPanelProps = {
   bystanders: number
   ko: number
   onKoClick?: () => void
+  initialSchemeOpen?: boolean // otwiera popup schematu od razu przy pierwszym renderze
+  onSchemeIntroClose?: () => void // wywoływane, gdy popup schematu się zamyka
 }
 
 export function StatsPanel({
@@ -63,9 +63,16 @@ export function StatsPanel({
   bystanders,
   ko,
   onKoClick,
+  initialSchemeOpen = false,
+  onSchemeIntroClose,
 }: StatsPanelProps) {
-  const [showScheme, setShowScheme] = useState(false)
+  const [showScheme, setShowScheme] = useState(initialSchemeOpen)
   const schemeText = scheme.text ?? scheme.description ?? ''
+
+  function closeScheme() {
+    setShowScheme(false)
+    onSchemeIntroClose?.()
+  }
 
   return (
     <div className="stats-panel">
@@ -78,7 +85,6 @@ export function StatsPanel({
         <Stat icon="victory.png" label="VP" value={victoryPoints} onClick={onVictoryClick} />
       </div>
 
-      {/* Dodatkowe informacje: widoczne po najechaniu na cały panel (patrz App.css) */}
       <div className="stats-panel-extra">
         <button className="info-scheme-button" onClick={() => setShowScheme(true)}>
           Scheme: {scheme.name}
@@ -99,15 +105,26 @@ export function StatsPanel({
         </button>
       </div>
 
-      {showScheme && (
-        <div className="modal-overlay" onClick={() => setShowScheme(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>{scheme.name}</h3>
-            {schemeText ? <p>{schemeText}</p> : <p>(brak opisu)</p>}
-            <button onClick={() => setShowScheme(false)}>Zamknij</button>
-          </div>
-        </div>
-      )}
+      {showScheme &&
+        createPortal(
+          <div className="modal-overlay" onClick={closeScheme}>
+            <div className="modal-content zoom-content" onClick={(e) => e.stopPropagation()}>
+              <h3>{scheme.name}</h3>
+              <button className="close-button" onClick={closeScheme}>
+                ✕
+              </button>
+              <div className="zoom-body">
+                {scheme.img && <img src={scheme.img} alt={scheme.name} className="zoom-image" />}
+                <div className="zoom-details">
+                  {schemeText
+                    ? schemeText.split('\n').map((line, i) => <p key={i}>{line}</p>)
+                    : <p>(brak opisu)</p>}
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   )
 }
