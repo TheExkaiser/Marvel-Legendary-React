@@ -9,6 +9,7 @@ import { CITY_NAMES } from '../../../engine/constants'
 import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
 import { refillHq } from '../../../engine/recruit'
+import { peekTopCard } from '../../../engine/deckOps'
 
 // ---------- Blob ----------
 
@@ -289,8 +290,9 @@ registerVillainAbilities('villain-baron-zemo', {
 
 registerVillainAbilities('villain-melter', {
   onFight: async (state, ui) => {
-    if (state.deck.length === 0) return
-    const top = state.deck[state.deck.length - 1]
+    const top = peekTopCard(state)
+    if (!top) return
+
     await ui.showInfo(top, 'Melter (Fight): revealed the top card of your deck')
 
     const choice = await ui.chooseOption(

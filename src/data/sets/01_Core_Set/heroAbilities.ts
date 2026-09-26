@@ -1,5 +1,5 @@
 import { registerCardAbility, getCardAbility } from '../../../engine/cardAbilities'
-import { drawCards, rescueBystander, gainWound, defeatVillainFree, claimTacticFree } from '../../../engine/game'
+import { drawCards, rescueBystander, gainWound, defeatVillainFree, claimTacticFree, takeTopCards, peekTopCard } from '../../../engine/game'
 import {
   countPlayedThisTurn,
   countDistinctHeroesPlayedThisTurn,
@@ -18,6 +18,7 @@ import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
 import { registerDiscardReplacement } from '../../../engine/replacements'
 import { villainPhase } from '../../../engine/villainPhase'
+
 
 // ---------- Black Widow ----------
 
@@ -215,7 +216,7 @@ registerCardAbility('hero-emma-frost-diamond-form', async (state) => {
 // ---------- Gambit ----------
 
 registerCardAbility('hero-gambit-card-shark', async (state, { ui }) => {
-  const top = state.deck[state.deck.length - 1]
+  const top = peekTopCard(state)
   if (!top) return
   await ui.showInfo(top, 'Card Shark: odkryto wierzchnią kartę talii')
   const data = state.cards[top.cardId]
@@ -239,7 +240,7 @@ registerCardAbility('hero-gambit-stack-the-deck', async (state, { ui }) => {
 
 registerCardAbility('hero-gambit-hypnotic-charm', async (state, { ui }) => {
   const resolveOne = async () => {
-    const top = state.deck[state.deck.length - 1]
+    const top = peekTopCard(state)
     if (!top) return
     const choice = await ui.chooseOptionWithCard(
       top,
@@ -253,7 +254,6 @@ registerCardAbility('hero-gambit-hypnotic-charm', async (state, { ui }) => {
       state.deck.pop()
       state.discard.push(top)
     }
-    // 'put-back' (lub zamknięcie okna) = karta zostaje na wierzchu, nic nie robimy
   }
 
   await resolveOne()
@@ -263,7 +263,7 @@ registerCardAbility('hero-gambit-hypnotic-charm', async (state, { ui }) => {
 })
 
 registerCardAbility('hero-gambit-high-stakes-jackpot', async (state, { ui }) => {
-  const top = state.deck[state.deck.length - 1]
+  const top = peekTopCard(state)
   if (!top) return
   await ui.showInfo(top, 'High Stakes Jackpot: odkryto wierzchnią kartę talii')
   state.attack += state.cards[top.cardId].cost ?? 0
@@ -485,7 +485,7 @@ registerCardAbility('hero-rogue-copy-powers', async (state, { ui, self }) => {
 })
 
 registerCardAbility('hero-rogue-steal-abilities', async (state, { ui, self }) => {
-  const top = state.deck.pop()
+  const [top] = takeTopCards(state, 1)
   if (!top) return
   state.discard.push(top)
   await ui.showInfo(top, 'Steal Abilities: odkryto i odrzucono wierzchnią kartę talii')
@@ -503,7 +503,7 @@ registerCardAbility('hero-rogue-steal-abilities', async (state, { ui, self }) =>
 // ---------- Spider-Man ----------
 
 async function revealAndDrawIfCheap(state: GameState, ui: UiAdapter, label: string): Promise<void> {
-  const top = state.deck[state.deck.length - 1]
+  const top = peekTopCard(state)
   if (!top) return
   await ui.showInfo(top, `${label}: odkryto wierzchnią kartę talii`)
   if ((state.cards[top.cardId].cost ?? 0) <= 2) {
@@ -526,10 +526,7 @@ registerCardAbility('hero-spider-man-web-shooters', async (state, { ui }) => {
 })
 
 registerCardAbility('hero-spider-man-the-amazing-spider-man', async (state, { ui }) => {
-  const revealed: CardInstance[] = []
-  for (let i = 0; i < 3 && state.deck.length > 0; i++) {
-    revealed.push(state.deck.pop()!)
-  }
+  const revealed = takeTopCards(state, 3)
   if (revealed.length === 0) return
 
   for (const card of revealed) {
@@ -545,7 +542,6 @@ registerCardAbility('hero-spider-man-the-amazing-spider-man', async (state, { ui
     }
   }
 
-  // Uproszczenie: odkładane karty wracają w oryginalnej kolejności (bez UI do wyboru kolejności)
   for (let i = putBack.length - 1; i >= 0; i--) {
     state.deck.push(putBack[i])
   }

@@ -2,6 +2,7 @@ import { registerCardAbility } from '../../../engine/cardAbilities'
 import { recruitHero, drawCards, fightVillain, gainWound, rescueBystander } from '../../../engine/game'
 import { revealCards, haveCards } from '../../../engine/keywords'
 import type { CardInstance } from '../../../engine/types'
+import { takeTopCards } from '../../../engine/deckOps'
 
 registerCardAbility('drdoom-dark-technology', async (state, { ui }) => {
   const targets = state.hq.filter(
@@ -100,16 +101,19 @@ registerCardAbility('loki-vanishing-illusions', async (state, { ui }) => {
 registerCardAbility('loki-whispers-and-lies', async (state, { ui }) => {
   for (let i = 0; i < 2; i++) {
     const bystanders = state.defeated.filter((c) => state.cards[c.cardId].kind === 'bystander')
-    if (bystanders.length === 0) break
+    if (bystanders.length === 0) return
 
-    const chosen = await ui.choose(bystanders, {
-      prompt: `Whispers and Lies: KO a Bystander from your Victory Pile (${i + 1}/2)`,
-      optional: true,
-    })
-    if (!chosen) break
+    const chosen =
+      bystanders.length === 1
+        ? bystanders[0]
+        : await ui.choose(bystanders, {
+            prompt: `Whispers and Lies: KO a Bystander from your Victory Pile (${i + 1}/2)`,
+            optional: false,
+          })
+    if (!chosen) return
 
     const index = state.defeated.findIndex((c) => c.instanceId === chosen.instanceId)
-    if (index === -1) break
+    if (index === -1) return
     const [card] = state.defeated.splice(index, 1)
     state.ko.push(card)
   }
@@ -182,11 +186,8 @@ registerCardAbility('redskull-negablast-grenades', async (state) => {
 })
 
 registerCardAbility('redskull-ruthless-dictator', async (state, { ui }) => {
-  const count = Math.min(3, state.deck.length)
-  if (count === 0) return
-
-  // Zdejmujemy z wierzchu (koniec tablicy = wierzch, tak jak w drawCards/Master Strike DrDooma)
-  const topCards = state.deck.splice(state.deck.length - count, count)
+  const topCards = takeTopCards(state, 3)
+  if (topCards.length === 0) return
 
   const toKo = await ui.choose(topCards, {
     prompt: 'Ruthless Dictator: choose a card to KO',
@@ -202,5 +203,5 @@ registerCardAbility('redskull-ruthless-dictator', async (state, { ui }) => {
   const remaining = afterKo.filter((c) => c.instanceId !== toDiscard?.instanceId)
   if (toDiscard) state.discard.push(toDiscard)
 
-  state.deck.push(...remaining) // reszta wraca na wierzch talii
+  state.deck.push(...remaining)
 })
