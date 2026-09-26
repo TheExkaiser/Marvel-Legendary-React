@@ -237,17 +237,28 @@ registerCardAbility('hero-gambit-stack-the-deck', async (state, { ui }) => {
 })
 
 registerCardAbility('hero-gambit-hypnotic-charm', async (state, { ui }) => {
-  const top = state.deck[state.deck.length - 1]
-  if (!top) return
-  const chosen = await ui.choose([top], {
-    prompt: 'Hypnotic Charm: odkrytą kartę odrzucić czy odłożyć z powrotem?',
-    optional: true,
-  })
-  if (chosen) {
-    state.deck.pop()
-    state.discard.push(chosen)
+  const resolveOne = async () => {
+    const top = state.deck[state.deck.length - 1]
+    if (!top) return
+    const choice = await ui.chooseOptionWithCard(
+      top,
+      [
+        { id: 'discard', label: 'Discard' },
+        { id: 'put-back', label: 'Put back' },
+      ],
+      'Hypnotic Charm: odkryto wierzchnią kartę talii',
+    )
+    if (choice === 'discard') {
+      state.deck.pop()
+      state.discard.push(top)
+    }
+    // 'put-back' (lub zamknięcie okna) = karta zostaje na wierzchu, nic nie robimy
   }
-  // "if instinct played this turn: to samo dla talii innych graczy" — gra jest solo-only, pomijamy.
+
+  await resolveOne()
+  if (countPlayedThisTurn(state, { type: 'instinct' }) > 0) {
+    await resolveOne()
+  }
 })
 
 registerCardAbility('hero-gambit-high-stakes-jackpot', async (state, { ui }) => {
@@ -273,8 +284,24 @@ registerCardAbility('hero-hawkeye-impossible-trick-shot', async (state) => {
   state.defeatRescueBonus = (state.defeatRescueBonus ?? 0) + 3
 })
 
-// Covering Fire: "if tech played this turn: choose... each other player ..." — gra solo-only,
-// nie ma kogo dotknąć efektem, więc bez rejestracji ability (karta i tak daje bazowe 3 Attack).
+registerCardAbility('hero-hawkeye-covering-fire', async (state, { ui }) => {
+  if (countPlayedThisTurn(state, { type: 'tech' }) === 0) return
 
-// Impossible Trick Shot: potrzebuje hooka "po pokonaniu Villaina/Mastermind w tej turze",
-// analogicznego do state.defeatRecruitBonus (Diamond Form) — dokończę po combat.ts.
+  const choice = await ui.chooseOption(
+    [
+      { id: 'draw', label: 'Draw a card' },
+      { id: 'discard', label: 'Discard a card' },
+    ],
+    'Covering Fire: wybierz efekt',
+  )
+
+  if (choice === 'draw') {
+    drawCards(state, 1)
+  } else if (choice === 'discard' && state.hand.length > 0) {
+    const chosen = await ui.choose(state.hand, {
+      prompt: 'Covering Fire: wybierz kartę do odrzucenia',
+      optional: false,
+    })
+    if (chosen) await discardCard(state, chosen.instanceId, ui)
+  }
+})

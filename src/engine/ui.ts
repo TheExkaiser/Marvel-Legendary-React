@@ -15,3 +15,14 @@ export interface UiAdapter {
   chooseOption(options: TextOption[], prompt: string): Promise<string | null>
   showInfo(card: CardInstance, message: string): Promise<void>
 }
+
+export interface UiAdapter {
+  choose(options: CardInstance[], choiceOpts: ChoiceOptions): Promise<CardInstance | null>
+  chooseOption(options: TextOption[], prompt: string): Promise<string | null>
+  chooseOptionWithCard(
+    card: CardInstance,
+    options: TextOption[],
+    prompt: string,
+  ): Promise<string | null>
+  showInfo(card: CardInstance, message: string): Promise<void>
+}

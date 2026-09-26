@@ -11,3 +11,4 @@ export {
   claimTacticFree,
 } from './combat'
 export { gainWound, gainWoundSilent, rescueBystander } from './wounds'
+export { debugReplaceAllHeroesInHq, debugRemoveAllStartingCards } from './debug'

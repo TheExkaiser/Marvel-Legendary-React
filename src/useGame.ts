@@ -10,6 +10,7 @@ interface CardPromptState extends ChoiceOptions {
 interface OptionPromptState {
   options: TextOption[]
   prompt: string
+  card?: CardInstance
 }
 
 interface InfoPromptState {
@@ -31,25 +32,31 @@ export function useGame(setup: GameSetup) {
   const resolveInfoRef = useRef<(() => void) | null>(null)
 
   const ui: UiAdapter = {
-    choose(options, choiceOpts) {
-      return new Promise((resolve) => {
-        resolveCardRef.current = resolve
-        setCardPrompt({ options, ...choiceOpts })
-      })
-    },
-    chooseOption(options, prompt) {
-      return new Promise((resolve) => {
-        resolveOptionRef.current = resolve
-        setOptionPrompt({ options, prompt })
-      })
-    },
-    showInfo(card, message) {
-      return new Promise((resolve) => {
-        resolveInfoRef.current = resolve
-        setInfoPrompt({ card, message })
-      })
-    },
-  }
+  choose(options, choiceOpts) {
+    return new Promise((resolve) => {
+      resolveCardRef.current = resolve
+      setCardPrompt({ options, ...choiceOpts })
+    })
+  },
+  chooseOption(options, prompt) {
+    return new Promise((resolve) => {
+      resolveOptionRef.current = resolve
+      setOptionPrompt({ options, prompt })
+    })
+  },
+  chooseOptionWithCard(card, options, prompt) {
+    return new Promise((resolve) => {
+      resolveOptionRef.current = resolve
+      setOptionPrompt({ options, prompt, card })
+    })
+  },
+  showInfo(card, message) {
+    return new Promise((resolve) => {
+      resolveInfoRef.current = resolve
+      setInfoPrompt({ card, message })
+    })
+  },
+}
 
   // Uruchamia grę RAZ, po pierwszym wyrenderowaniu (dopiero wtedy `ui` może pokazywać popupy)
   useEffect(() => {
