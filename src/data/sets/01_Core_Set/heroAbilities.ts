@@ -75,7 +75,7 @@ registerCardAbility('hero-captain-america-avengers-assemble', async (state) => {
 })
 
 registerCardAbility('hero-captain-america-perfect-teamwork', async (state) => {
-  state.recruit += countDistinctTypes(state, haveZone(state))
+  state.attack += countDistinctTypes(state, haveZone(state))
 })
 
 registerCardAbility('hero-captain-america-day-unlike-any-other', async (state) => {

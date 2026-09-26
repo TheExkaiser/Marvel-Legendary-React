@@ -656,7 +656,6 @@ export const SKRULLS_CARDS: DeckEntry[] = [
       id: 'villain-skrull-queen-veranke',
       name: 'Skrull Queen Veranke',
       img: '/cards/core-set/villain-skrull-queen-veranke.webp',
-      strength: 0, // TODO: dynamiczny Attack = koszt podpiętego Bohatera; patrz notatka w rozmowie
       vp: 4,
       villainGroup: 'Skrulls',
       text: "Ambush: Put the highest-cost Hero from the HQ under this Villain. This Villain's Attack is equal to that Hero's Cost. Fight: Gain that Hero.",
@@ -668,7 +667,6 @@ export const SKRULLS_CARDS: DeckEntry[] = [
       id: 'villain-skrull-shapeshifters',
       name: 'Skrull Shapeshifters',
       img: '/cards/core-set/villain-skrull-shapeshifters.webp',
-      strength: 0, // TODO: dynamiczny Attack = koszt podpiętego Bohatera; patrz notatka w rozmowie
       vp: 2,
       villainGroup: 'Skrulls',
       text: "Ambush: Put the rightmost Hero from the HQ under this Villain. This Villain's Attack is equal to that Hero's Cost. Fight: Gain that Hero.",

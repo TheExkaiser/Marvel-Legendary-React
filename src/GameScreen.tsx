@@ -27,6 +27,7 @@ import { useCardFlip } from './useCardFlip'
 import { PilePrompt } from './components/PilePrompt'
 import { CITY_NAMES } from './engine/constants'
 import './App.css'
+import { getEffectiveStrength } from './engine/keywords'
 
 
 // ---------- Stałe ----------
@@ -140,6 +141,7 @@ function GameScreen({
           <CardView
             data={state.cards[state.mastermind.cardId]}
             onClick={() => act(fightMastermind)}
+            effectiveStrength={getEffectiveStrength(state, state.mastermind)}
           />
           <CaptiveBadge
             count={mastermindCaptives}
@@ -158,6 +160,7 @@ function GameScreen({
                       data={state.cards[instance.cardId]}
                       flipId={instance.instanceId}
                       onClick={() => act((s, ui) => fightVillain(s, instance.instanceId, ui))}
+                      effectiveStrength={getEffectiveStrength(state, instance)}
                     />
                   ) : (
                     <div className="slot-empty">{CITY_NAMES[i]}</div>

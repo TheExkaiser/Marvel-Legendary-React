@@ -5,14 +5,8 @@ import { getVillainAbilities } from './villainAbilities'
 import { canDefeatVillain } from './villainRequirements'
 import { assertPlaying } from './common'
 import { rescueBystander } from './wounds' // <- podmień na właściwy plik, jeśli to nie ten
+import { getEffectiveStrength } from './keywords'
 
-/** Siła złoczyńcy: normalnie stałe pole `strength`, ale jeśli ma przypiętą kartę
- * (Skrull Queen Veranke, Skrull Shapeshifters), to jego Attack = koszt tej karty. */
-function getVillainStrength(state: GameState, villain: CardInstance): number {
-  const attached = state.attachedCards[villain.instanceId]
-  if (attached) return state.cards[attached.cardId].cost ?? 0
-  return state.cards[villain.cardId].strength ?? 0
-}
 
 /** Zdejmuje złoczyńcę z miasta do stosu pokonanych razem z uratowanymi jeńcami. */
 function removeVillainFromCity(state: GameState, index: number): void {
@@ -43,7 +37,7 @@ export async function fightVillain(
     throw new Error('Nie możesz teraz pokonać tego złoczyńcy (niespełniony warunek)')
   }
 
-  const strength = getVillainStrength(state, villain)
+  const strength = getEffectiveStrength(state, villain) ?? 0
   if (state.attack < strength) {
     throw new Error(`Za mało attack: masz ${state.attack}, siła ${strength}`)
   }

@@ -158,3 +158,14 @@ export function hasCard(state: GameState, filter: CardFilter): boolean {
 export function canReveal(state: GameState, filter: CardFilter): boolean {
   return revealCards(state, filter).length > 0
 }
+
+// Efektywna siła złoczyńcy/mastermina/henchmana: normalnie stałe `strength`,
+// ale jeśli ma przypiętą kartę (np. Skrull Queen Veranke), to jego Attack = koszt tej karty.
+export function getEffectiveStrength(
+  state: GameState,
+  instance: { instanceId: string; cardId: string },
+): number | undefined {
+  const attached = state.attachedCards[instance.instanceId]
+  if (attached) return state.cards[attached.cardId].cost ?? 0
+  return state.cards[instance.cardId].strength
+}

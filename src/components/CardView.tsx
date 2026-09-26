@@ -7,6 +7,7 @@ interface CardViewProps {
   onClick?: () => void
   flipId?: string
   flipFrom?: string // id talii (data-deck-id), z której nowa karta ma przyjechać
+  effectiveStrength?: number // aktualna siła (po ewentualnym modyfikatorze), liczona przez getEffectiveStrength
 }
 
 function ConditionLine({ data }: { data: CardData }) {
@@ -26,8 +27,52 @@ function ConditionLine({ data }: { data: CardData }) {
   )
 }
 
-export function CardView({ data, onClick, flipId, flipFrom }: CardViewProps) {
+// Mała odznaka na karcie (attack.png + wartość) pokazująca modyfikator ataku.
+function AttackModifierBadge({ data, effectiveStrength }: { data: CardData; effectiveStrength?: number }) {
+  const baseStrength = data.strength
+  let text: string
+  let color: string
+
+  if (baseStrength === undefined) {
+    if (effectiveStrength === undefined) return null
+    text = String(effectiveStrength)
+    color = '#ffffff'
+  } else {
+    if (effectiveStrength === undefined || effectiveStrength === baseStrength) return null
+    const delta = effectiveStrength - baseStrength
+    text = delta > 0 ? `+${delta}` : String(delta)
+    color = delta > 0 ? 'red' : 'green'
+  }
+
+  return (
+    <div className="attack-modifier-badge">
+      <img
+        className="attack-modifier-icon"
+        src={`${import.meta.env.BASE_URL}icons/attack.png`}
+        alt="Attack modifier"
+      />
+      <span className="attack-modifier-value" style={{ color }}>{text}</span>
+    </div>
+  )
+}
+
+// Wartość i kolor do pola "Attacks:" w zoom-popupie (uwzględnia modyfikator).
+function attackDisplay(baseStrength: number | undefined, effectiveStrength: number | undefined) {
+  if (baseStrength === undefined) {
+    return {
+      text: effectiveStrength !== undefined ? String(effectiveStrength) : '*',
+      color: '#d4b106', // żółty
+    }
+  }
+  const value = effectiveStrength ?? baseStrength
+  if (value > baseStrength) return { text: String(value), color: 'red' }
+  if (value < baseStrength) return { text: String(value), color: 'green' }
+  return { text: String(value), color: undefined }
+}
+
+export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength }: CardViewProps) {
   const [zoomed, setZoomed] = useState(false)
+  const attack = attackDisplay(data.strength, effectiveStrength)
 
   return (
     <>
@@ -47,6 +92,8 @@ export function CardView({ data, onClick, flipId, flipFrom }: CardViewProps) {
         >
           🔍
         </button>
+
+        <AttackModifierBadge data={data} effectiveStrength={effectiveStrength} />
 
         {data.img ? (
           <img src={data.img} alt={data.name} />
@@ -80,7 +127,12 @@ export function CardView({ data, onClick, flipId, flipFrom }: CardViewProps) {
                   {(data.type ?? []).length > 0 && (
                     <p><strong>Type:</strong> {(data.type ?? []).join(', ')}</p>
                   )}
-                  {data.strength !== undefined && <p><strong>Attacks:</strong> {data.strength}</p>}
+                  {(data.strength !== undefined || effectiveStrength !== undefined) && (
+                    <p>
+                      <strong>Attacks:</strong>{' '}
+                      <span style={{ color: attack.color }}>{attack.text}</span>
+                    </p>
+                  )}
                   {data.attack !== undefined && <p><strong>Attacks:</strong> {data.attack}</p>}
                   {data.cost !== undefined && <p><strong>Cost:</strong> {data.cost}</p>}
                   {data.vp !== undefined && <p><strong>VP:</strong> {data.vp}</p>}
