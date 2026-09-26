@@ -7,6 +7,8 @@ import {
   DEADPOOL_CARDS,
   EMMA_FROST_CARDS,
   HAWKEYE_CARDS,
+  HULK_CARDS,
+  IRON_MAN_CARDS,
   GAMBIT_CARDS,
   SHIELD_OFFICER,
   BROTHERHOOD_CARDS,
@@ -28,6 +30,8 @@ export const CORE_HEROES: CardGroup[] = [
   { id: 'coreset_emma_frost', name: 'Emma Frost', cards: EMMA_FROST_CARDS },
   { id: 'coreset_hawkeye', name: 'Hawkeye', cards: HAWKEYE_CARDS },
   { id: 'coreset_gambit', name: 'Gambit', cards: GAMBIT_CARDS},
+  { id: 'coreset_hulk', name: 'Hulk', cards: HULK_CARDS },
+  { id: 'coreset_iron_man', name: 'Iron Man', cards: IRON_MAN_CARDS },
 ]
 
 export const CORE_VILLAIN_GROUPS: CardGroup[] = [

@@ -1,5 +1,5 @@
 import { registerCardAbility } from '../../../engine/cardAbilities'
-import { drawCards, rescueBystander, defeatVillainFree, claimTacticFree } from '../../../engine/game'
+import { drawCards, rescueBystander, gainWound, defeatVillainFree, claimTacticFree } from '../../../engine/game'
 import {
   countPlayedThisTurn,
   countDistinctHeroesPlayedThisTurn,
@@ -110,11 +110,11 @@ registerCardAbility('hero-cyclops-optic-blast', async (state, { ui }) => {
 })
 
 registerCardAbility('hero-cyclops-x-men-united', async (state, { self }) => {
-  const count = countDistinctHeroesPlayedThisTurn(state, { team: 'x-men' }, self.instanceId)
+  const ownHero = state.cards[self.cardId].hero
+  const count = countDistinctHeroesPlayedThisTurn(state, { team: 'x-men' }, self.instanceId, ownHero)
   if (count === 0) return
   state.attack += 2 * count
 })
-
 registerDiscardReplacement('hero-cyclops-unending-energy', async (state, ui, self) => {
   const chosen = await ui.choose([self], {
     prompt: 'Unending Energy: chcesz zatrzymać tę kartę w ręce zamiast ją odrzucić?',
@@ -303,5 +303,67 @@ registerCardAbility('hero-hawkeye-covering-fire', async (state, { ui }) => {
       optional: false,
     })
     if (chosen) await discardCard(state, chosen.instanceId, ui)
+  }
+})
+
+// ---------- Hulk ----------
+
+registerCardAbility('hero-hulk-growing-anger', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'strength' }) > 0) {
+    state.attack += 1
+  }
+})
+
+registerCardAbility('hero-hulk-unstoppable-hulk', async (state, { ui }) => {
+  const options = [...state.hand, ...state.discard].filter(
+    (c) => state.cards[c.cardId].kind === 'wound',
+  )
+  if (options.length === 0) return
+
+  const chosen = await ui.choose(options, {
+    prompt: 'Unstoppable Hulk: możesz KO Wound z ręki lub stosu odrzuconych',
+    optional: true,
+  })
+  if (!chosen) return
+
+  koCard(state, chosen.instanceId)
+  state.attack += 2
+})
+
+registerCardAbility('hero-hulk-crazed-rampage', async (state, { ui }) => {
+  await gainWound(state, ui)
+})
+
+registerCardAbility('hero-hulk-hulk-smash', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'strength' }) > 0) {
+    state.attack += 5
+  }
+})
+
+// ---------- Iron Man ----------
+
+registerCardAbility('hero-iron-man-endless-invention', async (state) => {
+  drawCards(state, 1)
+  if (countPlayedThisTurn(state, { type: 'tech' }) > 0) {
+    drawCards(state, 1)
+  }
+})
+
+registerCardAbility('hero-iron-man-repulsor-rays', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'ranged' }) > 0) {
+    state.attack += 1
+  }
+})
+
+registerCardAbility('hero-iron-man-arc-reactor', async (state, { self }) => {
+  if (countPlayedThisTurn(state, { type: 'tech' }) === 0) return
+  const ownHero = state.cards[self.cardId].hero
+  state.attack += countDistinctHeroesPlayedThisTurn(state, {}, self.instanceId, ownHero)
+})
+
+registerCardAbility('hero-iron-man-quantum-breakthrough', async (state) => {
+  drawCards(state, 2)
+  if (countPlayedThisTurn(state, { type: 'tech' }) > 0) {
+    drawCards(state, 2)
   }
 })

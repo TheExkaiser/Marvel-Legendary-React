@@ -19,11 +19,13 @@ export function countDistinctHeroesPlayedThisTurn(
   state: GameState,
   filter: { type?: string; team?: string },
   excludeInstanceId: string,
+  excludeHero?: string,
 ): number {
   const heroes = new Set<string>()
   for (const instance of state.cardsPlayedThisTurn) {
     if (instance.instanceId === excludeInstanceId) continue
     const data = state.cards[instance.cardId]
+    if (excludeHero && data.hero === excludeHero) continue
     if (filter.type && !(data.type ?? []).includes(filter.type)) continue
     if (filter.team && !(data.team ?? []).includes(filter.team)) continue
     if (data.hero) heroes.add(data.hero)
