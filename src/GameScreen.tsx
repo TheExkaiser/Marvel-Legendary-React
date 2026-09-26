@@ -16,7 +16,6 @@ import { CardView } from './components/CardView'
 import { ChoicePrompt } from './components/ChoicePrompt'
 import { OptionPrompt } from './components/OptionPrompt'
 import { TacticPrompt } from './components/TacticPrompt'
-import { CaptivesPrompt } from './components/CaptivesPrompt'
 import { DebugPanel } from './components/DebugPanel'
 import { LogPanel } from './components/LogPanel'
 import { StatsPanel } from './components/StatsPanel'
@@ -27,24 +26,13 @@ import { useCardFlip } from './useCardFlip'
 import { PilePrompt } from './components/PilePrompt'
 import { CITY_NAMES } from './engine/constants'
 import './App.css'
-import { getEffectiveStrength } from './engine/keywords'
+import { getEffectiveStrength, getCapturedCards } from './engine/keywords'
+
 
 
 // ---------- Stałe ----------
 
 const SHOW_DEBUG = true
-
-// ---------- Małe komponenty pomocnicze ----------
-
-/** Znaczek "👤 N" pod kartą, która trzyma jeńców (bystanderów). Nic nie rysuje dla 0. */
-function CaptiveBadge({ count, onClick }: { count: number; onClick: () => void }) {
-  if (count === 0) return null
-  return (
-    <button className="captive-badge" onClick={onClick}>
-      👤 {count}
-    </button>
-  )
-}
 
 // ---------- Główny komponent ----------
 
@@ -142,10 +130,7 @@ function GameScreen({
             data={state.cards[state.mastermind.cardId]}
             onClick={() => act(fightMastermind)}
             effectiveStrength={getEffectiveStrength(state, state.mastermind)}
-          />
-          <CaptiveBadge
-            count={mastermindCaptives}
-            onClick={() => setViewingCaptivesOf(state.mastermind.instanceId)}
+            capturedCards={getCapturedCards(state, state.mastermind.instanceId)}
           />
         </div>
 
@@ -161,15 +146,10 @@ function GameScreen({
                       flipId={instance.instanceId}
                       onClick={() => act((s, ui) => fightVillain(s, instance.instanceId, ui))}
                       effectiveStrength={getEffectiveStrength(state, instance)}
+                      capturedCards={getCapturedCards(state, instance.instanceId)}
                     />
                   ) : (
                     <div className="slot-empty">{CITY_NAMES[i]}</div>
-                  )}
-                  {instance && (
-                    <CaptiveBadge
-                      count={state.captives[instance.instanceId]?.length ?? 0}
-                      onClick={() => setViewingCaptivesOf(instance.instanceId)}
-                    />
                   )}
                   {state.cityMarkers[i].length > 0 && (
                     <div className="markers">{state.cityMarkers[i].join(', ')}</div>
@@ -287,13 +267,6 @@ function GameScreen({
       )}
       {infoPrompt && (
         <TacticPrompt state={state} card={infoPrompt.card} onClose={closeInfoPrompt} />
-      )}
-      {viewingCaptivesOf && (
-        <CaptivesPrompt
-          state={state}
-          captives={state.captives[viewingCaptivesOf] ?? []}
-          onClose={() => setViewingCaptivesOf(null)}
-        />
       )}
       {viewingPile && (
         <PilePrompt

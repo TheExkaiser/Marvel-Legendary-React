@@ -169,3 +169,11 @@ export function getEffectiveStrength(
   if (attached) return state.cards[attached.cardId].cost ?? 0
   return state.cards[instance.cardId].strength
 }
+
+// Wszystkie karty "złapane" przez villaina/mastermind: jeńcy-bystanderzy + ewentualna
+// przypięta karta bohatera (Skrull Queen Veranke, Skrull Shapeshifters).
+export function getCapturedCards(state: GameState, instanceId: string): CardData[] {
+  const captives = state.captives[instanceId] ?? []
+  const attached = state.attachedCards[instanceId]
+  return [...captives, ...(attached ? [attached] : [])].map((c) => state.cards[c.cardId])
+}
