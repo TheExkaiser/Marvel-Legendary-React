@@ -78,6 +78,7 @@ export interface GameState {
   recruit: number
   defeatRecruitBonus?: number
   defeatRescueBonus?: number
+  copiedCardIds?: Record<string, string>   // instanceId -> cardId skopiowanej karty (Copy Powers), reset co turę
   turn: number
   extraTurnsQueued: number
   bonusDrawNextTurn: number

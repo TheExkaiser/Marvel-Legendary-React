@@ -713,3 +713,179 @@ export const IRON_MAN_CARDS: DeckEntry[] = [
     count: 1,
   },
 ]
+
+export const NICK_FURY_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'hero-nick-fury-battlefield-promotion',
+      name: 'Battlefield Promotion',
+      hero: 'Nick Fury',
+      img: '/cards/core-set/hero-nick-fury-battlefield-promotion.webp',
+      team: ['S.H.I.E.L.D.'],
+      type: ['covert'],
+      cost: 4,
+      text: 'You may KO a S.H.I.E.L.D. Hero from your hand or discard pile. If you do, you may gain a S.H.I.E.L.D. Officer to your hand.',
+    },
+    count: 5,
+  },
+  {
+    card: {
+      id: 'hero-nick-fury-high-tech-weaponry',
+      name: 'High-Tech Weaponry',
+      hero: 'Nick Fury',
+      img: '/cards/core-set/hero-nick-fury-high-tech-weaponry.webp',
+      team: ['S.H.I.E.L.D.'],
+      type: ['tech'],
+      attack: 2,
+      cost: 3,
+      conditionIcons: ['tech'],
+      conditionText: 'You get +1 Attack.',
+    },
+    count: 5,
+  },
+  {
+    card: {
+      id: 'hero-nick-fury-legendary-commander',
+      name: 'Legendary Commander',
+      hero: 'Nick Fury',
+      img: '/cards/core-set/hero-nick-fury-legendary-commander.webp',
+      team: ['S.H.I.E.L.D.'],
+      type: ['strength'],
+      attack: 1,
+      cost: 6,
+      text: 'You get +1 Attack for each other S.H.I.E.L.D. Hero you played this turn.',
+    },
+    count: 3,
+  },
+  {
+    card: {
+      id: 'hero-nick-fury-pure-fury',
+      name: 'Pure Fury',
+      hero: 'Nick Fury',
+      img: '/cards/core-set/hero-nick-fury-pure-fury.webp',
+      team: ['S.H.I.E.L.D.'],
+      type: ['tech'],
+      cost: 8,
+      text: 'Defeat any Villain or Mastermind whose Attack is less than the number of S.H.I.E.L.D. Heroes in the KO pile.',
+    },
+    count: 1,
+  },
+]
+
+export const ROGUE_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'hero-rogue-borrowed-brawn',
+      name: 'Borrowed Brawn',
+      hero: 'Rogue',
+      img: '/cards/core-set/hero-rogue-borrowed-brawn.webp',
+      team: ['x-men'],
+      type: ['strength'],
+      attack: 1,
+      cost: 4,
+      conditionIcons: ['strength'],
+      conditionText: 'You get +3 Attack.',
+    },
+    count: 5,
+  },
+  {
+    card: {
+      id: 'hero-rogue-energy-drain',
+      name: 'Energy Drain',
+      hero: 'Rogue',
+      img: '/cards/core-set/hero-rogue-energy-drain.webp',
+      team: ['x-men'],
+      type: ['covert'],
+      recruit: 2,
+      cost: 3,
+      conditionIcons: ['covert'],
+      conditionText: 'You may KO a card from your hand or discard pile. If you do, you get +1 Recruit.',
+    },
+    count: 5,
+  },
+   {
+    card: {
+      id: 'hero-rogue-copy-powers',
+      name: 'Copy Powers',
+      hero: 'Rogue',
+      img: '/cards/core-set/hero-rogue-copy-powers.webp',
+      team: ['x-men'],
+      type: ['covert'],
+      cost: 5,
+      text: 'Play this card as a copy of another Hero you played this turn. This card is both types/teams for the rest of the turn.',
+    },
+    count: 3,
+  },
+  
+  {
+    card: {
+      id: 'hero-rogue-steal-abilities',
+      name: 'Steal Abilities',
+      hero: 'Rogue',
+      img: '/cards/core-set/hero-rogue-steal-abilities.webp',
+      team: ['x-men'],
+      type: ['strength'],
+      attack: 4,
+      cost: 8,
+      text: 'Discard the top card of your deck. Play a copy of that card (its effects only, without playing the card itself).',
+    },
+    count: 1,
+  },
+]
+
+export const SPIDER_MAN_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'hero-spider-man-astonishing-strength',
+      name: 'Astonishing Strength',
+      hero: 'Spider-Man',
+      img: '/cards/core-set/hero-spider-man-astonishing-strength.webp',
+      team: ['spider-friends'],
+      type: ['strength'],
+      recruit: 1,
+      cost: 2,
+      text: 'Reveal the top card of your deck. If that card costs 2 or less, draw it.',
+    },
+    count: 5,
+  },
+  {
+    card: {
+      id: 'hero-spider-man-great-responsibility',
+      name: 'Great Responsibility',
+      hero: 'Spider-Man',
+      img: '/cards/core-set/hero-spider-man-great-responsibility.webp',
+      team: ['spider-friends'],
+      type: ['instinct'],
+      attack: 1,
+      cost: 2,
+      text: 'Reveal the top card of your deck. If that card costs 2 or less, draw it.',
+    },
+    count: 5,
+  },
+  {
+    card: {
+      id: 'hero-spider-man-web-shooters',
+      name: 'Web-Shooters',
+      hero: 'Spider-Man',
+      img: '/cards/core-set/hero-spider-man-web-shooters.webp',
+      team: ['spider-friends'],
+      type: ['tech'],
+      cost: 2,
+      text: 'Rescue a Bystander. Reveal the top card of your deck. If that card costs 2 or less, draw it.',
+    },
+    count: 3,
+  },
+  {
+    card: {
+      id: 'hero-spider-man-the-amazing-spider-man',
+      name: 'The Amazing Spider-Man',
+      hero: 'Spider-Man',
+      img: '/cards/core-set/hero-spider-man-the-amazing-spider-man.webp',
+      team: ['spider-friends'],
+      type: ['covert'],
+      cost: 2,
+      text: 'Reveal the top three cards of your deck. Put any that cost 2 or less into your hand. Put the rest back in any order.',
+    },
+    count: 1,
+  },
+]

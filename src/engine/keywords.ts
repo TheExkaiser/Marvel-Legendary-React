@@ -1,4 +1,4 @@
-import type { GameState, CardInstance } from './types'
+import type { GameState, CardInstance, CardData } from './types'
 import type { UiAdapter } from './ui'
 import { getDiscardReplacement } from './replacements'
 
@@ -7,9 +7,9 @@ export function countPlayedThisTurn(
   filter: { type?: string; team?: string },
 ): number {
   return state.cardsPlayedThisTurn.filter((instance) => {
-    const data = state.cards[instance.cardId]
-    if (filter.type && !(data.type ?? []).includes(filter.type)) return false
-    if (filter.team && !(data.team ?? []).includes(filter.team)) return false
+    const { type, team } = effectiveTypeTeam(state, instance)
+    if (filter.type && !type.includes(filter.type)) return false
+    if (filter.team && !team.includes(filter.team)) return false
     return true
   }).length
 }
@@ -19,26 +19,32 @@ export function countDistinctHeroesPlayedThisTurn(
   state: GameState,
   filter: { type?: string; team?: string },
   excludeInstanceId: string,
-  excludeHero?: string,
 ): number {
   const heroes = new Set<string>()
   for (const instance of state.cardsPlayedThisTurn) {
     if (instance.instanceId === excludeInstanceId) continue
     const data = state.cards[instance.cardId]
-    if (excludeHero && data.hero === excludeHero) continue
-    if (filter.type && !(data.type ?? []).includes(filter.type)) continue
-    if (filter.team && !(data.team ?? []).includes(filter.team)) continue
+    const { type, team } = effectiveTypeTeam(state, instance)
+    if (filter.type && !type.includes(filter.type)) continue
+    if (filter.team && !team.includes(filter.team)) continue
     if (data.hero) heroes.add(data.hero)
   }
   return heroes.size
 }
-
 export function countBystandersInPile(state: GameState, pile: CardInstance[]): number {
   return pile.filter((c) => state.cards[c.cardId].kind === 'bystander').length
 }
 
 export function hasCaptiveBystander(state: GameState, instance: CardInstance): boolean {
   return (state.captives[instance.instanceId]?.length ?? 0) > 0
+}
+
+export function isShieldHero(data: CardData): boolean {
+  return (
+    data.hero === 'S.H.I.E.L.D. Agent' ||
+    data.hero === 'S.H.I.E.L.D. Trooper' ||
+    ((data.team ?? []).includes('S.H.I.E.L.D.') && !!data.type)
+  )
 }
 
 export function countDistinctTeams(state: GameState, pile: CardInstance[]): number {
@@ -97,11 +103,22 @@ export async function discardCard(
 
 export type CardFilter = { type?: string; team?: string; hero?: string }
 
+function effectiveTypeTeam(state: GameState, instance: CardInstance): { type: string[]; team: string[] } {
+  const data = state.cards[instance.cardId]
+  const copiedId = state.copiedCardIds?.[instance.instanceId]
+  const copied = copiedId ? state.cards[copiedId] : undefined
+  return {
+    type: [...(data.type ?? []), ...(copied?.type ?? [])],
+    team: [...(data.team ?? []), ...(copied?.team ?? [])],
+  }
+}
+
 function matchesFilter(state: GameState, instance: CardInstance, filter: CardFilter): boolean {
   const data = state.cards[instance.cardId]
-  if (data.kind === 'wound') return false // rany nigdy nie są bohaterami
-  if (filter.type && !(data.type ?? []).includes(filter.type)) return false
-  if (filter.team && !(data.team ?? []).includes(filter.team)) return false
+  if (data.kind === 'wound') return false
+  const { type, team } = effectiveTypeTeam(state, instance)
+  if (filter.type && !type.includes(filter.type)) return false
+  if (filter.team && !team.includes(filter.team)) return false
   if (filter.hero && data.hero !== filter.hero) return false
   return true
 }

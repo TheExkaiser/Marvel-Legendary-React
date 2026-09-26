@@ -118,6 +118,7 @@ function GameScreen({
         wounds={state.wounds.length}
         bystanders={state.bystanders.length}
         ko={state.ko.length}
+        onKoClick={() => setViewingPile('ko')}
       />
 
       {/* ===== Mastermind (po lewej) + Miasto + talia villainów (po prawej) ===== */}

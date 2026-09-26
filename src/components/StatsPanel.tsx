@@ -46,6 +46,7 @@ type StatsPanelProps = {
   wounds: number
   bystanders: number
   ko: number
+  onKoClick?: () => void
 }
 
 export function StatsPanel({
@@ -61,6 +62,7 @@ export function StatsPanel({
   wounds,
   bystanders,
   ko,
+  onKoClick,
 }: StatsPanelProps) {
   const [showScheme, setShowScheme] = useState(false)
   const schemeText = scheme.text ?? scheme.description ?? ''
@@ -92,7 +94,9 @@ export function StatsPanel({
         ))}
         <p>Stos ran: {wounds}</p>
         <p>Stos bystanderów: {bystanders}</p>
-        <p>KO: {ko}</p>
+        <button className="info-scheme-button" onClick={onKoClick}>
+          KO: {ko}
+        </button>
       </div>
 
       {showScheme && (

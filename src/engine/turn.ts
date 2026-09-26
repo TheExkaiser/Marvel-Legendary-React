@@ -49,6 +49,8 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.attack = 0
   state.recruit = 0
   state.defeatRecruitBonus = 0
+  state.defeatRescueBonus = 0
+  state.copiedCardIds = {}
 
   const drawAmount = HAND_SIZE + state.bonusDrawNextTurn
   state.bonusDrawNextTurn = 0

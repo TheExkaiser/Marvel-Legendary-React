@@ -1,4 +1,4 @@
-import { registerCardAbility } from '../../../engine/cardAbilities'
+import { registerCardAbility, getCardAbility } from '../../../engine/cardAbilities'
 import { drawCards, rescueBystander, gainWound, defeatVillainFree, claimTacticFree } from '../../../engine/game'
 import {
   countPlayedThisTurn,
@@ -11,6 +11,7 @@ import {
   koCard,
   haveZone,
   revealCards,
+  isShieldHero,
 } from '../../../engine/keywords'
 import { registerPlayRequirement } from '../../../engine/cardRequirements'
 import type { CardInstance, GameState } from '../../../engine/types'
@@ -109,12 +110,12 @@ registerCardAbility('hero-cyclops-optic-blast', async (state, { ui }) => {
   await discardCost(state, ui)
 })
 
-registerCardAbility('hero-cyclops-x-men-united', async (state, { self }) => {
-  const ownHero = state.cards[self.cardId].hero
-  const count = countDistinctHeroesPlayedThisTurn(state, { team: 'x-men' }, self.instanceId, ownHero)
+registerCardAbility('hero-cyclops-x-men-united', async (state) => {
+  const count = countPlayedThisTurn(state, { team: 'x-men' })
   if (count === 0) return
   state.attack += 2 * count
 })
+
 registerDiscardReplacement('hero-cyclops-unending-energy', async (state, ui, self) => {
   const chosen = await ui.choose([self], {
     prompt: 'Unending Energy: chcesz zatrzymać tę kartę w ręce zamiast ją odrzucić?',
@@ -355,15 +356,197 @@ registerCardAbility('hero-iron-man-repulsor-rays', async (state) => {
   }
 })
 
-registerCardAbility('hero-iron-man-arc-reactor', async (state, { self }) => {
+registerCardAbility('hero-iron-man-arc-reactor', async (state) => {
   if (countPlayedThisTurn(state, { type: 'tech' }) === 0) return
-  const ownHero = state.cards[self.cardId].hero
-  state.attack += countDistinctHeroesPlayedThisTurn(state, {}, self.instanceId, ownHero)
+  // "Hero" = karta z ustawionym `type` (odróżnia to od Agenta/Trooper/Oficera, którzy `type` nie mają)
+  const otherHeroesPlayed = state.cardsPlayedThisTurn.filter(
+    (c) => !!state.cards[c.cardId].type,
+  ).length
+  state.attack += otherHeroesPlayed
 })
 
 registerCardAbility('hero-iron-man-quantum-breakthrough', async (state) => {
   drawCards(state, 2)
   if (countPlayedThisTurn(state, { type: 'tech' }) > 0) {
     drawCards(state, 2)
+  }
+})
+
+// ---------- Nick Fury ----------
+
+registerCardAbility('hero-nick-fury-battlefield-promotion', async (state, { ui, self }) => {
+  const targets = haveZone(state).filter((c) => isShieldHero(state.cards[c.cardId]))
+  if (targets.length === 0) return
+  const chosen = await ui.choose(targets, {
+    prompt: 'Battlefield Promotion: możesz KO S.H.I.E.L.D. Hero z ręki lub stosu odrzuconych',
+    optional: true,
+  })
+  if (!chosen) return
+  koCard(state, chosen.instanceId)
+
+  if (state.officerDeck.length === 0) return
+  const gain = await ui.choose([self], {
+    prompt: 'Battlefield Promotion: chcesz zyskać S.H.I.E.L.D. Officera do ręki?',
+    optional: true,
+  })
+  if (!gain) return
+  const officer = state.officerDeck.pop()
+  if (officer) state.hand.push(officer)
+})
+
+registerCardAbility('hero-nick-fury-high-tech-weaponry', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'tech' }) > 0) {
+    state.attack += 1
+  }
+})
+
+registerCardAbility('hero-nick-fury-legendary-commander', async (state) => {
+  const count = state.cardsPlayedThisTurn.filter((c) => isShieldHero(state.cards[c.cardId])).length
+  state.attack += count
+})
+
+registerCardAbility('hero-nick-fury-pure-fury', async (state, { ui, self }) => {
+  const shieldHeroesInKo = state.ko.filter((c) => isShieldHero(state.cards[c.cardId])).length
+
+  const villainTargets = state.city.filter(
+    (c): c is CardInstance =>
+      !!c && (state.cards[c.cardId].strength ?? 0) < shieldHeroesInKo,
+  )
+  const mastermindEligible =
+    (state.cards[state.mastermind.cardId].strength ?? 0) < shieldHeroesInKo
+  const targets = [...villainTargets, ...(mastermindEligible ? [state.mastermind] : [])]
+
+  if (targets.length === 0) {
+    await ui.showInfo(
+      self,
+      `Pure Fury: no eligible target (S.H.I.E.L.D. Heroes in KO: ${shieldHeroesInKo})`,
+    )
+    return
+  }
+
+  const chosen =
+    targets.length === 1
+      ? targets[0]
+      : await ui.choose(targets, { prompt: 'Pure Fury: choose a target to defeat', optional: false })
+  if (!chosen) return
+
+  if (chosen.instanceId === state.mastermind.instanceId) {
+    await claimTacticFree(state, ui)
+  } else {
+    defeatVillainFree(state, chosen.instanceId)
+  }
+})
+
+// ---------- Rogue ----------
+
+registerCardAbility('hero-rogue-borrowed-brawn', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'strength' }) > 0) {
+    state.attack += 3
+  }
+})
+
+registerCardAbility('hero-rogue-energy-drain', async (state, { ui }) => {
+  if (countPlayedThisTurn(state, { type: 'covert' }) === 0) return
+
+  const options = [...state.hand, ...state.discard]
+  if (options.length === 0) return
+
+  const chosen = await ui.choose(options, {
+    prompt: 'Energy Drain: możesz KO kartę z ręki lub stosu odrzuconych',
+    optional: true,
+  })
+  if (!chosen) return
+
+  koCard(state, chosen.instanceId)
+  state.recruit += 1
+})
+
+registerCardAbility('hero-rogue-copy-powers', async (state, { ui, self }) => {
+  const targets = state.cardsPlayedThisTurn
+  if (targets.length === 0) return
+
+  const chosen = await ui.choose(targets, {
+    prompt: 'Copy Powers: wybierz kartę zagraną w tej turze do skopiowania',
+    optional: false,
+  })
+  if (!chosen) return
+
+  const copiedData = state.cards[chosen.cardId]
+  state.attack += copiedData.attack ?? 0
+  state.recruit += copiedData.recruit ?? 0
+
+  state.copiedCardIds = state.copiedCardIds ?? {}
+  state.copiedCardIds[self.instanceId] = chosen.cardId
+
+  const ability = getCardAbility(chosen.cardId)
+  if (ability) {
+    await ability(state, { self, ui })
+  }
+})
+
+registerCardAbility('hero-rogue-steal-abilities', async (state, { ui, self }) => {
+  const top = state.deck.pop()
+  if (!top) return
+  state.discard.push(top)
+  await ui.showInfo(top, 'Steal Abilities: odkryto i odrzucono wierzchnią kartę talii')
+
+  const data = state.cards[top.cardId]
+  state.attack += data.attack ?? 0
+  state.recruit += data.recruit ?? 0
+
+  const ability = getCardAbility(top.cardId)
+  if (ability) {
+    await ability(state, { self, ui })
+  }
+})
+
+// ---------- Spider-Man ----------
+
+async function revealAndDrawIfCheap(state: GameState, ui: UiAdapter, label: string): Promise<void> {
+  const top = state.deck[state.deck.length - 1]
+  if (!top) return
+  await ui.showInfo(top, `${label}: odkryto wierzchnią kartę talii`)
+  if ((state.cards[top.cardId].cost ?? 0) <= 2) {
+    state.deck.pop()
+    state.hand.push(top)
+  }
+}
+
+registerCardAbility('hero-spider-man-astonishing-strength', async (state, { ui }) => {
+  await revealAndDrawIfCheap(state, ui, 'Astonishing Strength')
+})
+
+registerCardAbility('hero-spider-man-great-responsibility', async (state, { ui }) => {
+  await revealAndDrawIfCheap(state, ui, 'Great Responsibility')
+})
+
+registerCardAbility('hero-spider-man-web-shooters', async (state, { ui }) => {
+  rescueBystander(state)
+  await revealAndDrawIfCheap(state, ui, 'Web-Shooters')
+})
+
+registerCardAbility('hero-spider-man-the-amazing-spider-man', async (state, { ui }) => {
+  const revealed: CardInstance[] = []
+  for (let i = 0; i < 3 && state.deck.length > 0; i++) {
+    revealed.push(state.deck.pop()!)
+  }
+  if (revealed.length === 0) return
+
+  for (const card of revealed) {
+    await ui.showInfo(card, 'The Amazing Spider-Man: odkryto kartę z talii')
+  }
+
+  const putBack: CardInstance[] = []
+  for (const card of revealed) {
+    if ((state.cards[card.cardId].cost ?? 0) <= 2) {
+      state.hand.push(card)
+    } else {
+      putBack.push(card)
+    }
+  }
+
+  // Uproszczenie: odkładane karty wracają w oryginalnej kolejności (bez UI do wyboru kolejności)
+  for (let i = putBack.length - 1; i >= 0; i--) {
+    state.deck.push(putBack[i])
   }
 })
