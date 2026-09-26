@@ -1,10 +1,14 @@
 import { registerVillainAbilities } from '../../../engine/villainAbilities'
 import { registerDefeatRequirement } from '../../../engine/villainRequirements'
-import { koCard, hasCard, revealCards, haveCards, isShieldHero } from '../../../engine/keywords'
-import { gainWound, takeTopCards, drawCards } from '../../../engine/game'
+import { registerVpModifier } from '../../../engine/vpModifiers'
+import { koCard, hasCard, revealCards, haveCards, isShieldHero, allOwnedCards } from '../../../engine/keywords'
+import { gainWound, takeTopCards, drawCards, recruitOfficer, rescueBystander, recruitHero } from '../../../engine/game'
 import { getScheme } from '../../../engine/schemeRegistry'
+import { resolveVillainDeckCard, checkEndConditions } from '../../../engine/villainPhase'
+import { CITY_NAMES } from '../../../engine/constants'
 import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
+import { refillHq } from '../../../engine/recruit'
 
 // ---------- Blob ----------
 
@@ -52,16 +56,33 @@ registerVillainAbilities('villain-mystique', {
 
 // ---------- Sabretooth ----------
 
-async function revealXMenOrWound(state: GameState, ui: UiAdapter, prompt: string): Promise<void> {
-  const xmenToReveal = revealCards(state, { team: 'x-men' })  
+async function revealTeamOrWound(state: GameState, ui: UiAdapter, team: string, label: string, prompt: string): Promise<void> {
+  const toReveal = revealCards(state, { team })
 
-  if (xmenToReveal.length > 0) {
+  if (toReveal.length > 0) {
     const chosen =
-      xmenToReveal.length === 1
-        ? xmenToReveal[0]
-        : await ui.choose(xmenToReveal, { prompt, optional: false })
+      toReveal.length === 1
+        ? toReveal[0]
+        : await ui.choose(toReveal, { prompt, optional: false })
     if (chosen) {
-      await ui.showInfo(chosen, `${prompt}: ujawniono X-Men`)
+      await ui.showInfo(chosen, `${prompt}: revealed a ${label} Hero`)
+      return
+    }
+  }
+
+  await gainWound(state, ui)
+}
+
+async function revealTypeOrWound(state: GameState, ui: UiAdapter, type: string, label: string, prompt: string): Promise<void> {
+  const toReveal = revealCards(state, { type })
+
+  if (toReveal.length > 0) {
+    const chosen =
+      toReveal.length === 1
+        ? toReveal[0]
+        : await ui.choose(toReveal, { prompt, optional: false })
+    if (chosen) {
+      await ui.showInfo(chosen, `${prompt}: revealed a ${label} Hero`)
       return
     }
   }
@@ -71,10 +92,10 @@ async function revealXMenOrWound(state: GameState, ui: UiAdapter, prompt: string
 
 registerVillainAbilities('villain-sabretooth', {
   onFight: async (state, ui) => {
-    await revealXMenOrWound(state, ui, 'Sabretooth (Fight): ujawnij X-Men lub zdobądź ranę')
+    await revealTeamOrWound(state, ui, 'x-men', 'X-Men', 'Sabretooth (Fight): reveal an X-Men Hero or gain a Wound')
   },
   onEscape: async (state, ui) => {
-    await revealXMenOrWound(state, ui, 'Sabretooth (Escape): ujawnij X-Men lub zdobądź ranę')
+    await revealTeamOrWound(state, ui, 'x-men', 'X-Men', 'Sabretooth (Escape): reveal an X-Men Hero or gain a Wound')
   },
 })
 
@@ -111,7 +132,7 @@ registerVillainAbilities('villain-destroyer', {
     }
   },
   onEscape: async (state, ui) => {
-    await koTwoHeroesFrom(state, ui, state.hand, 'Destroyer (Escape): KO a Hero from your hand')
+    await koTwoHeroesFrom(state, ui, haveCards(state), 'Destroyer (Escape): KO a Hero from your cards')
   },
 })
 
@@ -125,29 +146,12 @@ registerVillainAbilities('villain-enchantress', {
 
 // ---------- Frost Giant ----------
 
-async function revealRangedOrWound(state: GameState, ui: UiAdapter, prompt: string): Promise<void> {
-  const rangedToReveal = revealCards(state, { type: 'ranged' })
-
-  if (rangedToReveal.length > 0) {
-    const chosen =
-      rangedToReveal.length === 1
-        ? rangedToReveal[0]
-        : await ui.choose(rangedToReveal, { prompt, optional: false })
-    if (chosen) {
-      await ui.showInfo(chosen, `${prompt}: revealed a Ranged Hero`)
-      return
-    }
-  }
-
-  await gainWound(state, ui)
-}
-
 registerVillainAbilities('villain-frost-giant', {
   onFight: async (state, ui) => {
-    await revealRangedOrWound(state, ui, 'Frost Giant (Fight): reveal a Ranged Hero or gain a Wound')
+    await revealTypeOrWound(state, ui, 'ranged', 'Ranged', 'Frost Giant (Fight): reveal a Ranged Hero or gain a Wound')
   },
   onEscape: async (state, ui) => {
-    await revealRangedOrWound(state, ui, 'Frost Giant (Escape): reveal a Ranged Hero or gain a Wound')
+    await revealTypeOrWound(state, ui, 'ranged', 'Ranged', 'Frost Giant (Escape): reveal a Ranged Hero or gain a Wound')
   },
 })
 
@@ -155,7 +159,7 @@ registerVillainAbilities('villain-frost-giant', {
 
 registerVillainAbilities('villain-ymir', {
   onAmbush: async (state, ui) => {
-    await revealRangedOrWound(state, ui, 'Ymir (Ambush): reveal a Ranged Hero or gain a Wound')
+    await revealTypeOrWound(state, ui, 'ranged', 'Ranged', 'Ymir (Ambush): reveal a Ranged Hero or gain a Wound')
   },
   onFight: async (state, ui) => {
     let wounds = [...state.hand, ...state.discard].filter(
@@ -205,5 +209,292 @@ registerVillainAbilities('henchmen-sentinel', {
           })
     if (!chosen) return
     koCard(state, chosen.instanceId)
+  },
+})
+
+// ---------- Endless Armies of HYDRA ----------
+
+registerVillainAbilities('villain-endless-armies-of-hydra', {
+  onFight: async (state, ui) => {
+    for (let i = 0; i < 2; i++) {
+      const card = state.villainDeck.pop()
+      if (!card) break
+      await resolveVillainDeckCard(state, card, ui)
+    }
+    checkEndConditions(state)
+  },
+})
+
+// ---------- HYDRA Kidnappers ----------
+
+registerVillainAbilities('villain-hydra-kidnappers', {
+  onFight: async (state, ui) => {
+    if (state.officerDeck.length === 0) return
+
+    const choice = await ui.chooseOption(
+      [
+        { id: 'yes', label: 'Yes' },
+        { id: 'no', label: 'No' },
+      ],
+      'HYDRA Kidnappers (Fight): gain a S.H.I.E.L.D. Officer?',
+    )
+    if (choice !== 'yes') return
+
+    const cost = state.cards[state.officerCardId].cost ?? 0
+    state.recruit += cost
+    recruitOfficer(state)
+  },
+})
+
+// ---------- Supreme HYDRA (tylko VP, brak zdolności bojowej) ----------
+
+registerVpModifier('villain-supreme-hydra', (state, self, pile) => {
+  const count = pile.filter(
+    (c) => c.instanceId !== self.instanceId && state.cards[c.cardId].villainGroup === 'HYDRA',
+  ).length
+  return count * 3
+})
+
+// ---------- Viper ----------
+
+async function woundIfNoOtherHydra(state: GameState, ui: UiAdapter, self: CardInstance): Promise<void> {
+  const hasOtherHydra = state.defeated.some(
+    (c) => c.instanceId !== self.instanceId && state.cards[c.cardId].villainGroup === 'HYDRA',
+  )
+  if (hasOtherHydra) return
+  await gainWound(state, ui)
+}
+
+registerVillainAbilities('villain-viper', {
+  onFight: async (state, ui, self) => {
+    await woundIfNoOtherHydra(state, ui, self)
+  },
+  onEscape: async (state, ui, self) => {
+    await woundIfNoOtherHydra(state, ui, self)
+  },
+})
+
+// ---------- Baron Zemo ----------
+
+registerVillainAbilities('villain-baron-zemo', {
+  onFight: async (state) => {
+    const avengersHeroes = haveCards(state, { team: 'avengers' })
+    for (let i = 0; i < avengersHeroes.length; i++) {
+      await rescueBystander(state)
+    }
+  },
+})
+
+// ---------- Melter ----------
+
+registerVillainAbilities('villain-melter', {
+  onFight: async (state, ui) => {
+    if (state.deck.length === 0) return
+    const top = state.deck[state.deck.length - 1]
+    await ui.showInfo(top, 'Melter (Fight): revealed the top card of your deck')
+
+    const choice = await ui.chooseOption(
+      [
+        { id: 'ko', label: 'KO it' },
+        { id: 'keep', label: 'Put it back' },
+      ],
+      'Melter (Fight): KO the revealed card or put it back?',
+    )
+    if (choice === 'ko') {
+      state.deck.pop()
+      state.ko.push(top)
+    }
+  },
+})
+
+// ---------- Ultron ----------
+
+registerVpModifier('villain-ultron', (state) => {
+  const techCount = allOwnedCards(state).filter((c) =>
+    (state.cards[c.cardId].type ?? []).includes('tech'),
+  ).length
+  return techCount
+})
+
+registerVillainAbilities('villain-ultron', {
+  onEscape: async (state, ui) => {
+    await revealTypeOrWound(state, ui, 'tech', 'Tech', 'Ultron (Escape): reveal a Tech Hero or gain a Wound')
+  },
+})
+
+// ---------- Whirlwind ----------
+
+registerVillainAbilities('villain-whirlwind', {
+  onFight: async (state, ui, self) => {
+    const index = state.city.findIndex((c) => c?.instanceId === self.instanceId)
+    const location = index !== -1 ? CITY_NAMES[index] : undefined
+    if (location !== 'Rooftops' && location !== 'Bridge') return
+
+    await koTwoHeroesFrom(state, ui, haveCards(state), 'Whirlwind (Fight): KO a Hero from your cards')
+  },
+})
+
+// ---------- Abomination ----------
+
+registerVillainAbilities('villain-abomination', {
+  onFight: async (state, ui, self) => {
+    const index = state.city.findIndex((c) => c?.instanceId === self.instanceId)
+    const location = index !== -1 ? CITY_NAMES[index] : undefined
+    if (location !== 'Streets' && location !== 'Bridge') return
+
+    for (let i = 0; i < 3; i++) {
+      await rescueBystander(state)
+    }
+  },
+})
+
+// ---------- The Leader ----------
+
+registerVillainAbilities('villain-the-leader', {
+  onAmbush: async (state, ui) => {
+    const card = state.villainDeck.pop()
+    if (!card) return
+    await resolveVillainDeckCard(state, card, ui)
+    checkEndConditions(state)
+  },
+})
+
+// ---------- Maestro ----------
+
+registerVillainAbilities('villain-maestro', {
+  onFight: async (state, ui) => {
+    const strengthCount = haveCards(state, { type: 'strength' }).length
+
+    for (let i = 0; i < strengthCount; i++) {
+      const heroes = haveCards(state).filter((c) => state.cards[c.cardId].hero !== undefined)
+      if (heroes.length === 0) break
+
+      const chosen =
+        heroes.length === 1
+          ? heroes[0]
+          : await ui.choose(heroes, {
+              prompt: 'Maestro (Fight): KO one of your Heroes',
+              optional: false,
+            })
+      if (!chosen) break
+      koCard(state, chosen.instanceId)
+    }
+  },
+})
+
+// ---------- Zzzax ----------
+
+registerVillainAbilities('villain-zzzax', {
+  onFight: async (state, ui) => {
+    await revealTypeOrWound(state, ui, 'strength', 'Strength', 'Zzzax (Fight): reveal a Strength Hero or gain a Wound')
+  },
+  onEscape: async (state, ui) => {
+    await revealTypeOrWound(state, ui, 'strength', 'Strength', 'Zzzax (Escape): reveal a Strength Hero or gain a Wound')
+  },
+})
+
+// ---------- Paibok the Power Skrull ----------
+
+registerVillainAbilities('villain-paibok', {
+  onFight: async (state, ui) => {
+    const targets = state.hq.filter((c): c is CardInstance => !!c)
+    if (targets.length === 0) return
+
+    const chosen =
+      targets.length === 1
+        ? targets[0]
+        : await ui.choose(targets, {
+            prompt: 'Paibok the Power Skrull (Fight): choose a Hero from the HQ to gain',
+            optional: false,
+          })
+    if (!chosen) return
+
+    const cost = state.cards[chosen.cardId].cost ?? 0
+    state.recruit += cost
+    recruitHero(state, chosen.instanceId)
+  },
+})
+
+// ---------- Super-Skrull ----------
+
+registerVillainAbilities('villain-super-skrull', {
+  onFight: async (state, ui) => {
+    const heroes = haveCards(state).filter((c) => state.cards[c.cardId].hero !== undefined)
+    if (heroes.length === 0) return
+
+    const chosen =
+      heroes.length === 1
+        ? heroes[0]
+        : await ui.choose(heroes, {
+            prompt: 'Super-Skrull (Fight): KO one of your Heroes',
+            optional: false,
+          })
+    if (!chosen) return
+    koCard(state, chosen.instanceId)
+  },
+})
+
+// ---------- Skrull Queen Veranke ----------
+
+registerVillainAbilities('villain-skrull-queen-veranke', {
+  onAmbush: async (state, ui, self) => {
+    const candidates = state.hq.filter((c): c is CardInstance => !!c)
+    if (candidates.length === 0) return
+
+    let highest = candidates[0]
+    for (const c of candidates) {
+      if ((state.cards[c.cardId].cost ?? 0) > (state.cards[highest.cardId].cost ?? 0)) {
+        highest = c
+      }
+    }
+
+    const index = state.hq.findIndex((c) => c?.instanceId === highest.instanceId)
+    state.hq[index] = null
+    refillHq(state)
+    state.attachedCards[self.instanceId] = highest
+
+    await ui.showInfo(
+      self,
+      `Skrull Queen Veranke pins ${state.cards[highest.cardId].name} (Attack ${state.cards[highest.cardId].cost ?? 0})`,
+    )
+  },
+  onFight: async (state, ui, self) => {
+    const attached = state.attachedCards[self.instanceId]
+    if (attached) {
+      state.discard.push(attached)
+      delete state.attachedCards[self.instanceId]
+    }
+  },
+})
+
+// ---------- Skrull Shapeshifters ----------
+
+registerVillainAbilities('villain-skrull-shapeshifters', {
+  onAmbush: async (state, ui, self) => {
+    let index = -1
+    for (let i = state.hq.length - 1; i >= 0; i--) {
+      if (state.hq[i]) {
+        index = i
+        break
+      }
+    }
+    if (index === -1) return
+
+    const chosen = state.hq[index]!
+    state.hq[index] = null
+    refillHq(state)
+    state.attachedCards[self.instanceId] = chosen
+
+    await ui.showInfo(
+      self,
+      `Skrull Shapeshifters pin ${state.cards[chosen.cardId].name} (Attack ${state.cards[chosen.cardId].cost ?? 0})`,
+    )
+  },
+  onFight: async (state, ui, self) => {
+    const attached = state.attachedCards[self.instanceId]
+    if (attached) {
+      state.discard.push(attached)
+      delete state.attachedCards[self.instanceId]
+    }
   },
 })

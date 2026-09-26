@@ -1,6 +1,7 @@
 import type { GameState, CardInstance, CardData } from './types'
 import type { UiAdapter } from './ui'
 import { getDiscardReplacement } from './replacements'
+import { getVpModifier } from './vpModifiers'
 
 export function countPlayedThisTurn(
   state: GameState,
@@ -65,7 +66,16 @@ export function countDistinctTypes(state: GameState, pile: CardInstance[]): numb
 }
 
 export function sumVictoryPoints(state: GameState, pile: CardInstance[]): number {
-  return pile.reduce((total, c) => total + (state.cards[c.cardId].vp ?? 0), 0)
+  return pile.reduce((total, c) => {
+    const base = state.cards[c.cardId].vp ?? 0
+    const modifier = getVpModifier(c.cardId)
+    return total + base + (modifier ? modifier(state, c, pile) : 0)
+  }, 0)
+}
+
+// DECK + HAND + PLAYED + DISCARD = wszystkie karty, które gracz aktualnie posiada
+export function allOwnedCards(state: GameState): CardInstance[] {
+  return [...state.deck, ...state.hand, ...state.played, ...state.discard]
 }
 
 export function koCard(state: GameState, instanceId: string): void {

@@ -60,6 +60,7 @@ export interface GameState {
   cityMarkers: string[][]
   escaped: CardInstance[]
   captives: Record<string, CardInstance[]>
+  attachedCards: Record<string, CardInstance> // instanceId złoczyńcy -> przypięta karta (Skrull Queen Veranke, Skrull Shapeshifters)
 
   mastermind: CardInstance
   tactics: CardInstance[]

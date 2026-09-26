@@ -1,10 +1,18 @@
-import type { GameState } from './types'
+import type { GameState, CardInstance } from './types'
 import type { UiAdapter } from './ui'
 import { getCardAbility } from './cardAbilities'
 import { getVillainAbilities } from './villainAbilities'
 import { canDefeatVillain } from './villainRequirements'
 import { assertPlaying } from './common'
 import { rescueBystander } from './wounds' // <- podmień na właściwy plik, jeśli to nie ten
+
+/** Siła złoczyńcy: normalnie stałe pole `strength`, ale jeśli ma przypiętą kartę
+ * (Skrull Queen Veranke, Skrull Shapeshifters), to jego Attack = koszt tej karty. */
+function getVillainStrength(state: GameState, villain: CardInstance): number {
+  const attached = state.attachedCards[villain.instanceId]
+  if (attached) return state.cards[attached.cardId].cost ?? 0
+  return state.cards[villain.cardId].strength ?? 0
+}
 
 /** Zdejmuje złoczyńcę z miasta do stosu pokonanych razem z uratowanymi jeńcami. */
 function removeVillainFromCity(state: GameState, index: number): void {
@@ -17,6 +25,7 @@ function removeVillainFromCity(state: GameState, index: number): void {
   const rescued = state.captives[villain.instanceId] ?? []
   state.defeated.push(...rescued)
   delete state.captives[villain.instanceId]
+  delete state.attachedCards[villain.instanceId] // zabezpieczenie, jeśli Fight nie zdążyło "Gain that Hero"
 }
 
 /** Walka ze złoczyńcą: sprawdza warunek i siłę, odpala Fight, zdejmuje z miasta. */
@@ -34,7 +43,7 @@ export async function fightVillain(
     throw new Error('Nie możesz teraz pokonać tego złoczyńcy (niespełniony warunek)')
   }
 
-  const strength = state.cards[villain.cardId].strength ?? 0
+  const strength = getVillainStrength(state, villain)
   if (state.attack < strength) {
     throw new Error(`Za mało attack: masz ${state.attack}, siła ${strength}`)
   }

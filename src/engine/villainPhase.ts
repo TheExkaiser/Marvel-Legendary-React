@@ -7,11 +7,12 @@ import { ESCAPE_LIMIT } from './constants'
 import { logEvent } from './common'
 import { captureBystander } from './wounds'
 
-/** Odkrywa wierzchnią kartę talii złoczyńców i rozpatruje ją według jej rodzaju. */
-export async function villainPhase(state: GameState, ui: UiAdapter): Promise<void> {
-  const card = state.villainDeck.pop()
-  if (!card) return
-
+/** Rozpatruje pojedynczą kartę z talii złoczyńców, według jej rodzaju (bez pop'owania z talii). */
+export async function resolveVillainDeckCard(
+  state: GameState,
+  card: CardInstance,
+  ui: UiAdapter,
+): Promise<void> {
   const data = state.cards[card.cardId]
   logEvent(state, `Tura ${state.turn}: odkryto ${data.name}`)
 
@@ -24,6 +25,14 @@ export async function villainPhase(state: GameState, ui: UiAdapter): Promise<voi
   } else {
     await enterCity(state, card, ui)
   }
+}
+
+/** Odkrywa wierzchnią kartę talii złoczyńców i rozpatruje ją według jej rodzaju. */
+export async function villainPhase(state: GameState, ui: UiAdapter): Promise<void> {
+  const card = state.villainDeck.pop()
+  if (!card) return
+
+  await resolveVillainDeckCard(state, card, ui)
 
   checkEndConditions(state)
 }
@@ -48,14 +57,12 @@ async function resolveMasterStrike(
 async function enterCity(state: GameState, villain: CardInstance, ui: UiAdapter): Promise<void> {
   let moving: CardInstance | null = villain
 
-  // Przesuwanie w stronę wyjścia: każda karta wypycha poprzednią
   for (let i = state.city.length - 1; i >= 0 && moving; i--) {
     const occupant: CardInstance | null = state.city[i]
     state.city[i] = moving
     moving = occupant
   }
 
-  // Ucieczka: karta zostaje w "escaped", jeńcy tracą (KO), odpalają się efekty
   if (moving) {
     state.escaped.push(moving)
     logEvent(state, `Ucieka: ${state.cards[moving.cardId].name}`)
@@ -72,7 +79,6 @@ async function enterCity(state: GameState, villain: CardInstance, ui: UiAdapter)
     }
   }
 
-  // Wejście nowego złoczyńcy: hook scheme'u + Ambush
   getScheme(state).onVillainEntered?.(state, villain)
 
   const ambushAbilities = getVillainAbilities(villain.cardId)
@@ -95,7 +101,7 @@ async function resolveTwist(
 }
 
 /** Sprawdza przegraną: limit uciekinierów albo warunek scheme'u. */
-function checkEndConditions(state: GameState): void {
+export function checkEndConditions(state: GameState): void {
   if (state.status !== 'playing') return
 
   const scheme = getScheme(state)

@@ -83,6 +83,7 @@ export function createGameState(setup: GameSetup): GameState {
     wounds: buildDeck([setup.wounds]),
     bystanders,
     captives: {},
+    attachedCards: {},
     ko: [],
 
     // Mastermind

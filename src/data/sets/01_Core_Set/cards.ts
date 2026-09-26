@@ -482,6 +482,213 @@ export const ENEMIES_OF_ASGARD_CARDS: DeckEntry[] = [
   },
 ]
 
+export const HYDRA_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'villain-endless-armies-of-hydra',
+      name: 'Endless Armies of HYDRA',
+      img: '/cards/core-set/villain-endless-armies-of-hydra.webp',
+      strength: 4,
+      vp: 3,
+      villainGroup: 'HYDRA',
+      text: 'Fight: Play the top two cards of the Villain Deck.',
+      flavor: 'Hail HYDRA! Immortal HYDRA! Cut off a limb, and two more shall take its place!',
+    },
+    count: 3,
+  },
+  {
+    card: {
+      id: 'villain-hydra-kidnappers',
+      name: 'HYDRA Kidnappers',
+      img: '/cards/core-set/villain-hydra-kidnappers.webp',
+      strength: 3,
+      vp: 1,
+      villainGroup: 'HYDRA',
+      text: 'Fight: You may gain a S.H.I.E.L.D. Officer.',
+    },
+    count: 3,
+  },
+  {
+    card: {
+      id: 'villain-supreme-hydra',
+      name: 'Supreme HYDRA',
+      img: '/cards/core-set/villain-supreme-hydra.webp',
+      strength: 6,
+      vp: 3,
+      villainGroup: 'HYDRA',
+      text: 'Supreme HYDRA is worth +3 VP for each other HYDRA Villain in your Victory Pile.',
+    },
+    count: 1,
+  },
+  {
+    card: {
+      id: 'villain-viper',
+      name: 'Viper',
+      img: '/cards/core-set/villain-viper.webp',
+      strength: 5,
+      vp: 3,
+      villainGroup: 'HYDRA',
+      text: 'Fight: Each player without another HYDRA Villain in their Victory Pile gains a Wound. Escape: Same effect.',
+    },
+    count: 1,
+  },
+]
+
+export const MASTERS_OF_EVIL_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'villain-baron-zemo',
+      name: 'Baron Zemo',
+      img: '/cards/core-set/villain-baron-zemo.webp',
+      strength: 6,
+      vp: 4,
+      villainGroup: 'Masters of Evil',
+      text: 'Fight: For each of your Avengers Heroes, rescue a Bystander.',
+    },
+    count: 2,
+  },
+  {
+    card: {
+      id: 'villain-melter',
+      name: 'Melter',
+      img: '/cards/core-set/villain-melter.webp',
+      strength: 5,
+      vp: 3,
+      villainGroup: 'Masters of Evil',
+      text: 'Fight: Each player reveals the top card of their deck. For each card, you choose to KO it or put it back.',
+    },
+    count: 2,
+  },
+  {
+    card: {
+      id: 'villain-ultron',
+      name: 'Ultron',
+      img: '/cards/core-set/villain-ultron.webp',
+      strength: 6,
+      vp: 2,
+      villainGroup: 'Masters of Evil',
+      text: 'Ultron is worth +1 VP for each Tech Hero you have among all your cards at the end of the game. Escape: Each player reveals a Tech Hero or gains a Wound.',
+    },
+    count: 2,
+  },
+  {
+    card: {
+      id: 'villain-whirlwind',
+      name: 'Whirlwind',
+      img: '/cards/core-set/villain-whirlwind.webp',
+      strength: 4,
+      vp: 2,
+      villainGroup: 'Masters of Evil',
+      text: 'Fight: If you fight Whirlwind on the Rooftops or Bridge, KO two of your Heroes.',
+    },
+    count: 2,
+  },
+]
+
+export const RADIATION_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'villain-abomination',
+      name: 'Abomination',
+      img: '/cards/core-set/villain-abomination.webp',
+      strength: 5,
+      vp: 3,
+      villainGroup: 'Radiation',
+      text: 'Fight: If you fight Abomination on the Streets or Bridge, rescue three Bystanders.',
+    },
+    count: 2,
+  },
+  {
+    card: {
+      id: 'villain-the-leader',
+      name: 'The Leader',
+      img: '/cards/core-set/villain-the-leader.webp',
+      strength: 4,
+      vp: 2,
+      villainGroup: 'Radiation',
+      text: 'Ambush: Play the top card of the Villain Deck.',
+    },
+    count: 2,
+  },
+  {
+    card: {
+      id: 'villain-maestro',
+      name: 'Maestro',
+      img: '/cards/core-set/villain-maestro.webp',
+      strength: 6,
+      vp: 4,
+      villainGroup: 'Radiation',
+      text: 'Fight: For each of your Strength Heroes, KO one of your Heroes.',
+      flavor:
+        'Traveling from the future, Maestro is an alternate-reality Hulk that has absorbed 100 years of radiation on a nuclear wasteland Earth.',
+    },
+    count: 2,
+  },
+  {
+    card: {
+      id: 'villain-zzzax',
+      name: 'Zzzax',
+      img: '/cards/core-set/villain-zzzax.webp',
+      strength: 5,
+      vp: 3,
+      villainGroup: 'Radiation',
+      text: 'Fight: Each player reveals a Strength Hero or gains a Wound. Escape: Same effect.',
+    },
+    count: 2,
+  },
+]
+
+export const SKRULLS_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'villain-paibok',
+      name: 'Paibok the Power Skrull',
+      img: '/cards/core-set/villain-paibok.webp',
+      strength: 8,
+      vp: 3,
+      villainGroup: 'Skrulls',
+      text: 'Fight: Choose a Hero in the HQ. Gain that Hero.',
+    },
+    count: 1,
+  },
+  {
+    card: {
+      id: 'villain-skrull-queen-veranke',
+      name: 'Skrull Queen Veranke',
+      img: '/cards/core-set/villain-skrull-queen-veranke.webp',
+      strength: 0, // TODO: dynamiczny Attack = koszt podpiętego Bohatera; patrz notatka w rozmowie
+      vp: 4,
+      villainGroup: 'Skrulls',
+      text: "Ambush: Put the highest-cost Hero from the HQ under this Villain. This Villain's Attack is equal to that Hero's Cost. Fight: Gain that Hero.",
+    },
+    count: 1,
+  },
+  {
+    card: {
+      id: 'villain-skrull-shapeshifters',
+      name: 'Skrull Shapeshifters',
+      img: '/cards/core-set/villain-skrull-shapeshifters.webp',
+      strength: 0, // TODO: dynamiczny Attack = koszt podpiętego Bohatera; patrz notatka w rozmowie
+      vp: 2,
+      villainGroup: 'Skrulls',
+      text: "Ambush: Put the rightmost Hero from the HQ under this Villain. This Villain's Attack is equal to that Hero's Cost. Fight: Gain that Hero.",
+    },
+    count: 3,
+  },
+  {
+    card: {
+      id: 'villain-super-skrull',
+      name: 'Super-Skrull',
+      img: '/cards/core-set/villain-super-skrull.webp',
+      strength: 4,
+      vp: 2,
+      villainGroup: 'Skrulls',
+      text: 'Fight: Each player KOs one of their Heroes.',
+    },
+    count: 3,
+  },
+]
+
 export const DOOMBOT_LEGION_CARDS: DeckEntry[] = [
   {
     card: {

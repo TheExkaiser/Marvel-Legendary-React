@@ -16,6 +16,10 @@ import {
   SHIELD_OFFICER,
   BROTHERHOOD_CARDS,
   ENEMIES_OF_ASGARD_CARDS,
+  HYDRA_CARDS,
+  MASTERS_OF_EVIL_CARDS,
+  RADIATION_CARDS,
+  SKRULLS_CARDS,
   DOOMBOT_LEGION_CARDS,
   HAND_NINJAS_CARDS,
   SAVAGE_LAND_MUTATES_CARDS,
@@ -48,6 +52,10 @@ export const CORE_HEROES: CardGroup[] = [
 export const CORE_VILLAIN_GROUPS: CardGroup[] = [
   { id: 'coreset_brotherhood', name: 'Brotherhood', cards: BROTHERHOOD_CARDS },
   { id: 'coreset_enemies_of_asgard', name: 'Enemies of Asgard', cards: ENEMIES_OF_ASGARD_CARDS },
+  { id: 'coreset_hydra', name: 'HYDRA', cards: HYDRA_CARDS },
+  { id: 'coreset_masters_of_evil', name: 'Masters of Evil', cards: MASTERS_OF_EVIL_CARDS },
+  { id: 'coreset_radiation', name: 'Radiation', cards: RADIATION_CARDS },
+  { id: 'coreset_skrulls', name: 'Skrulls', cards: SKRULLS_CARDS },
 ]
 
 export const CORE_HENCHMEN_GROUPS: CardGroup[] = [

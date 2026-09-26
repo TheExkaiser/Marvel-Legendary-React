@@ -25,13 +25,12 @@ import { HamburgerMenu } from './components/HamburgerMenu'
 import { SlideDrawer } from './components/SlideDrawer'
 import { useCardFlip } from './useCardFlip'
 import { PilePrompt } from './components/PilePrompt'
+import { CITY_NAMES } from './engine/constants'
 import './App.css'
 
 
 // ---------- Stałe ----------
 
-// Indeks 0 = miejsce ucieczki (Bridge), indeks 4 = miejsce wejścia (Sewers)
-const CITY_NAMES = ['Bridge', 'Streets', 'Rooftops', 'Bank', 'Sewers']
 const SHOW_DEBUG = true
 
 // ---------- Małe komponenty pomocnicze ----------
