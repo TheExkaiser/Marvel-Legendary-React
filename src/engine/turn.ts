@@ -6,6 +6,7 @@ import { HAND_SIZE } from './constants'
 import { assertPlaying } from './common'
 import { drawCards } from './deckOps'
 import { villainPhase } from './villainPhase'
+import { addRecruit, addAttack } from './resources'
 
 /** Zagrywa kartę z ręki: dolicza attack/recruit i odpala jej zdolność. */
 export async function playCard(
@@ -26,8 +27,8 @@ export async function playCard(
 
   const [instance] = state.hand.splice(index, 1)
   state.played.push(instance)
-  state.attack += data.attack ?? 0
-  state.recruit += data.recruit ?? 0
+  addAttack(state, data.attack ?? 0)
+  addRecruit(state, data.recruit ?? 0)
 
   const ability = getCardAbility(instance.cardId)
   if (ability) {
@@ -64,6 +65,12 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.defeatRecruitBonus = 0
   state.defeatRescueBonus = 0
   state.copiedCardIds = {}
+  state.locationAttackModifiers = {}
+  state.mastermindAttackModifierThisTurn = 0
+  state.recruitCountsAsAttackThisTurn = false
+  state.cardsDrawnThisTurn = 0
+  state.recruitGainedThisTurn = 0
+  state.attackGainedThisTurn = 0
 
   const drawAmount = HAND_SIZE + state.bonusDrawNextTurn
   state.bonusDrawNextTurn = 0

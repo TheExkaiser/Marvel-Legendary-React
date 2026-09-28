@@ -1,7 +1,14 @@
 import { useState } from 'react'
 import type { GameState } from '../engine/types'
 import type { UiAdapter } from '../engine/ui'
-import { gainWound, rescueBystander, debugReplaceAllHeroesInHq, debugRemoveAllStartingCards } from '../engine/game'
+import {
+  gainWound,
+  rescueBystander,
+  debugReplaceAllHeroesInHq,
+  debugRemoveAllStartingCards,
+  addAttack,
+  addRecruit,
+} from '../engine/game'
 
 interface DebugPanelProps {
   state: GameState
@@ -32,7 +39,7 @@ export function DebugPanel({ state, act }: DebugPanelProps) {
           value={attackAmount}
           onChange={(e) => setAttackAmount(Number(e.target.value))}
         />
-        <button onClick={() => act((s) => { s.attack += attackAmount })}>
+        <button onClick={() => act((s) => addAttack(s, attackAmount))}>
           Add attacks
         </button>
       </span>
@@ -43,7 +50,7 @@ export function DebugPanel({ state, act }: DebugPanelProps) {
           value={recruitAmount}
           onChange={(e) => setRecruitAmount(Number(e.target.value))}
         />
-        <button onClick={() => act((s) => { s.recruit += recruitAmount })}>
+        <button onClick={() => act((s) => addRecruit(s, recruitAmount))}>
           Add resources
         </button>
       </span>

@@ -13,6 +13,9 @@ import {
   NICK_FURY_CARDS,
   ROGUE_CARDS,
   SPIDER_MAN_CARDS,
+  STORM_CARDS,
+  THOR_CARDS,
+  WOLVERINE_CARDS,
   SHIELD_OFFICER,
   BROTHERHOOD_CARDS,
   ENEMIES_OF_ASGARD_CARDS,
@@ -47,6 +50,9 @@ export const CORE_HEROES: CardGroup[] = [
   { id: 'coreset_nick_fury', name: 'Nick Fury', cards: NICK_FURY_CARDS },
   { id: 'coreset_rogue', name: 'Rogue', cards: ROGUE_CARDS },
   { id: 'coreset_spider_man', name: 'Spider-Man', cards: SPIDER_MAN_CARDS },
+  { id: 'coreset_storm', name: 'Storm', cards: STORM_CARDS },
+  { id: 'coreset_thor', name: 'Thor', cards: THOR_CARDS },
+  { id: 'coreset_wolverine', name: 'Wolverine', cards: WOLVERINE_CARDS },
 ]
 
 export const CORE_VILLAIN_GROUPS: CardGroup[] = [

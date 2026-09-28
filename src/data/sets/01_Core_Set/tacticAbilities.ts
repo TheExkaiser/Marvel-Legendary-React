@@ -1,8 +1,18 @@
 import { registerCardAbility } from '../../../engine/cardAbilities'
-import { recruitHero, drawCards, fightVillain, gainWound, rescueBystander } from '../../../engine/game'
+import {
+  recruitHero,
+  drawCards,
+  fightVillain,
+  gainWound,
+  rescueBystander,
+  takeTopCards,
+  addRecruit,
+  addAttack,
+} from '../../../engine/game'
 import { revealCards, haveCards } from '../../../engine/keywords'
 import type { CardInstance } from '../../../engine/types'
-import { takeTopCards } from '../../../engine/deckOps'
+
+// ---------- Dr. Doom ----------
 
 registerCardAbility('drdoom-dark-technology', async (state, { ui }) => {
   const targets = state.hq.filter(
@@ -20,7 +30,7 @@ registerCardAbility('drdoom-dark-technology', async (state, { ui }) => {
   if (!chosen) return
 
   const cost = state.cards[chosen.cardId].cost ?? 0
-  state.recruit += cost
+  addRecruit(state, cost)
   recruitHero(state, chosen.instanceId)
 })
 
@@ -49,6 +59,8 @@ registerCardAbility('drdoom-treasures-of-latveria', async (state) => {
   state.bonusDrawNextTurn += 3
 })
 
+// ---------- Loki ----------
+
 registerCardAbility('loki-cruel-ruler', async (state, { ui }) => {
   const targets = state.city.filter((c): c is CardInstance => !!c)
   if (targets.length === 0) return
@@ -60,7 +72,7 @@ registerCardAbility('loki-cruel-ruler', async (state, { ui }) => {
   if (!chosen) return
 
   const strength = state.cards[chosen.cardId].strength ?? 0
-  state.attack += strength
+  addAttack(state, strength)
   await fightVillain(state, chosen.instanceId, ui)
 })
 
@@ -119,6 +131,8 @@ registerCardAbility('loki-whispers-and-lies', async (state, { ui }) => {
   }
 })
 
+// ---------- Magneto ----------
+
 registerCardAbility('magneto-bitter-captor', async (state, { ui }) => {
   const targets = state.hq.filter(
     (c): c is CardInstance => !!c && (state.cards[c.cardId].team ?? []).includes('x-men'),
@@ -132,7 +146,7 @@ registerCardAbility('magneto-bitter-captor', async (state, { ui }) => {
   if (!chosen) return
 
   const cost = state.cards[chosen.cardId].cost ?? 0
-  state.recruit += cost
+  addRecruit(state, cost)
   recruitHero(state, chosen.instanceId)
 })
 
@@ -168,8 +182,10 @@ registerCardAbility('magneto-xaviers-nemesis', async (state) => {
   }
 })
 
+// ---------- Red Skull ----------
+
 registerCardAbility('redskull-endless-resources', async (state) => {
-  state.recruit += 4
+  addRecruit(state, 4)
 })
 
 registerCardAbility('redskull-hydra-conspiracy', async (state) => {
@@ -182,7 +198,7 @@ registerCardAbility('redskull-hydra-conspiracy', async (state) => {
 })
 
 registerCardAbility('redskull-negablast-grenades', async (state) => {
-  state.attack += 3
+  addAttack(state, 3)
 })
 
 registerCardAbility('redskull-ruthless-dictator', async (state, { ui }) => {
@@ -203,5 +219,5 @@ registerCardAbility('redskull-ruthless-dictator', async (state, { ui }) => {
   const remaining = afterKo.filter((c) => c.instanceId !== toDiscard?.instanceId)
   if (toDiscard) state.discard.push(toDiscard)
 
-  state.deck.push(...remaining)
+  state.deck.push(...remaining) // reszta wraca na wierzch talii
 })

@@ -87,6 +87,13 @@ export interface GameState {
   bonusDrawNextTurn: number
   extraCardToHand?: string // instanceId karty zarezerwowanej przez Electromagnetic Bubble
   status: GameStatus
+  locationAttackModifiers: Record<string, number>
+  mastermindAttackModifierThisTurn: number
+  recruitCountsAsAttackThisTurn: boolean
+  cardsDrawnThisTurn: number
+  recruitGainedThisTurn: number
+  attackGainedThisTurn: number
+  
 }
 
 export interface GameSetup {

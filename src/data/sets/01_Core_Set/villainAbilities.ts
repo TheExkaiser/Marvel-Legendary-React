@@ -2,14 +2,22 @@ import { registerVillainAbilities } from '../../../engine/villainAbilities'
 import { registerDefeatRequirement } from '../../../engine/villainRequirements'
 import { registerVpModifier } from '../../../engine/vpModifiers'
 import { koCard, hasCard, revealCards, haveCards, isShieldHero, allOwnedCards } from '../../../engine/keywords'
-import { gainWound, takeTopCards, drawCards, recruitOfficer, rescueBystander, recruitHero } from '../../../engine/game'
+import {
+  gainWound,
+  takeTopCards,
+  peekTopCard,
+  drawCards,
+  recruitOfficer,
+  rescueBystander,
+  recruitHero,
+  addRecruit,
+} from '../../../engine/game'
 import { getScheme } from '../../../engine/schemeRegistry'
 import { resolveVillainDeckCard, checkEndConditions } from '../../../engine/villainPhase'
 import { CITY_NAMES } from '../../../engine/constants'
+import { refillHq } from '../../../engine/recruit'
 import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
-import { refillHq } from '../../../engine/recruit'
-import { peekTopCard } from '../../../engine/deckOps'
 
 // ---------- Blob ----------
 
@@ -182,7 +190,7 @@ registerVillainAbilities('villain-ymir', {
 
 registerVillainAbilities('henchmen-hand-ninjas', {
   onFight: async (state) => {
-    state.recruit += 1
+    addRecruit(state, 1)
   },
 })
 
@@ -242,7 +250,7 @@ registerVillainAbilities('villain-hydra-kidnappers', {
     if (choice !== 'yes') return
 
     const cost = state.cards[state.officerCardId].cost ?? 0
-    state.recruit += cost
+    addRecruit(state, cost)
     recruitOfficer(state)
   },
 })
@@ -412,7 +420,7 @@ registerVillainAbilities('villain-paibok', {
     if (!chosen) return
 
     const cost = state.cards[chosen.cardId].cost ?? 0
-    state.recruit += cost
+    addRecruit(state, cost)
     recruitHero(state, chosen.instanceId)
   },
 })

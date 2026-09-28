@@ -13,3 +13,4 @@ export {
 export { gainWound, gainWoundSilent, rescueBystander } from './wounds'
 export { debugReplaceAllHeroesInHq, debugRemoveAllStartingCards } from './debug'
 export { peekTopCard } from './deckOps'
+export { addRecruit, addAttack } from './resources'

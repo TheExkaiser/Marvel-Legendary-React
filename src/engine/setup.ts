@@ -84,6 +84,12 @@ export function createGameState(setup: GameSetup): GameState {
     bystanders,
     captives: {},
     attachedCards: {},
+    locationAttackModifiers: {},
+    mastermindAttackModifierThisTurn: 0,
+    recruitCountsAsAttackThisTurn: false,
+    cardsDrawnThisTurn: 0,
+    recruitGainedThisTurn: 0,
+    attackGainedThisTurn: 0,
     ko: [],
 
     // Mastermind

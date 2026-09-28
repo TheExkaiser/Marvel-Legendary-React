@@ -3,23 +3,36 @@ import type { UiAdapter } from './ui'
 import { getCardAbility } from './cardAbilities'
 import { getVillainAbilities } from './villainAbilities'
 import { canDefeatVillain } from './villainRequirements'
+import { getEffectiveStrength } from './keywords'
 import { assertPlaying } from './common'
 import { rescueBystander } from './wounds' // <- podmień na właściwy plik, jeśli to nie ten
-import { getEffectiveStrength } from './keywords'
+import { addRecruit } from './resources'
 
+/** Ile Attack faktycznie masz do dyspozycji w tej turze (uwzględnia God of Thunder: Recruit jako Attack). */
+function availableAttack(state: GameState): number {
+  return state.attack + (state.recruitCountsAsAttackThisTurn ? state.recruit : 0)
+}
+
+/** Płaci koszt w Attack: najpierw z state.attack, resztę z state.recruit (jeśli dozwolone). */
+function spendAttack(state: GameState, amount: number): void {
+  const fromAttack = Math.min(state.attack, amount)
+  state.attack -= fromAttack
+  const remaining = amount - fromAttack
+  if (remaining > 0) state.recruit -= remaining
+}
 
 /** Zdejmuje złoczyńcę z miasta do stosu pokonanych razem z uratowanymi jeńcami. */
 function removeVillainFromCity(state: GameState, index: number): void {
   const villain = state.city[index]!
   state.defeated.push(villain)
   state.city[index] = null
-  state.recruit += state.defeatRecruitBonus ?? 0
+  addRecruit(state, state.defeatRecruitBonus ?? 0)
   for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) rescueBystander(state)
 
   const rescued = state.captives[villain.instanceId] ?? []
   state.defeated.push(...rescued)
   delete state.captives[villain.instanceId]
-  delete state.attachedCards[villain.instanceId] // zabezpieczenie, jeśli Fight nie zdążyło "Gain that Hero"
+  delete state.attachedCards[villain.instanceId]
 }
 
 /** Walka ze złoczyńcą: sprawdza warunek i siłę, odpala Fight, zdejmuje z miasta. */
@@ -38,11 +51,11 @@ export async function fightVillain(
   }
 
   const strength = getEffectiveStrength(state, villain) ?? 0
-  if (state.attack < strength) {
-    throw new Error(`Za mało attack: masz ${state.attack}, siła ${strength}`)
+  if (availableAttack(state) < strength) {
+    throw new Error(`Za mało attack: masz ${availableAttack(state)}, siła ${strength}`)
   }
 
-  state.attack -= strength
+  spendAttack(state, strength)
 
   const abilities = getVillainAbilities(villain.cardId)
   if (abilities?.onFight) {
@@ -78,7 +91,7 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
   }
 
   state.defeated.push(tactic)
-  state.recruit += state.defeatRecruitBonus ?? 0
+  addRecruit(state, state.defeatRecruitBonus ?? 0)
   for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) rescueBystander(state)
   if (state.tactics.length === 0) {
     state.status = 'won'
@@ -88,12 +101,12 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
 /** Walka z mastermindem: płaci attack i zabiera taktykę. */
 export async function fightMastermind(state: GameState, ui: UiAdapter): Promise<void> {
   assertPlaying(state)
-  const strength = state.cards[state.mastermind.cardId].strength ?? 0
-  if (state.attack < strength) {
-    throw new Error(`Za mało attack: masz ${state.attack}, siła ${strength}`)
+  const strength = getEffectiveStrength(state, state.mastermind) ?? 0
+  if (availableAttack(state) < strength) {
+    throw new Error(`Za mało attack: masz ${availableAttack(state)}, siła ${strength}`)
   }
 
-  state.attack -= strength
+  spendAttack(state, strength)
   await claimTactic(state, ui)
 }
 

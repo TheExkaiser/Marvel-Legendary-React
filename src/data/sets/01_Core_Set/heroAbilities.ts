@@ -1,5 +1,15 @@
 import { registerCardAbility, getCardAbility } from '../../../engine/cardAbilities'
-import { drawCards, rescueBystander, gainWound, defeatVillainFree, claimTacticFree, takeTopCards, peekTopCard } from '../../../engine/game'
+import {
+  drawCards,
+  rescueBystander,
+  gainWound,
+  defeatVillainFree,
+  claimTacticFree,
+  takeTopCards,
+  peekTopCard,
+  addRecruit,
+  addAttack,
+} from '../../../engine/game'
 import {
   countPlayedThisTurn,
   countDistinctHeroesPlayedThisTurn,
@@ -18,7 +28,7 @@ import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
 import { registerDiscardReplacement } from '../../../engine/replacements'
 import { villainPhase } from '../../../engine/villainPhase'
-
+import { CITY_NAMES } from '../../../engine/constants'
 
 // ---------- Black Widow ----------
 
@@ -46,7 +56,7 @@ registerCardAbility('hero-black-widow-mission-accomplished', async (state) => {
 })
 
 registerCardAbility('hero-black-widow-covert-operation', async (state) => {
-  state.attack += countBystandersInPile(state, state.defeated)
+  addAttack(state, countBystandersInPile(state, state.defeated))
 })
 
 registerCardAbility('hero-black-widow-silent-sniper', async (state, { ui }) => {
@@ -72,17 +82,17 @@ registerCardAbility('hero-black-widow-silent-sniper', async (state, { ui }) => {
 // ---------- Captain America ----------
 
 registerCardAbility('hero-captain-america-avengers-assemble', async (state) => {
-  state.recruit += countDistinctTypes(state, haveZone(state))
+  addRecruit(state, countDistinctTypes(state, haveZone(state)))
 })
 
 registerCardAbility('hero-captain-america-perfect-teamwork', async (state) => {
-  state.attack += countDistinctTypes(state, haveZone(state))
+  addAttack(state, countDistinctTypes(state, haveZone(state)))
 })
 
 registerCardAbility('hero-captain-america-day-unlike-any-other', async (state) => {
   const count = countPlayedThisTurn(state, { team: 'avengers' })
   if (count === 0) return
-  state.attack += 3 * count
+  addAttack(state, 3 * count)
 })
 
 // ---------- Cyclops ----------
@@ -114,7 +124,7 @@ registerCardAbility('hero-cyclops-optic-blast', async (state, { ui }) => {
 registerCardAbility('hero-cyclops-x-men-united', async (state) => {
   const count = countPlayedThisTurn(state, { team: 'x-men' })
   if (count === 0) return
-  state.attack += 2 * count
+  addAttack(state, 2 * count)
 })
 
 registerDiscardReplacement('hero-cyclops-unending-energy', async (state, ui, self) => {
@@ -152,7 +162,7 @@ registerCardAbility('hero-deadpool-oddball', async (state) => {
     const data = state.cards[c.cardId]
     return !!data.hero && (data.cost ?? 0) % 2 === 1
   }).length
-  state.attack += odd
+  addAttack(state, odd)
 })
 
 registerCardAbility('hero-deadpool-hey-can-i-get-a-do-over', async (state, { ui, self }) => {
@@ -199,7 +209,7 @@ registerCardAbility('hero-emma-frost-shadowed-thoughts', async (state, { ui, sel
   if (!chosen) return
 
   await villainPhase(state, ui)
-  state.attack += 2
+  addAttack(state, 2)
 })
 
 registerCardAbility('hero-emma-frost-psychic-link', async (state, { self }) => {
@@ -254,6 +264,7 @@ registerCardAbility('hero-gambit-hypnotic-charm', async (state, { ui }) => {
       state.deck.pop()
       state.discard.push(top)
     }
+    // 'put-back' (lub zamknięcie okna) = karta zostaje na wierzchu, nic nie robimy
   }
 
   await resolveOne()
@@ -266,7 +277,7 @@ registerCardAbility('hero-gambit-high-stakes-jackpot', async (state, { ui }) => 
   const top = peekTopCard(state)
   if (!top) return
   await ui.showInfo(top, 'High Stakes Jackpot: odkryto wierzchnią kartę talii')
-  state.attack += state.cards[top.cardId].cost ?? 0
+  addAttack(state, state.cards[top.cardId].cost ?? 0)
 })
 
 // ---------- Hawkeye ----------
@@ -277,7 +288,7 @@ registerCardAbility('hero-hawkeye-quick-draw', async (state) => {
 
 registerCardAbility('hero-hawkeye-team-player', async (state) => {
   if (hasCard(state, { team: 'avengers' })) {
-    state.attack += 1
+    addAttack(state, 1)
   }
 })
 
@@ -311,7 +322,7 @@ registerCardAbility('hero-hawkeye-covering-fire', async (state, { ui }) => {
 
 registerCardAbility('hero-hulk-growing-anger', async (state) => {
   if (countPlayedThisTurn(state, { type: 'strength' }) > 0) {
-    state.attack += 1
+    addAttack(state, 1)
   }
 })
 
@@ -328,7 +339,7 @@ registerCardAbility('hero-hulk-unstoppable-hulk', async (state, { ui }) => {
   if (!chosen) return
 
   koCard(state, chosen.instanceId)
-  state.attack += 2
+  addAttack(state, 2)
 })
 
 registerCardAbility('hero-hulk-crazed-rampage', async (state, { ui }) => {
@@ -337,7 +348,7 @@ registerCardAbility('hero-hulk-crazed-rampage', async (state, { ui }) => {
 
 registerCardAbility('hero-hulk-hulk-smash', async (state) => {
   if (countPlayedThisTurn(state, { type: 'strength' }) > 0) {
-    state.attack += 5
+    addAttack(state, 5)
   }
 })
 
@@ -352,7 +363,7 @@ registerCardAbility('hero-iron-man-endless-invention', async (state) => {
 
 registerCardAbility('hero-iron-man-repulsor-rays', async (state) => {
   if (countPlayedThisTurn(state, { type: 'ranged' }) > 0) {
-    state.attack += 1
+    addAttack(state, 1)
   }
 })
 
@@ -362,7 +373,7 @@ registerCardAbility('hero-iron-man-arc-reactor', async (state) => {
   const otherHeroesPlayed = state.cardsPlayedThisTurn.filter(
     (c) => !!state.cards[c.cardId].type,
   ).length
-  state.attack += otherHeroesPlayed
+  addAttack(state, otherHeroesPlayed)
 })
 
 registerCardAbility('hero-iron-man-quantum-breakthrough', async (state) => {
@@ -396,13 +407,13 @@ registerCardAbility('hero-nick-fury-battlefield-promotion', async (state, { ui, 
 
 registerCardAbility('hero-nick-fury-high-tech-weaponry', async (state) => {
   if (countPlayedThisTurn(state, { type: 'tech' }) > 0) {
-    state.attack += 1
+    addAttack(state, 1)
   }
 })
 
 registerCardAbility('hero-nick-fury-legendary-commander', async (state) => {
   const count = state.cardsPlayedThisTurn.filter((c) => isShieldHero(state.cards[c.cardId])).length
-  state.attack += count
+  addAttack(state, count)
 })
 
 registerCardAbility('hero-nick-fury-pure-fury', async (state, { ui, self }) => {
@@ -441,7 +452,7 @@ registerCardAbility('hero-nick-fury-pure-fury', async (state, { ui, self }) => {
 
 registerCardAbility('hero-rogue-borrowed-brawn', async (state) => {
   if (countPlayedThisTurn(state, { type: 'strength' }) > 0) {
-    state.attack += 3
+    addAttack(state, 3)
   }
 })
 
@@ -458,7 +469,7 @@ registerCardAbility('hero-rogue-energy-drain', async (state, { ui }) => {
   if (!chosen) return
 
   koCard(state, chosen.instanceId)
-  state.recruit += 1
+  addRecruit(state, 1)
 })
 
 registerCardAbility('hero-rogue-copy-powers', async (state, { ui, self }) => {
@@ -472,8 +483,8 @@ registerCardAbility('hero-rogue-copy-powers', async (state, { ui, self }) => {
   if (!chosen) return
 
   const copiedData = state.cards[chosen.cardId]
-  state.attack += copiedData.attack ?? 0
-  state.recruit += copiedData.recruit ?? 0
+  addAttack(state, copiedData.attack ?? 0)
+  addRecruit(state, copiedData.recruit ?? 0)
 
   state.copiedCardIds = state.copiedCardIds ?? {}
   state.copiedCardIds[self.instanceId] = chosen.cardId
@@ -491,8 +502,8 @@ registerCardAbility('hero-rogue-steal-abilities', async (state, { ui, self }) =>
   await ui.showInfo(top, 'Steal Abilities: odkryto i odrzucono wierzchnią kartę talii')
 
   const data = state.cards[top.cardId]
-  state.attack += data.attack ?? 0
-  state.recruit += data.recruit ?? 0
+  addAttack(state, data.attack ?? 0)
+  addRecruit(state, data.recruit ?? 0)
 
   const ability = getCardAbility(top.cardId)
   if (ability) {
@@ -542,7 +553,118 @@ registerCardAbility('hero-spider-man-the-amazing-spider-man', async (state, { ui
     }
   }
 
+  // Uproszczenie: odkładane karty wracają w oryginalnej kolejności (bez UI do wyboru kolejności)
   for (let i = putBack.length - 1; i >= 0; i--) {
     state.deck.push(putBack[i])
+  }
+})
+
+// ---------- Storm ----------
+
+registerCardAbility('hero-storm-gathering-stormclouds', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'ranged' }) > 0) {
+    drawCards(state, 1)
+  }
+})
+
+registerCardAbility('hero-storm-lightning-bolt', async (state) => {
+  state.locationAttackModifiers['Rooftops'] = (state.locationAttackModifiers['Rooftops'] ?? 0) - 2
+})
+
+registerCardAbility('hero-storm-spinning-cyclone', async (state, { ui }) => {
+  const targets = state.city.filter((c): c is CardInstance => !!c)
+  if (targets.length === 0) return
+
+  const villain =
+    targets.length === 1
+      ? targets[0]
+      : await ui.choose(targets, {
+          prompt: 'Spinning Cyclone: choose a Villain to move to a new city space',
+          optional: true,
+        })
+  if (!villain) return
+
+  const fromIndex = state.city.findIndex((c) => c?.instanceId === villain.instanceId)
+
+  const slotOptions = CITY_NAMES.map((name, i) => ({ id: String(i), label: name })).filter(
+    (opt) => Number(opt.id) !== fromIndex,
+  )
+  const chosenSlotId = await ui.chooseOption(slotOptions, 'Spinning Cyclone: choose a new city space')
+  const toIndex = Number(chosenSlotId)
+
+  const occupant = state.city[toIndex]
+  state.city[toIndex] = villain
+  state.city[fromIndex] = occupant ?? null
+
+  const captured = state.captives[villain.instanceId] ?? []
+  state.defeated.push(...captured)
+  delete state.captives[villain.instanceId]
+})
+
+registerCardAbility('hero-storm-tidal-wave', async (state) => {
+  state.locationAttackModifiers['Bridge'] = (state.locationAttackModifiers['Bridge'] ?? 0) - 2
+  if (countPlayedThisTurn(state, { type: 'ranged' }) > 0) {
+    state.mastermindAttackModifierThisTurn -= 2
+  }
+})
+
+// ---------- Thor ----------
+
+registerCardAbility('hero-thor-odinson', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'strength' }) > 0) {
+    addRecruit(state, 2)
+  }
+})
+
+registerCardAbility('hero-thor-surge-of-power', async (state) => {
+  if (state.recruitGainedThisTurn >= 8) {
+    addAttack(state, 3)
+  }
+})
+
+registerCardAbility('hero-thor-call-lightning', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'ranged' }) > 0) {
+    addAttack(state, 3)
+  }
+})
+
+registerCardAbility('hero-thor-god-of-thunder', async (state) => {
+  state.recruitCountsAsAttackThisTurn = true
+})
+
+// ---------- Wolverine ----------
+
+registerCardAbility('hero-wolverine-healing-factor', async (state, { ui }) => {
+  const wounds = [...state.hand, ...state.discard].filter(
+    (c) => state.cards[c.cardId].kind === 'wound',
+  )
+  if (wounds.length === 0) return
+
+  const chosen = await ui.choose(wounds, {
+    prompt: 'Healing Factor: you may KO a Wound from your hand or discard pile',
+    optional: true,
+  })
+  if (!chosen) return
+
+  koCard(state, chosen.instanceId)
+  drawCards(state, 1)
+})
+
+registerCardAbility('hero-wolverine-keen-senses', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'instinct' }) > 0) {
+    drawCards(state, 1)
+  }
+})
+
+registerCardAbility('hero-wolverine-frenzied-slashing', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'instinct' }) > 0) {
+    drawCards(state, 2)
+  }
+})
+
+registerCardAbility('hero-wolverine-berserker-rage', async (state) => {
+  drawCards(state, 3)
+  if (countPlayedThisTurn(state, { type: 'instinct' }) > 0) {
+    addAttack(state, state.cardsDrawnThisTurn)
   }
 })
