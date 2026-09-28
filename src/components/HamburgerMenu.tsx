@@ -3,9 +3,10 @@ import { useState } from 'react'
 interface HamburgerMenuProps {
   onMainMenu: () => void
   onRestart: () => void
+  onSettings: () => void
 }
 
-export function HamburgerMenu({ onMainMenu, onRestart }: HamburgerMenuProps) {
+export function HamburgerMenu({ onMainMenu, onRestart, onSettings }: HamburgerMenuProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -15,6 +16,14 @@ export function HamburgerMenu({ onMainMenu, onRestart }: HamburgerMenuProps) {
       </button>
       {open && (
         <div className="hamburger-menu">
+          <button
+            onClick={() => {
+              setOpen(false)
+              onSettings()
+            }}
+          >
+            Settings
+          </button>
           <button
             onClick={() => {
               setOpen(false)

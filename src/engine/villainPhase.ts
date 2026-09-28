@@ -17,7 +17,7 @@ export async function resolveVillainDeckCard(
   logEvent(state, `Tura ${state.turn}: odkryto ${data.name}`)
 
   if (data.kind === 'bystander') {
-    captureBystander(state, card)
+    await captureBystander(state, card, ui)
   } else if (data.kind === 'twist') {
     await resolveTwist(state, card, ui)
   } else if (data.kind === 'masterstrike') {
@@ -43,7 +43,7 @@ async function resolveMasterStrike(
   card: CardInstance,
   ui: UiAdapter,
 ): Promise<void> {
-  await ui.showInfo(card, 'Odkryto: Master Strike!')
+  await ui.revealCard(card, 'Odkryto: Master Strike!')
 
   const ability = getCardAbility(state.masterStrikeId)
   if (ability) {
@@ -55,14 +55,18 @@ async function resolveMasterStrike(
 
 /** Wprowadza złoczyńcę do miasta (przesuwa pozostałych); najdalszy może uciec. */
 async function enterCity(state: GameState, villain: CardInstance, ui: UiAdapter): Promise<void> {
+  await ui.revealCard(villain, `${state.cards[villain.cardId].name} enters the city`)
+
   let moving: CardInstance | null = villain
 
+  // Przesuwanie w stronę wyjścia: każda karta wypycha poprzednią
   for (let i = state.city.length - 1; i >= 0 && moving; i--) {
     const occupant: CardInstance | null = state.city[i]
     state.city[i] = moving
     moving = occupant
   }
 
+  // Ucieczka: karta zostaje w "escaped", jeńcy tracą (KO), odpalają się efekty
   if (moving) {
     state.escaped.push(moving)
     logEvent(state, `Ucieka: ${state.cards[moving.cardId].name}`)
@@ -79,6 +83,7 @@ async function enterCity(state: GameState, villain: CardInstance, ui: UiAdapter)
     }
   }
 
+  // Wejście nowego złoczyńcy: hook scheme'u + Ambush
   getScheme(state).onVillainEntered?.(state, villain)
 
   const ambushAbilities = getVillainAbilities(villain.cardId)
@@ -95,7 +100,7 @@ async function resolveTwist(
 ): Promise<void> {
   state.twistsRevealed += 1
   logEvent(state, `Scheme Twist #${state.twistsRevealed}`)
-  await ui.showInfo(twist, `Odkryto: Scheme Twist #${state.twistsRevealed}`)
+  await ui.revealCard(twist, `Odkryto: Scheme Twist #${state.twistsRevealed}`)
   await getScheme(state).onTwist?.(state, state.twistsRevealed, ui)
   state.ko.push(twist) // TODO: karta ma leżeć obok scheme'u (schemeTwists), nie w KO
 }

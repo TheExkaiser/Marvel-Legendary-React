@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { createGameState, startGame } from './engine/game'
 import type { GameSetup, GameState, CardInstance } from './engine/types'
 import type { UiAdapter, ChoiceOptions, TextOption } from './engine/ui'
+import type { Settings } from './useSettings'
 
 interface CardPromptState extends ChoiceOptions {
   options: CardInstance[]
@@ -18,7 +19,13 @@ interface InfoPromptState {
   message: string
 }
 
-export function useGame(setup: GameSetup) {
+interface CapturePromptState {
+  capturer: CardInstance
+  bystander: CardInstance
+  message: string
+}
+
+export function useGame(setup: GameSetup, settings: Settings) {
   const [state] = useState<GameState>(() => createGameState(setup))
   const [, setVersion] = useState(0)
   const startedRef = useRef(false)
@@ -26,10 +33,12 @@ export function useGame(setup: GameSetup) {
   const [cardPrompt, setCardPrompt] = useState<CardPromptState | null>(null)
   const [optionPrompt, setOptionPrompt] = useState<OptionPromptState | null>(null)
   const [infoPrompt, setInfoPrompt] = useState<InfoPromptState | null>(null)
+  const [capturePrompt, setCapturePrompt] = useState<CapturePromptState | null>(null)
 
   const resolveCardRef = useRef<((choice: CardInstance | null) => void) | null>(null)
   const resolveOptionRef = useRef<((choice: string | null) => void) | null>(null)
   const resolveInfoRef = useRef<(() => void) | null>(null)
+  const resolveCaptureRef = useRef<(() => void) | null>(null)
 
   const ui: UiAdapter = {
     choose(options, choiceOpts) {
@@ -56,13 +65,25 @@ export function useGame(setup: GameSetup) {
         setInfoPrompt({ card, message })
       })
     },
+    revealCard(card, message) {
+      if (!settings.showRevealPopups) return Promise.resolve()
+      return new Promise((resolve) => {
+        resolveInfoRef.current = resolve
+        setInfoPrompt({ card, message })
+      })
+    },
+    showCapture(capturer, bystander, message) {
+      if (!settings.showRevealPopups) return Promise.resolve()
+      return new Promise((resolve) => {
+        resolveCaptureRef.current = resolve
+        setCapturePrompt({ capturer, bystander, message })
+      })
+    },
   }
 
-  // Woła się dopiero, gdy gracz zamknie popup ze schematem na starcie (patrz GameScreen).
-  // Dzięki temu villainPhase() (pierwsza karta villaina) nie odpala się, dopóki
-  // gracz nie zobaczył i nie zamknął opisu schematu.
+  // Uruchamia grę RAZ, po pierwszym wyrenderowaniu (dopiero wtedy `ui` może pokazywać popupy)
   function beginGame() {
-    if (startedRef.current) return // ochrona przed podwójnym wywołaniem
+    if (startedRef.current) return
     startedRef.current = true
 
     startGame(state, ui).then(() => {
@@ -88,6 +109,12 @@ export function useGame(setup: GameSetup) {
     setInfoPrompt(null)
   }
 
+  function closeCapturePrompt() {
+    resolveCaptureRef.current?.()
+    resolveCaptureRef.current = null
+    setCapturePrompt(null)
+  }
+
   async function act(action: (state: GameState, ui: UiAdapter) => void | Promise<void>) {
     try {
       await action(state, ui)
@@ -107,5 +134,7 @@ export function useGame(setup: GameSetup) {
     answerOptionPrompt,
     infoPrompt,
     closeInfoPrompt,
+    capturePrompt,
+    closeCapturePrompt,
   }
 }

@@ -27,7 +27,9 @@ import { PilePrompt } from './components/PilePrompt'
 import { CITY_NAMES } from './engine/constants'
 import './App.css'
 import { getEffectiveStrength, getCapturedCards } from './engine/keywords'
-
+import { useSettings } from './useSettings'
+import { SettingsMenu } from './components/SettingsMenu'
+import { CapturePrompt } from './components/CapturePrompt'
 
 
 // ---------- Stałe ----------
@@ -45,6 +47,8 @@ function GameScreen({
   onExit: () => void
   onRestart?: () => void
 }) {
+  const { settings, updateSetting } = useSettings()
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const {
     state,
     act,
@@ -55,7 +59,9 @@ function GameScreen({
     answerOptionPrompt,
     infoPrompt,
     closeInfoPrompt,
-  } = useGame(setup)
+    capturePrompt,
+    closeCapturePrompt
+ } = useGame(setup, settings)
     const discardIds = new Set(state.discard.map((c) => c.instanceId))
   useCardFlip(discardIds)
   
@@ -81,7 +87,7 @@ function GameScreen({
     <div className="app">
       {/* ===== Górny pasek: log (na całą szerokość) + hamburger menu ===== */}
       <LogPanel log={state.log} />
-      <HamburgerMenu onMainMenu={onExit} onRestart={onRestart} />
+      <HamburgerMenu onMainMenu={onExit} onRestart={onRestart} onSettings={() => setSettingsOpen(true)} />
 
       {(state.status === 'won' || state.status === 'lost') && (
         <div className="modal-overlay">
@@ -276,8 +282,22 @@ function GameScreen({
           onClose={() => setViewingPile(null)}
         />
       )}
+
+      {settingsOpen && (
+        <SettingsMenu settings={settings} onChange={updateSetting} onClose={() => setSettingsOpen(false)} />
+      )}
+      {capturePrompt && (
+        <CapturePrompt
+          message={capturePrompt.message}
+          capturerData={state.cards[capturePrompt.capturer.cardId]}
+          bystanderData={state.cards[capturePrompt.bystander.cardId]}
+          onClose={closeCapturePrompt}
+        />
+      )}
     </div>
   )
 }
+
+
 
 export default GameScreen

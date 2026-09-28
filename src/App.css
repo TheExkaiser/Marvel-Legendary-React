@@ -1045,3 +1045,22 @@ button:disabled {
   background: var(--deep);
   color: var(--muted);
 }
+
+.capture-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.capture-arrow {
+  font-size: 1.5rem;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  cursor: pointer;
+}

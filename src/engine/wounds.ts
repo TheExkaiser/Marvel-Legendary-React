@@ -28,13 +28,22 @@ export function rescueBystander(state: GameState): void {
 }
 
 /** Odkryty bystander zostaje jeńcem najdalszego złoczyńcy; bez złoczyńców idzie do KO. */
-export function captureBystander(state: GameState, bystander: CardInstance): void {
+export async function captureBystander(
+  state: GameState,
+  bystander: CardInstance,
+  ui: UiAdapter,
+): Promise<void> {
   for (let i = state.city.length - 1; i >= 0; i--) {
     const villain = state.city[i]
     if (villain) {
       const list = state.captives[villain.instanceId] ?? []
       list.push(bystander)
       state.captives[villain.instanceId] = list
+      await ui.showCapture(
+        villain,
+        bystander,
+        `Bystander captured by ${state.cards[villain.cardId].name}`,
+      )
       return
     }
   }
