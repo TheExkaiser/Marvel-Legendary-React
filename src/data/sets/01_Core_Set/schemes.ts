@@ -138,10 +138,41 @@ const NEGATIVE_ZONE_PRISON_BREAKOUT: SchemeDef = {
   escapeLimit: 12,
 }
 
+const PORTALS_TO_THE_DARK_DIMENSION: SchemeDef = {
+  id: 'coreset_portals_to_the_dark_dimension',
+  name: 'Portals to the Dark Dimension',
+  img: '',
+  twistCount: 7,
+  text:
+    'Setup: 7 Twists. Each Twist is a Dark Portal.\n' +
+    'Twist 1: Put the Dark Portal above the Mastermind. The Mastermind gets +1 Attack.\n' +
+    "Twists 2-6: Put the Dark Portal in the leftmost city space that doesn't yet have a Dark Portal. Villains in that city space get +1 Attack.\n" +
+    'Twist 7: Evil Wins!',
+
+  onTwist: async (state, n) => {
+    if (n === 1) {
+      state.counters['Dark Portal (Mastermind)'] = (state.counters['Dark Portal (Mastermind)'] ?? 0) + 1
+      return
+    }
+
+    if (n >= 2 && n <= 6) {
+      const index = CITY_NAMES.findIndex((_, i) => !state.cityMarkers[i].includes('Dark Portal'))
+      if (index !== -1) {
+        state.cityMarkers[index].push('Dark Portal')
+      }
+    }
+
+    // Twist 7: Evil Wins — obsłużone przez checkLoss
+  },
+
+  checkLoss: (state) => state.twistsRevealed >= 7,
+}
+
 // Wszystkie schematy tego zestawu. Nowy scheme = nowy obiekt wyżej + wpis tutaj
 export const CORE_SCHEMES: SchemeDef[] = [
   COSMIC_CUBE,
   LEGACY_VIRUS,
   MIDTOWN_BANK_ROBBERY,
   NEGATIVE_ZONE_PRISON_BREAKOUT,
+  PORTALS_TO_THE_DARK_DIMENSION,
 ]

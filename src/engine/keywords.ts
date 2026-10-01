@@ -175,11 +175,13 @@ export function getEffectiveStrength(
 
   if (instance.instanceId === state.mastermind.instanceId) {
     total += state.mastermindAttackModifierThisTurn
+    total += state.counters['Dark Portal (Mastermind)'] ?? 0
   } else {
     const cityIndex = state.city.findIndex((c) => c?.instanceId === instance.instanceId)
     if (cityIndex !== -1) {
       const location = CITY_NAMES[cityIndex]
       total += state.locationAttackModifiers[location] ?? 0
+      total += state.cityMarkers[cityIndex].filter((m) => m === 'Dark Portal').length
     }
   }
 
