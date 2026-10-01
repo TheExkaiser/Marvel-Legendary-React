@@ -1,6 +1,7 @@
 import type { GameState, GameSetup, CardData } from './types'
 import type { UiAdapter } from './ui'
 import { registerScheme } from './schemeRegistry'
+import { registerGameMode } from './gameModeRegistry'
 import { buildDeck } from './deck'
 import { shuffle } from './random'
 import { HAND_SIZE } from './constants'
@@ -39,8 +40,9 @@ function buildCardIndex(setup: GameSetup): Record<string, CardData> {
 
 /** Tworzy pełny, gotowy do gry stan (talie potasowane, HQ zapełnione, setup scheme'u wykonany). */
 export function createGameState(setup: GameSetup): GameState {
-  const { startingCards, heroCards, villainCards, mastermind, scheme } = setup
+  const { startingCards, heroCards, villainCards, mastermind, scheme, gameMode } = setup
   registerScheme(scheme)
+  registerGameMode(gameMode)
 
   // Bystanderzy: część trafia do talii złoczyńców, reszta zostaje w stosie
   const bystanders = shuffle(buildDeck([setup.bystanders]))
@@ -97,8 +99,9 @@ export function createGameState(setup: GameSetup): GameState {
     tactics: shuffle(mastermind.tactics.map((t) => ({ instanceId: t.id, cardId: t.id }))),
     masterStrikeId: mastermind.masterStrikeId,
 
-    // Scheme
+    // Scheme + Game Mode
     schemeId: scheme.id,
+    gameModeId: gameMode.id,
     counters: {},
     twistsRevealed: 0,
 

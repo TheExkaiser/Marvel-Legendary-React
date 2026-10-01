@@ -5,7 +5,7 @@ import { getVillainAbilities } from './villainAbilities'
 import { canDefeatVillain } from './villainRequirements'
 import { getEffectiveStrength } from './keywords'
 import { assertPlaying } from './common'
-import { rescueBystander } from './wounds' // <- podmień na właściwy plik, jeśli to nie ten
+import { rescueBystander } from './wounds'
 import { addRecruit } from './resources'
 
 /** Ile Attack faktycznie masz do dyspozycji w tej turze (uwzględnia God of Thunder: Recruit jako Attack). */
@@ -13,15 +13,29 @@ function availableAttack(state: GameState): number {
   return state.attack + (state.recruitCountsAsAttackThisTurn ? state.recruit : 0)
 }
 
-/** Płaci koszt w Attack: najpierw z state.attack, resztę z state.recruit (jeśli dozwolone). */
-function spendAttack(state: GameState, amount: number): void {
-  const fromAttack = Math.min(state.attack, amount)
+/** Płaci koszt w Attack — normalnie wprost z state.attack; z God of Thunder aktywnym
+ * i realnym wyborem (oba zasoby > 0) pyta gracza o proporcję. */
+async function spendAttack(state: GameState, amount: number, ui: UiAdapter): Promise<void> {
+  if (!state.recruitCountsAsAttackThisTurn) {
+    state.attack -= amount
+    return
+  }
+
+  if (state.attack <= 0 || state.recruit <= 0) {
+    // Brak realnego wyboru: płacimy z tego, co jest (attack najpierw, reszta z recruit)
+    const fromAttack = Math.min(state.attack, amount)
+    state.attack -= fromAttack
+    state.recruit -= amount - fromAttack
+    return
+  }
+
+  const maxFromAttack = Math.min(amount, state.attack)
+  const maxFromRecruit = Math.min(amount, state.recruit)
+  const { fromAttack, fromRecruit } = await ui.chooseAttackSplit(amount, maxFromAttack, maxFromRecruit)
   state.attack -= fromAttack
-  const remaining = amount - fromAttack
-  if (remaining > 0) state.recruit -= remaining
+  state.recruit -= fromRecruit
 }
 
-/** Zdejmuje złoczyńcę z miasta do stosu pokonanych razem z uratowanymi jeńcami. */
 function removeVillainFromCity(state: GameState, index: number): void {
   const villain = state.city[index]!
   state.defeated.push(villain)
@@ -35,7 +49,6 @@ function removeVillainFromCity(state: GameState, index: number): void {
   delete state.attachedCards[villain.instanceId]
 }
 
-/** Walka ze złoczyńcą: sprawdza warunek i siłę, odpala Fight, zdejmuje z miasta. */
 export async function fightVillain(
   state: GameState,
   instanceId: string,
@@ -55,7 +68,7 @@ export async function fightVillain(
     throw new Error(`Za mało attack: masz ${availableAttack(state)}, siła ${strength}`)
   }
 
-  spendAttack(state, strength)
+  await spendAttack(state, strength, ui)
 
   const abilities = getVillainAbilities(villain.cardId)
   if (abilities?.onFight) {
@@ -65,7 +78,6 @@ export async function fightVillain(
   removeVillainFromCity(state, index)
 }
 
-/** Darmowe pokonanie (np. Silent Sniper): respektuje warunek pokonania, ale NIE odpala "Fight". */
 export function defeatVillainFree(state: GameState, instanceId: string): void {
   const index = state.city.findIndex((c) => c?.instanceId === instanceId)
   if (index === -1) throw new Error(`Złoczyńcy ${instanceId} nie ma w mieście`)
@@ -78,7 +90,6 @@ export function defeatVillainFree(state: GameState, instanceId: string): void {
   removeVillainFromCity(state, index)
 }
 
-/** Zabiera wierzchnią taktykę mastermina: popup, efekt Fight, do Victory Pool. Ostatnia = wygrana. */
 async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
   const tactic = state.tactics.pop()
   if (!tactic) throw new Error('Mastermind jest już pokonany')
@@ -98,7 +109,6 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
   }
 }
 
-/** Walka z mastermindem: płaci attack i zabiera taktykę. */
 export async function fightMastermind(state: GameState, ui: UiAdapter): Promise<void> {
   assertPlaying(state)
   const strength = getEffectiveStrength(state, state.mastermind) ?? 0
@@ -106,11 +116,10 @@ export async function fightMastermind(state: GameState, ui: UiAdapter): Promise<
     throw new Error(`Za mało attack: masz ${availableAttack(state)}, siła ${strength}`)
   }
 
-  spendAttack(state, strength)
+  await spendAttack(state, strength, ui)
   await claimTactic(state, ui)
 }
 
-/** Zabranie taktyki bez płacenia attack (np. Silent Sniper). */
 export async function claimTacticFree(state: GameState, ui: UiAdapter): Promise<void> {
   await claimTactic(state, ui)
 }

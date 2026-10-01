@@ -2,6 +2,8 @@ import type { GameState, CardInstance, CardData } from './types'
 import type { UiAdapter } from './ui'
 import { getDiscardReplacement } from './replacements'
 import { getVpModifier } from './vpModifiers'
+import { CITY_NAMES } from './constants'
+import { getScheme } from './schemeRegistry'
 
 export function countPlayedThisTurn(
   state: GameState,
@@ -159,15 +161,31 @@ export function canReveal(state: GameState, filter: CardFilter): boolean {
   return revealCards(state, filter).length > 0
 }
 
-// Efektywna siła złoczyńcy/mastermina/henchmana: normalnie stałe `strength`,
-// ale jeśli ma przypiętą kartę (np. Skrull Queen Veranke), to jego Attack = koszt tej karty.
+// Efektywna siła złoczyńcy/mastermina/henchmana: bazowe `strength` (albo koszt przypiętej karty),
+// plus modyfikatory lokacji/mastermina na tę turę, plus ewentualny bonus zdefiniowany przez Scheme.
 export function getEffectiveStrength(
   state: GameState,
   instance: { instanceId: string; cardId: string },
 ): number | undefined {
   const attached = state.attachedCards[instance.instanceId]
-  if (attached) return state.cards[attached.cardId].cost ?? 0
-  return state.cards[instance.cardId].strength
+  const base = attached ? state.cards[attached.cardId].cost ?? 0 : state.cards[instance.cardId].strength
+  if (base === undefined) return undefined
+
+  let total = base
+
+  if (instance.instanceId === state.mastermind.instanceId) {
+    total += state.mastermindAttackModifierThisTurn
+  } else {
+    const cityIndex = state.city.findIndex((c) => c?.instanceId === instance.instanceId)
+    if (cityIndex !== -1) {
+      const location = CITY_NAMES[cityIndex]
+      total += state.locationAttackModifiers[location] ?? 0
+    }
+  }
+
+  total += getScheme(state).villainStrengthModifier?.(state, instance) ?? 0
+
+  return total
 }
 
 // Wszystkie karty "złapane" przez villaina/mastermind: jeńcy-bystanderzy + ewentualna

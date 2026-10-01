@@ -1,7 +1,8 @@
-import type { SetData, SetupChoices } from './types'
+import type { GameModeDef, SetData, SetupChoices } from './types'
 import { resolveRules } from './setupRules'
 
 export const EMPTY_CHOICES: SetupChoices = {
+  gameModeId: '',
   schemeId: '',
   mastermindId: '',
   heroIds: [],
@@ -44,20 +45,24 @@ function fillIds(current: string[], pool: string[], count: number, required: str
 export function completeChoices(
   partial: Partial<SetupChoices>,
   sets: SetData[],
+  gameModes: GameModeDef[],
   rng: Rng = Math.random,
 ): SetupChoices {
   const schemes = sets.flatMap((s) => s.schemes)
   const masterminds = sets.flatMap((s) => s.masterminds)
 
+  const gameMode =
+    gameModes.find((m) => m.id === partial.gameModeId) ?? randomItem(gameModes, rng, 'game mode')
   const scheme =
     schemes.find((s) => s.id === partial.schemeId) ?? randomItem(schemes, rng, 'scheme')
   const mastermind =
     masterminds.find((m) => m.card.id === partial.mastermindId) ??
     randomItem(masterminds, rng, 'mastermind')
-  const rules = resolveRules(scheme)
+  const rules = resolveRules(gameMode, scheme)
 
   const ids = (groups: { id: string }[]) => groups.map((g) => g.id)
   return {
+    gameModeId: gameMode.id,
     schemeId: scheme.id,
     mastermindId: mastermind.card.id,
     heroIds: fillIds(partial.heroIds ?? [], ids(sets.flatMap((s) => s.heroes)), rules.heroes, rules.requiredHeroes, rng),
@@ -66,11 +71,12 @@ export function completeChoices(
   }
 }
 
-/** Usuwa z wyborów id, których nie ma w podanych zestawach (po wyłączeniu setu). */
-export function pruneChoices(choices: SetupChoices, sets: SetData[]): SetupChoices {
+/** Usuwa z wyborów id, których nie ma w podanych zestawach/game modach (po wyłączeniu setu). */
+export function pruneChoices(choices: SetupChoices, sets: SetData[], gameModes: GameModeDef[]): SetupChoices {
   const has = (pool: { id: string }[], id: string) => pool.some((x) => x.id === id)
   const keep = (pool: { id: string }[], list: string[]) => list.filter((id) => has(pool, id))
   return {
+    gameModeId: gameModes.some((m) => m.id === choices.gameModeId) ? choices.gameModeId : '',
     schemeId: has(sets.flatMap((s) => s.schemes), choices.schemeId) ? choices.schemeId : '',
     mastermindId: sets.some((s) => s.masterminds.some((m) => m.card.id === choices.mastermindId))
       ? choices.mastermindId

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { createGameState, startGame } from './engine/game'
 import type { GameSetup, GameState, CardInstance } from './engine/types'
-import type { UiAdapter, ChoiceOptions, TextOption } from './engine/ui'
+import type { UiAdapter, ChoiceOptions, TextOption, AttackSplit } from './engine/ui'
 import type { Settings } from './useSettings'
 
 interface CardPromptState extends ChoiceOptions {
@@ -25,6 +25,12 @@ interface CapturePromptState {
   message: string
 }
 
+interface AttackSplitPromptState {
+  cost: number
+  maxFromAttack: number
+  maxFromRecruit: number
+}
+
 export function useGame(setup: GameSetup, settings: Settings) {
   const [state] = useState<GameState>(() => createGameState(setup))
   const [, setVersion] = useState(0)
@@ -34,11 +40,13 @@ export function useGame(setup: GameSetup, settings: Settings) {
   const [optionPrompt, setOptionPrompt] = useState<OptionPromptState | null>(null)
   const [infoPrompt, setInfoPrompt] = useState<InfoPromptState | null>(null)
   const [capturePrompt, setCapturePrompt] = useState<CapturePromptState | null>(null)
+  const [attackSplitPrompt, setAttackSplitPrompt] = useState<AttackSplitPromptState | null>(null)
 
   const resolveCardRef = useRef<((choice: CardInstance | null) => void) | null>(null)
   const resolveOptionRef = useRef<((choice: string | null) => void) | null>(null)
   const resolveInfoRef = useRef<(() => void) | null>(null)
   const resolveCaptureRef = useRef<(() => void) | null>(null)
+  const resolveAttackSplitRef = useRef<((split: AttackSplit) => void) | null>(null)
 
   const ui: UiAdapter = {
     choose(options, choiceOpts) {
@@ -79,6 +87,12 @@ export function useGame(setup: GameSetup, settings: Settings) {
         setCapturePrompt({ capturer, bystander, message })
       })
     },
+    chooseAttackSplit(cost, maxFromAttack, maxFromRecruit) {
+      return new Promise((resolve) => {
+        resolveAttackSplitRef.current = resolve
+        setAttackSplitPrompt({ cost, maxFromAttack, maxFromRecruit })
+      })
+    },
   }
 
   // Uruchamia grę RAZ, po pierwszym wyrenderowaniu (dopiero wtedy `ui` może pokazywać popupy)
@@ -115,6 +129,12 @@ export function useGame(setup: GameSetup, settings: Settings) {
     setCapturePrompt(null)
   }
 
+  function answerAttackSplitPrompt(fromAttack: number, fromRecruit: number) {
+    resolveAttackSplitRef.current?.({ fromAttack, fromRecruit })
+    resolveAttackSplitRef.current = null
+    setAttackSplitPrompt(null)
+  }
+
   async function act(action: (state: GameState, ui: UiAdapter) => void | Promise<void>) {
     try {
       await action(state, ui)
@@ -136,5 +156,7 @@ export function useGame(setup: GameSetup, settings: Settings) {
     closeInfoPrompt,
     capturePrompt,
     closeCapturePrompt,
+    attackSplitPrompt,
+    answerAttackSplitPrompt,
   }
 }

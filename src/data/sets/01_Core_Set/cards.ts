@@ -698,7 +698,7 @@ export const DOOMBOT_LEGION_CARDS: DeckEntry[] = [
       henchman: true,
       text: 'Fight: Look at the top two cards of your deck. KO one of them and put the other back.',
     },
-    count: 3,
+    count: 10,
   },
 ]
 
@@ -713,7 +713,7 @@ export const HAND_NINJAS_CARDS: DeckEntry[] = [
       henchman: true,
       text: 'Fight: You get +1 Recruit.',
     },
-    count: 3,
+    count: 10,
   },
 ]
 
@@ -728,7 +728,7 @@ export const SAVAGE_LAND_MUTATES_CARDS: DeckEntry[] = [
       henchman: true,
       text: 'Fight: When you draw a new hand of cards at the end of this turn, draw an extra card.',
     },
-    count: 3,
+    count: 10,
   },
 ]
 
@@ -743,7 +743,7 @@ export const SENTINEL_CARDS: DeckEntry[] = [
       henchman: true,
       text: 'Fight: KO one of your Heroes.',
     },
-    count: 3,
+    count: 10,
   },
 ]
 

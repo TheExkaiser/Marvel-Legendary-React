@@ -1,4 +1,4 @@
-import type { GameSetup, SetData, SetupChoices, SetupRules } from './types'
+import type { GameModeDef, GameSetup, SetData, SetupChoices, SetupRules, DeckEntry } from './types'
 import { resolveRules } from './setupRules'
 
 /** Szuka elementu po id; getId mówi, skąd wziąć id (masterminda mają je w card.id). */
@@ -47,10 +47,16 @@ export function getSetupProblems(choices: SetupChoices, rules: SetupRules): stri
   return problems
 }
 
-/** Czysta funkcja: wybory + dostępne sety -> GameSetup gotowy dla createGameState. */
-export function buildSetup(choices: SetupChoices, sets: SetData[]): GameSetup {
-  const scheme = pick(sets.flatMap((s) => s.schemes), (s) => s.id, choices.schemeId, "scheme")
-  const rules = resolveRules(scheme)
+/** Przycina liczbę kopii w każdym DeckEntry do maxCount (nie mutuje oryginałów z cards.ts). */
+function capCounts(entries: DeckEntry[], maxCount: number): DeckEntry[] {
+  return entries.map((entry) => ({ ...entry, count: Math.min(entry.count, maxCount) }))
+}
+
+/** Czysta funkcja: wybory + dostępne sety + dostępne game mode'y -> GameSetup gotowy dla createGameState. */
+export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: GameModeDef[]): GameSetup {
+  const gameMode = pick(gameModes, (m) => m.id, choices.gameModeId, 'game mode')
+  const scheme = pick(sets.flatMap((s) => s.schemes), (s) => s.id, choices.schemeId, 'scheme')
+  const rules = resolveRules(gameMode, scheme)
 
   const problems = getSetupProblems(choices, rules)
   if (problems.length > 0) throw new Error(`Niepoprawny setup:\n${problems.join('\n')}`)
@@ -82,7 +88,10 @@ export function buildSetup(choices: SetupChoices, sets: SetData[]): GameSetup {
     startingCards: shared.startingCards,
     heroCards: heroes.flatMap((g) => g.cards),
     officerCards: shared.officer,
-    villainCards: [...villains, ...henchmen].flatMap((g) => g.cards),
+    villainCards: [
+      ...villains.flatMap((g) => g.cards),
+      ...henchmen.flatMap((g) => capCounts(g.cards, rules.henchmenCopiesPerGroup)),
+    ],
     mastermind,
     wounds: shared.wounds,
     bystanders: shared.bystanders,
@@ -90,6 +99,7 @@ export function buildSetup(choices: SetupChoices, sets: SetData[]): GameSetup {
     masterStrikeCard: shared.masterStrikeCard,
     masterStrikeCount: shared.masterStrikeCount,
     scheme,
+    gameMode,
     twist: shared.twist,
   }
 }

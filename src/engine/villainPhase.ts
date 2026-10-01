@@ -1,6 +1,7 @@
 import type { GameState, CardInstance } from './types'
 import type { UiAdapter } from './ui'
 import { getScheme } from './schemeRegistry'
+import { getGameMode } from './gameModeRegistry'
 import { getCardAbility } from './cardAbilities'
 import { getVillainAbilities } from './villainAbilities'
 import { ESCAPE_LIMIT } from './constants'
@@ -37,7 +38,7 @@ export async function villainPhase(state: GameState, ui: UiAdapter): Promise<voi
   checkEndConditions(state)
 }
 
-/** Master Strike: popup, efekt mastermina, karta idzie do KO. */
+/** Master Strike: popup, efekt mastermina, karta idzie do KO, ewentualny hook Game Mode. */
 async function resolveMasterStrike(
   state: GameState,
   card: CardInstance,
@@ -51,6 +52,8 @@ async function resolveMasterStrike(
   }
 
   state.ko.push(card)
+
+  await getGameMode(state).onMasterStrikeResolved?.(state, ui)
 }
 
 /** Wprowadza złoczyńcę do miasta (przesuwa pozostałych); najdalszy może uciec. */
@@ -75,7 +78,7 @@ async function enterCity(state: GameState, villain: CardInstance, ui: UiAdapter)
     state.ko.push(...lost)
     delete state.captives[moving.instanceId]
 
-    getScheme(state).onVillainEscaped?.(state, moving)
+    getScheme(state).onVillainEscaped?.(state, moving, lost)
 
     const escapeAbilities = getVillainAbilities(moving.cardId)
     if (escapeAbilities?.onEscape) {
@@ -92,7 +95,7 @@ async function enterCity(state: GameState, villain: CardInstance, ui: UiAdapter)
   }
 }
 
-/** Scheme Twist: licznik, popup, efekt scheme'u. */
+/** Scheme Twist: licznik, popup, efekt scheme'u, ewentualny hook Game Mode. */
 async function resolveTwist(
   state: GameState,
   twist: CardInstance,
@@ -102,17 +105,18 @@ async function resolveTwist(
   logEvent(state, `Scheme Twist #${state.twistsRevealed}`)
   await ui.revealCard(twist, `Odkryto: Scheme Twist #${state.twistsRevealed}`)
   await getScheme(state).onTwist?.(state, state.twistsRevealed, ui)
+  await getGameMode(state).onSchemeTwistResolved?.(state, ui)
   state.ko.push(twist) // TODO: karta ma leżeć obok scheme'u (schemeTwists), nie w KO
 }
 
-/** Sprawdza przegraną: limit uciekinierów albo warunek scheme'u. */
+/** Sprawdza przegraną: limit uciekinierów (TYLKO jeśli scheme go definiuje) albo warunek scheme'u. */
 export function checkEndConditions(state: GameState): void {
   if (state.status !== 'playing') return
 
   const scheme = getScheme(state)
-  const limit = scheme.escapeLimit ?? ESCAPE_LIMIT
+  const escapedTooMany = scheme.escapeLimit !== undefined && state.escaped.length >= scheme.escapeLimit
 
-  if (state.escaped.length >= limit || scheme.checkLoss?.(state)) {
+  if (escapedTooMany || scheme.checkLoss?.(state)) {
     state.status = 'lost'
   }
 }

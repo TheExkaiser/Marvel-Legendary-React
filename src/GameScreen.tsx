@@ -30,6 +30,7 @@ import { getEffectiveStrength, getCapturedCards } from './engine/keywords'
 import { useSettings } from './useSettings'
 import { SettingsMenu } from './components/SettingsMenu'
 import { CapturePrompt } from './components/CapturePrompt'
+import { AttackSplitPrompt } from './components/AttackSplitPrompt'
 
 
 // ---------- Stałe ----------
@@ -60,7 +61,9 @@ function GameScreen({
     infoPrompt,
     closeInfoPrompt,
     capturePrompt,
-    closeCapturePrompt
+    closeCapturePrompt,
+    attackSplitPrompt,
+    answerAttackSplitPrompt,
  } = useGame(setup, settings)
     const discardIds = new Set(state.discard.map((c) => c.instanceId))
   useCardFlip(discardIds)
@@ -292,6 +295,15 @@ function GameScreen({
           capturerData={state.cards[capturePrompt.capturer.cardId]}
           bystanderData={state.cards[capturePrompt.bystander.cardId]}
           onClose={closeCapturePrompt}
+        />
+      )}
+
+      {attackSplitPrompt && (
+        <AttackSplitPrompt
+          cost={attackSplitPrompt.cost}
+          maxFromAttack={attackSplitPrompt.maxFromAttack}
+          maxFromRecruit={attackSplitPrompt.maxFromRecruit}
+          onConfirm={answerAttackSplitPrompt}
         />
       )}
     </div>

@@ -3,6 +3,7 @@ import type { CardGroup, GameSetup, SetData, SetupChoices } from '../engine/type
 import { buildSetup, getSetupProblems } from '../engine/buildSetup'
 import { DEFAULT_SETUP_RULES, resolveRules } from '../engine/setupRules'
 import { EMPTY_CHOICES, completeChoices, pruneChoices } from '../engine/setupChoices'
+import { GAME_MODES } from '../data/gameModes'
 import { DEBUG_PRESET } from '../data/sets/setup'
 import './SetupMenu.css'
 
@@ -66,17 +67,22 @@ function PickList({ title, items, selected, max, required, onChange }: PickListP
 
 export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   const [enabledSetIds, setEnabledSetIds] = useState<string[]>(() => sets.map((s) => s.id))
-  const [choices, setChoices] = useState<SetupChoices>(EMPTY_CHOICES)
+  const [choices, setChoices] = useState<SetupChoices>(() => ({
+    ...EMPTY_CHOICES,
+    gameModeId: GAME_MODES[0]?.id ?? '', // domyślnie Dark City - Advanced Solo
+  }))
 
   // Pula do wyboru = suma zaznaczonych zestawów
   const activeSets = sets.filter((s) => enabledSetIds.includes(s.id))
   const schemes = activeSets.flatMap((s) => s.schemes)
   const masterminds = activeSets.flatMap((s) => s.masterminds)
 
+  const gameMode = GAME_MODES.find((m) => m.id === choices.gameModeId)
   const scheme = schemes.find((s) => s.id === choices.schemeId)
-  const rules = scheme ? resolveRules(scheme) : DEFAULT_SETUP_RULES
+  const rules = gameMode && scheme ? resolveRules(gameMode, scheme) : DEFAULT_SETUP_RULES
 
   const problems: string[] = []
+  if (!gameMode) problems.push('Wybierz game mode')
   if (!scheme) problems.push('Wybierz scheme')
   if (!masterminds.some((m) => m.card.id === choices.mastermindId)) {
     problems.push('Wybierz masterminda')
@@ -93,7 +99,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
       : [...enabledSetIds, id]
     if (next.length === 0) return // musi zostać przynajmniej jeden zestaw
     setEnabledSetIds(next)
-    setChoices(pruneChoices(choices, sets.filter((s) => next.includes(s.id))))
+    setChoices(pruneChoices(choices, sets.filter((s) => next.includes(s.id)), GAME_MODES))
   }
 
   return (
@@ -115,6 +121,18 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
             </label>
           ))}
         </div>
+      </section>
+
+      <section>
+        <h3>Game Mode</h3>
+        <select value={choices.gameModeId} onChange={(e) => update({ gameModeId: e.target.value })}>
+          <option value="">— wybierz —</option>
+          {GAME_MODES.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.name}
+            </option>
+          ))}
+        </select>
       </section>
 
       <section>
@@ -178,22 +196,24 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
       )}
 
       <div className="setup-buttons">
-        <button onClick={() => safely(() => setChoices(completeChoices({}, activeSets)))}>
+        <button onClick={() => safely(() => setChoices(completeChoices({}, activeSets, GAME_MODES)))}>
           Losuj wszystko
         </button>
-        <button onClick={() => safely(() => setChoices(completeChoices(choices, activeSets)))}>
+        <button onClick={() => safely(() => setChoices(completeChoices(choices, activeSets, GAME_MODES)))}>
           Dolosuj brakujące
         </button>
-        <button onClick={() => setChoices(EMPTY_CHOICES)}>Wyczyść</button>
+        <button onClick={() => setChoices({ ...EMPTY_CHOICES, gameModeId: GAME_MODES[0]?.id ?? '' })}>
+          Wyczyść
+        </button>
         {import.meta.env.DEV && (
-          <button onClick={() => setChoices(pruneChoices(DEBUG_PRESET, activeSets))}>
+          <button onClick={() => setChoices(pruneChoices(DEBUG_PRESET, activeSets, GAME_MODES))}>
             Preset debug
           </button>
         )}
         <button
           className="setup-start"
           disabled={problems.length > 0}
-          onClick={() => safely(() => onStart(buildSetup(choices, activeSets)))}
+          onClick={() => safely(() => onStart(buildSetup(choices, activeSets, GAME_MODES)))}
         >
           Start
         </button>

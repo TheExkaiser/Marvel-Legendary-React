@@ -15,6 +15,7 @@ export function drawCards(state: GameState, count: number): void {
     if (state.deck.length === 0 && !reshuffleDiscardIntoDeck(state)) return
     const card = state.deck.pop()!
     state.hand.push(card)
+    state.cardsDrawnThisTurn += 1
   }
 }
 

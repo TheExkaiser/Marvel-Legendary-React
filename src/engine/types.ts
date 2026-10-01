@@ -17,7 +17,7 @@ export interface CardData {
   flavor?: string
   conditionIcons?: string[]   // ikony warunku "jeśli zagrano X w tej turze" (może być kilka, np. ['strength','strength'])
   conditionText?: string      // efekt, który zachodzi przy spełnionym warunku
-  henchman?: boolean   // podtyp villaina: grupa 3 identycznych kart
+  henchman?: boolean   // podtyp villaina: grupa identycznych kart
   villainGroup?: string
 }
 
@@ -72,6 +72,7 @@ export interface GameState {
   ko: CardInstance[]
 
   schemeId: string
+  gameModeId: string
   counters: Record<string, number>
   twistsRevealed: number
 
@@ -93,7 +94,7 @@ export interface GameState {
   cardsDrawnThisTurn: number
   recruitGainedThisTurn: number
   attackGainedThisTurn: number
-  
+
 }
 
 export interface GameSetup {
@@ -108,6 +109,7 @@ export interface GameSetup {
   masterStrikeCard: CardData   // NOWE: generyczna karta "Master Strike" (jak Scheme Twist)
   masterStrikeCount: number    // NOWE: standardowo 5
   scheme: SchemeDef
+  gameMode: GameModeDef
   twist: CardData
 }
 
@@ -122,11 +124,27 @@ export interface SchemeDef {
   setup?: (state: GameState) => void
   onTwist?: (state: GameState, twistNumber: number, ui: UiAdapter) => void | Promise<void>
   onVillainEntered?: (state: GameState, villain: CardInstance) => void
-  onVillainEscaped?: (state: GameState, villain: CardInstance) => void
+  onVillainEscaped?: (state: GameState, villain: CardInstance, lostCaptives: CardInstance[]) => void
   checkLoss?: (state: GameState) => boolean
+
+  // Dodatkowy bonus do siły villaina/mastermina/henchmana, liczony przy każdym sprawdzeniu ataku
+  // (np. Midtown Bank Robbery: +1 za każdego trzymanego bystandera)
+  villainStrengthModifier?: (state: GameState, instance: CardInstance) => number
 
   // Nadpisania domyślnych reguł setupu (patrz engine/setupRules.ts)
   setupRules?: Partial<SetupRules>
+}
+
+/** Tryb rozgrywki (np. Dark City - Advanced Solo). Nadpisuje domyślne reguły setupu
+ * (ale sam jest nadpisywany przez Scheme — patrz resolveRules) i może dorzucać własne
+ * reguły w trakcie gry (auto-dobór po Master Strike, dodatkowy efekt Scheme Twist...). */
+export interface GameModeDef {
+  id: string
+  name: string
+  setupRules?: Partial<SetupRules>
+
+  onMasterStrikeResolved?: (state: GameState, ui: UiAdapter) => void | Promise<void>
+  onSchemeTwistResolved?: (state: GameState, ui: UiAdapter) => void | Promise<void>
 }
 
 /** Grupa kart wybierana w setupie: bohater, grupa villainów albo grupa henchmenów. */
@@ -163,6 +181,7 @@ export interface SetupRules {
   heroes: number
   villainGroups: number
   henchmenGroups: number
+  henchmenCopiesPerGroup: number // ile kopii jednej karty henchmana trafia do talii złoczyńców (kanonicznie 10)
   bystandersInVillainDeck: number
   requiredHeroes: string[]
   requiredVillainGroups: string[]
@@ -171,6 +190,7 @@ export interface SetupRules {
 
 /** Wybory gracza z menu (albo preset debug). Same id, żadnych kart. */
 export interface SetupChoices {
+  gameModeId: string
   schemeId: string
   mastermindId: string
   heroIds: string[]
