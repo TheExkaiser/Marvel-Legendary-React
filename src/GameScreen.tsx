@@ -31,6 +31,9 @@ import { useSettings } from './useSettings'
 import { SettingsMenu } from './components/SettingsMenu'
 import { CapturePrompt } from './components/CapturePrompt'
 import { AttackSplitPrompt } from './components/AttackSplitPrompt'
+import { useEffect, useRef } from 'react'
+import { appendGameLogEntry, formatDate, formatTime, type GameLogMeta } from './gameLog'
+import { GameHistoryMenu } from './components/GameHistoryMenu'
 
 
 // ---------- Stałe ----------
@@ -41,10 +44,12 @@ const SHOW_DEBUG = true
 
 function GameScreen({
   setup,
+  logMeta,
   onExit,
   onRestart = onExit, // dopóki App.tsx nie dostarczy prawdziwego restartu, zachowuje się jak Main Menu
 }: {
   setup: GameSetup
+  logMeta :GameLogMeta
   onExit: () => void
   onRestart?: () => void
 }) {
@@ -53,6 +58,7 @@ function GameScreen({
   const {
     state,
     act,
+    debugAct,
     beginGame,
     cardPrompt,
     answerCardPrompt,
@@ -67,12 +73,34 @@ function GameScreen({
  } = useGame(setup, settings)
     const discardIds = new Set(state.discard.map((c) => c.instanceId))
   useCardFlip(discardIds)
+
+  useEffect(() => {
+  if (state.status === 'playing') return
+  if (loggedRef.current) return
+  loggedRef.current = true
+  if (state.debugUsed) return
+
+  const now = new Date()
+  const result: 'Lose' | number =
+    state.status === 'lost' ? 'Lose' : sumVictoryPoints(state, state.defeated)
+
+  appendGameLogEntry({
+    id: `${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
+    date: formatDate(now),
+    time: formatTime(now),
+    ...logMeta,
+    result,
+  })
+}, [state.status])
   
   const scheme = getScheme(state)
   const [viewingCaptivesOf, setViewingCaptivesOf] = useState<string | null>(null)
   
   const [viewingPile, setViewingPile] = useState<'victory' | 'ko' | 'discard' | null>(null)
 
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const loggedRef = useRef(false)
+  
   const mastermindCaptives = state.captives[state.mastermind.instanceId]?.length ?? 0
   
   const discardTop =
@@ -90,8 +118,12 @@ function GameScreen({
     <div className="app">
       {/* ===== Górny pasek: log (na całą szerokość) + hamburger menu ===== */}
       <LogPanel log={state.log} />
-      <HamburgerMenu onMainMenu={onExit} onRestart={onRestart} onSettings={() => setSettingsOpen(true)} />
-
+      <HamburgerMenu
+        onMainMenu={onExit}
+        onRestart={onRestart}
+        onSettings={() => setSettingsOpen(true)}
+        onHistory={() => setHistoryOpen(true)}
+      />
       {(state.status === 'won' || state.status === 'lost') && (
         <div className="modal-overlay">
           <div className="modal-content game-over-content">
@@ -108,7 +140,7 @@ function GameScreen({
       {/* ===== Wysuwany panel: debug (znika całkowicie po ustawieniu SHOW_DEBUG=false) ===== */}
       {SHOW_DEBUG && (
         <SlideDrawer edge="left" tabLabel="Debug">
-          <DebugPanel state={state} act={act} />
+          <DebugPanel state={state} act={debugAct} />
         </SlideDrawer>
       )}
 
@@ -306,6 +338,8 @@ function GameScreen({
           onConfirm={answerAttackSplitPrompt}
         />
       )}
+
+      {historyOpen && <GameHistoryMenu onClose={() => setHistoryOpen(false)} />}
     </div>
   )
 }

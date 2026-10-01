@@ -144,6 +144,12 @@ export function useGame(setup: GameSetup, settings: Settings) {
     setVersion((v) => v + 1)
   }
 
+  // Jak act(), ale oznacza grę jako "debug used" — taka rozgrywka nie trafia do historii gier.
+function debugAct(action: (state: GameState, ui: UiAdapter) => void | Promise<void>) {
+  state.debugUsed = true
+  return act(action)
+}
+
   return {
     state,
     act,
@@ -158,5 +164,6 @@ export function useGame(setup: GameSetup, settings: Settings) {
     closeCapturePrompt,
     attackSplitPrompt,
     answerAttackSplitPrompt,
+    debugAct,
   }
 }

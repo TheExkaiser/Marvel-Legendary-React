@@ -4,9 +4,10 @@ interface HamburgerMenuProps {
   onMainMenu: () => void
   onRestart: () => void
   onSettings: () => void
+  onHistory: () => void
 }
 
-export function HamburgerMenu({ onMainMenu, onRestart, onSettings }: HamburgerMenuProps) {
+export function HamburgerMenu({ onMainMenu, onRestart, onSettings, onHistory }: HamburgerMenuProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -16,6 +17,14 @@ export function HamburgerMenu({ onMainMenu, onRestart, onSettings }: HamburgerMe
       </button>
       {open && (
         <div className="hamburger-menu">
+          <button
+            onClick={() => {
+              setOpen(false)
+              onHistory()
+            }}
+          >
+            Game History
+          </button>
           <button
             onClick={() => {
               setOpen(false)

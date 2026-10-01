@@ -27,7 +27,7 @@ export function rescueBystander(state: GameState): void {
   if (bystander) state.defeated.push(bystander)
 }
 
-/** Odkryty bystander zostaje jeńcem najdalszego złoczyńcy; bez złoczyńców idzie do KO. */
+/** Odkryty bystander zostaje jeńcem najdalszego złoczyńcy; przy pustym mieście jeńcem zostaje mastermind. */
 export async function captureBystander(
   state: GameState,
   bystander: CardInstance,
@@ -47,5 +47,13 @@ export async function captureBystander(
       return
     }
   }
-  state.ko.push(bystander)
+
+  const list = state.captives[state.mastermind.instanceId] ?? []
+  list.push(bystander)
+  state.captives[state.mastermind.instanceId] = list
+  await ui.showCapture(
+    state.mastermind,
+    bystander,
+    `Bystander captured by ${state.cards[state.mastermind.cardId].name}`,
+  )
 }

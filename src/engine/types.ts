@@ -94,7 +94,7 @@ export interface GameState {
   cardsDrawnThisTurn: number
   recruitGainedThisTurn: number
   attackGainedThisTurn: number
-
+  debugUsed: boolean // true, jeśli użyto czegokolwiek z Debug Panelu — taka gra nie trafia do logu
 }
 
 export interface GameSetup {

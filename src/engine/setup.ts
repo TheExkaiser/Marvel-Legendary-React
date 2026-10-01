@@ -113,6 +113,7 @@ export function createGameState(setup: GameSetup): GameState {
     extraTurnsQueued: 0,
     bonusDrawNextTurn: 0,
     status: 'playing',
+    debugUsed: false,
   }
 
   refillHq(state)

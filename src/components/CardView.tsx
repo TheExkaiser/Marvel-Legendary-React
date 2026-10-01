@@ -28,7 +28,7 @@ function ConditionLine({ data }: { data: CardData }) {
   )
 }
 
-// Mała odznaka na karcie (attack.png + wartość) pokazująca modyfikator ataku.
+// Mała odznaka na karcie (attack.png + wartość) pokazująca AKTUALNĄ siłę, gdy odbiega od bazowej.
 function AttackModifierBadge({ data, effectiveStrength }: { data: CardData; effectiveStrength?: number }) {
   const baseStrength = data.strength
   let text: string
@@ -40,9 +40,8 @@ function AttackModifierBadge({ data, effectiveStrength }: { data: CardData; effe
     color = '#d4b106'
   } else {
     if (effectiveStrength === undefined || effectiveStrength === baseStrength) return null
-    const delta = effectiveStrength - baseStrength
-    text = delta > 0 ? `+${delta}` : String(delta)
-    color = delta > 0 ? 'red' : 'green'
+    text = String(effectiveStrength)
+    color = effectiveStrength > baseStrength ? 'red' : 'green'
   }
 
   return (
@@ -50,7 +49,7 @@ function AttackModifierBadge({ data, effectiveStrength }: { data: CardData; effe
       <img
         className="attack-modifier-icon"
         src={`${import.meta.env.BASE_URL}icons/attack.png`}
-        alt="Attack modifier"
+        alt="Attack"
       />
       <span className="attack-modifier-value" style={{ color }}>{text}</span>
     </div>

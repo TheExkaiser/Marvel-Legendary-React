@@ -1071,3 +1071,34 @@ button:disabled {
   gap: 8px;
   margin-top: 8px;
 }
+
+.history-content {
+  max-width: 1300px;
+  width: 95vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-table-wrap {
+  overflow: auto;
+  flex: 1;
+}
+
+.history-actions {
+  margin: 8px 0 12px;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.history-table th,
+.history-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+  text-align: left;
+  white-space: nowrap;
+}

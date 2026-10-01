@@ -5,11 +5,13 @@ import { DEFAULT_SETUP_RULES, resolveRules } from '../engine/setupRules'
 import { EMPTY_CHOICES, completeChoices, pruneChoices } from '../engine/setupChoices'
 import { GAME_MODES } from '../data/gameModes'
 import { DEBUG_PRESET } from '../data/sets/setup'
+import { consumePendingSetupChoices, type GameLogMeta } from '../gameLog'
+import { GameHistoryMenu } from './GameHistoryMenu'
 import './SetupMenu.css'
 
 interface SetupMenuProps {
   sets: SetData[]
-  onStart: (setup: GameSetup) => void
+  onStart: (setup: GameSetup, logMeta: GameLogMeta) => void
 }
 
 function toggleId(list: string[], id: string): string[] {
@@ -67,26 +69,30 @@ function PickList({ title, items, selected, max, required, onChange }: PickListP
 
 export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   const [enabledSetIds, setEnabledSetIds] = useState<string[]>(() => sets.map((s) => s.id))
-  const [choices, setChoices] = useState<SetupChoices>(() => ({
-    ...EMPTY_CHOICES,
-    gameModeId: GAME_MODES[0]?.id ?? '', // domyślnie Dark City - Advanced Solo
-  }))
+  const [choices, setChoices] = useState<SetupChoices>(() => {
+    const pending = consumePendingSetupChoices()
+    const base = pending ? pruneChoices(pending, sets, GAME_MODES) : EMPTY_CHOICES
+    return { ...base, gameModeId: base.gameModeId || GAME_MODES[0]?.id || '' }
+  })
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   // Pula do wyboru = suma zaznaczonych zestawów
   const activeSets = sets.filter((s) => enabledSetIds.includes(s.id))
   const schemes = activeSets.flatMap((s) => s.schemes)
   const masterminds = activeSets.flatMap((s) => s.masterminds)
+  const heroGroups = activeSets.flatMap((s) => s.heroes)
+  const villainGroups = activeSets.flatMap((s) => s.villainGroups)
+  const henchmenGroups = activeSets.flatMap((s) => s.henchmenGroups)
 
   const gameMode = GAME_MODES.find((m) => m.id === choices.gameModeId)
   const scheme = schemes.find((s) => s.id === choices.schemeId)
+  const mastermind = masterminds.find((m) => m.card.id === choices.mastermindId)
   const rules = gameMode && scheme ? resolveRules(gameMode, scheme) : DEFAULT_SETUP_RULES
 
   const problems: string[] = []
   if (!gameMode) problems.push('Wybierz game mode')
   if (!scheme) problems.push('Wybierz scheme')
-  if (!masterminds.some((m) => m.card.id === choices.mastermindId)) {
-    problems.push('Wybierz masterminda')
-  }
+  if (!mastermind) problems.push('Wybierz masterminda')
   problems.push(...getSetupProblems(choices, rules))
 
   function update(patch: Partial<SetupChoices>) {
@@ -102,10 +108,31 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
     setChoices(pruneChoices(choices, sets.filter((s) => next.includes(s.id)), GAME_MODES))
   }
 
+  function start() {
+    if (!gameMode || !scheme || !mastermind) return
+    const setup = buildSetup(choices, activeSets, GAME_MODES)
+    const logMeta: GameLogMeta = {
+      choices,
+      gameModeName: gameMode.name,
+      schemeName: scheme.name,
+      mastermindName: mastermind.card.name,
+      heroNames: heroGroups.filter((g) => choices.heroIds.includes(g.id)).map((g) => g.name),
+      villainGroupNames: villainGroups
+        .filter((g) => choices.villainGroupIds.includes(g.id))
+        .map((g) => g.name),
+      henchmenGroupNames: henchmenGroups
+        .filter((g) => choices.henchmenGroupIds.includes(g.id))
+        .map((g) => g.name),
+    }
+    onStart(setup, logMeta)
+  }
+
   return (
     <div className="setup-menu">
       <h1>Marvel Legendary</h1>
       <h2>Nowa gra</h2>
+
+      <button onClick={() => setHistoryOpen(true)}>Game History</button>
 
       <section>
         <h3>Zestawy</h3>
@@ -164,7 +191,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
 
       <PickList
         title="Bohaterowie"
-        items={activeSets.flatMap((s) => s.heroes)}
+        items={heroGroups}
         selected={choices.heroIds}
         max={rules.heroes}
         required={rules.requiredHeroes}
@@ -172,7 +199,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
       />
       <PickList
         title="Grupy villainów"
-        items={activeSets.flatMap((s) => s.villainGroups)}
+        items={villainGroups}
         selected={choices.villainGroupIds}
         max={rules.villainGroups}
         required={rules.requiredVillainGroups}
@@ -180,7 +207,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
       />
       <PickList
         title="Grupy henchmenów"
-        items={activeSets.flatMap((s) => s.henchmenGroups)}
+        items={henchmenGroups}
         selected={choices.henchmenGroupIds}
         max={rules.henchmenGroups}
         required={rules.requiredHenchmenGroups}
@@ -210,14 +237,20 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
             Preset debug
           </button>
         )}
-        <button
-          className="setup-start"
-          disabled={problems.length > 0}
-          onClick={() => safely(() => onStart(buildSetup(choices, activeSets, GAME_MODES)))}
-        >
+        <button className="setup-start" disabled={problems.length > 0} onClick={() => safely(start)}>
           Start
         </button>
       </div>
+
+      {historyOpen && (
+        <GameHistoryMenu
+          onClose={() => setHistoryOpen(false)}
+          onApply={(choices) => {
+            setChoices(pruneChoices(choices, activeSets, GAME_MODES))
+            setHistoryOpen(false)
+          }}
+        />
+      )}
     </div>
   )
 }
