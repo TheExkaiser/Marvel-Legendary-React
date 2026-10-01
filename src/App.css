@@ -1100,5 +1100,21 @@ button:disabled {
   padding: 6px 8px;
   border-bottom: 1px solid rgba(128, 128, 128, 0.3);
   text-align: left;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.history-table th:nth-child(5),
+.history-table td:nth-child(5) {
+  min-width: 140px;
+}
+
+.history-table th:nth-child(9),
+.history-table td:nth-child(9) {
+  min-width: 100px;
+}
+
+.history-table th:nth-child(2),
+.history-table td:nth-child(2) {
+  min-width: 70px;
 }
