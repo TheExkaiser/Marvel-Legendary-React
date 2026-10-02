@@ -37,11 +37,11 @@ function AttackModifierBadge({ data, effectiveStrength }: { data: CardData; effe
   if (baseStrength === undefined) {
     if (effectiveStrength === undefined) return null
     text = String(effectiveStrength)
-    color = '#d4b106'
+    color = '#ffd93d'
   } else {
     if (effectiveStrength === undefined || effectiveStrength === baseStrength) return null
     text = String(effectiveStrength)
-    color = effectiveStrength > baseStrength ? 'red' : 'green'
+    color = effectiveStrength > baseStrength ? '#ff6b6b' : '#4ade80'
   }
 
   return (

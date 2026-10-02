@@ -91,6 +91,7 @@ export function createGameState(setup: GameSetup): GameState {
     recruitCountsAsAttackThisTurn: false,
     cardsDrawnThisTurn: 0,
     recruitGainedThisTurn: 0,
+    pendingSurgeOfPower: 0,
     attackGainedThisTurn: 0,
     ko: [],
 
@@ -124,5 +125,6 @@ export function createGameState(setup: GameSetup): GameState {
 /** Start gry: pierwsza ręka + pierwsza faza złoczyńcy. */
 export async function startGame(state: GameState, ui: UiAdapter): Promise<void> {
   drawCards(state, HAND_SIZE)
+  state.cardsDrawnThisTurn = 0 // pierwsza ręka też się nie liczy jako "extra"
   await villainPhase(state, ui)
 }

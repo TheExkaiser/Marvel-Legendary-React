@@ -287,7 +287,7 @@ registerCardAbility('hero-hawkeye-quick-draw', async (state) => {
 })
 
 registerCardAbility('hero-hawkeye-team-player', async (state) => {
-  if (hasCard(state, { team: 'avengers' })) {
+  if (countPlayedThisTurn(state, { team: 'avengers'}) > 0) {
     addAttack(state, 1)
   }
 })
@@ -619,6 +619,8 @@ registerCardAbility('hero-thor-odinson', async (state) => {
 registerCardAbility('hero-thor-surge-of-power', async (state) => {
   if (state.recruitGainedThisTurn >= 8) {
     addAttack(state, 3)
+  } else {
+    state.pendingSurgeOfPower += 1
   }
 })
 

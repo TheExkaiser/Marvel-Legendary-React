@@ -145,6 +145,11 @@ export function revealZone(state: GameState): CardInstance[] {
   return [...state.hand, ...state.played]
 }
 
+// PLAYED = tylko karty aktualnie leżące w "played" (w przeciwieństwie do revealZone, NIE liczy ręki)
+export function playedZone(state: GameState): CardInstance[] {
+  return [...state.played]
+}
+
 export function haveCards(state: GameState, filter: CardFilter = {}): CardInstance[] {
   return haveZone(state).filter((c) => matchesFilter(state, c, filter))
 }
@@ -153,12 +158,20 @@ export function revealCards(state: GameState, filter: CardFilter = {}): CardInst
   return revealZone(state).filter((c) => matchesFilter(state, c, filter))
 }
 
+export function playedCards(state: GameState, filter: CardFilter = {}): CardInstance[] {
+  return playedZone(state).filter((c) => matchesFilter(state, c, filter))
+}
+
 export function hasCard(state: GameState, filter: CardFilter): boolean {
   return haveCards(state, filter).length > 0
 }
 
 export function canReveal(state: GameState, filter: CardFilter): boolean {
   return revealCards(state, filter).length > 0
+}
+
+export function hasPlayedCard(state: GameState, filter: CardFilter): boolean {
+  return playedCards(state, filter).length > 0
 }
 
 // Efektywna siła złoczyńcy/mastermina/henchmana: bazowe `strength` (albo koszt przypiętej karty),

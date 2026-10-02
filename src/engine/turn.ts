@@ -71,6 +71,7 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.cardsDrawnThisTurn = 0
   state.recruitGainedThisTurn = 0
   state.attackGainedThisTurn = 0
+  state.pendingSurgeOfPower = 0
 
   const drawAmount = HAND_SIZE + state.bonusDrawNextTurn
   state.bonusDrawNextTurn = 0
@@ -85,4 +86,8 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
     addReservedCardToHand(state)
     await villainPhase(state, ui)
   }
+
+  // Standardowe dobranie ręki na start tury NIE liczy się jako "extra" karty
+  // (Berserker Rage, ewentualne przyszłe karty tego typu) — licznik startuje od zera dopiero teraz.
+  state.cardsDrawnThisTurn = 0
 }
