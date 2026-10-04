@@ -1118,3 +1118,191 @@ button:disabled {
 .history-table td:nth-child(2) {
   min-width: 70px;
 }
+
+/* =========================================================
+   12. WĄSKIE EKRANY (TELEFONY)
+   ========================================================= */
+
+@media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
+  .app {
+    padding: 40px 6px 150px;
+  }
+
+  .card,
+  .slot-empty,
+  .deck-pile {
+    width: 80px;
+  }
+
+  .card-text {
+    padding: 2px;
+    font-size: 7px;
+  }
+
+  .row {
+    gap: 4px;
+    min-height: 62px;
+  }
+
+  .board-top {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .city-row,
+  .row-with-deck,
+  .recruit-row {
+    gap: 4px;
+  }
+
+  .deck-group > .deck-pile:nth-child(2) {
+    margin-left: 10px;
+  }
+
+  .stats-panel {
+    top: 4px;
+    left: 4px;
+    padding: 4px 6px;
+    gap: 3px;
+  }
+
+  .stat-row {
+    gap: 6px;
+  }
+
+  .stat-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .stat-value {
+    font-size: 11px;
+  }
+
+  .stats-panel-extra {
+    width: 120px;
+  }
+
+  .piles-panel {
+    width: 42px;
+    padding: 4px 6px;
+    bottom: 4px;
+    left: 4px;
+  }
+
+  .hand-fan {
+    padding: 0 6px 3px;
+  }
+
+  .hand-slot {
+    margin-left: -13px;
+  }
+
+  .end-turn-button {
+    bottom: 30px;
+    right: 80px;
+    padding: 7px 11px;
+    font-size: 10px;
+  }
+
+  .zoom-image {
+    width: 110px;
+  }
+
+  .captured-thumb {
+    width: 21px;
+  }
+
+  .deck-count {
+    font-size: 11px;
+    bottom: 3px;
+  }
+
+  .attack-modifier-badge {
+    width: 24px;
+    height: 24px;
+    bottom: -3px;
+    right: -3px;
+  }
+
+  .attack-modifier-value {
+    font-size: 9px;
+  }
+
+  .captured-badge {
+    width: 9px;
+    height: 12px;
+  }
+
+  .captured-badge-value {
+    font-size: 6px;
+  }
+
+  .log-bar {
+    max-width: calc(60vw - 16px);
+    font-size: 10px;
+    padding: 4px 7px;
+  }
+    .zone-title {
+    min-height: 20px;
+    margin-bottom: 4px;
+    font-size: 10px;
+  }
+
+  .slot-empty {
+    font-size: 7px;
+  }
+
+  .markers {
+    font-size: 8px;
+  }
+
+  .officer-slot {
+    padding-right: 6px;
+    margin-right: 4px;
+    font-size: 8px;
+  }
+
+  .board-top,
+  .city-row,
+  .recruit-row,
+  .row-with-deck {
+    flex-wrap: wrap;
+  }
+
+  .city-slot,
+  .mastermind-slot {
+    min-width: 0;
+  }
+
+    .city-slot {
+    flex: 0 1 auto;
+  }
+
+  .row-with-deck .row {
+    flex: 0 1 auto;
+  }
+
+  .city-row .deck-pile,
+  .deck-end {
+    margin-left: 0;
+  }
+
+    .board-top,
+  .row-with-deck {
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .recruit-row {
+    padding-left: 6px;
+  }
+
+  .row-with-deck {
+    padding-left: 6px;
+  }
+
+  .city-row .deck-pile {
+    margin-left: 6px;
+  }
+}
