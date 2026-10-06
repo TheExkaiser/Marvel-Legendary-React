@@ -257,7 +257,6 @@ function GameScreen({
             topCard={discardTop}
             onClick={() => setViewingPile('discard')}
           />
-          
           {teleported.length > 0 && (
             <DeckPile
               count={teleported.length}
@@ -267,7 +266,6 @@ function GameScreen({
               onClick={() => setViewingPile('teleport')}
             />
           )}
-
         </div>
       </div>
 
@@ -288,7 +286,27 @@ function GameScreen({
                   data={state.cards[c.cardId]}
                   flipId={c.instanceId}
                   flipFrom="deck"
-                  onClick={() => act((s, ui) => playCard(s, c.instanceId, ui))}
+                  onClick={() =>
+                    act(async (s, ui) => {
+                      const data = s.cards[c.cardId]
+                      if (data.keywords?.includes('teleport')) {
+                        const choice = await ui.chooseOptionWithCard(
+                          c,
+                          [
+                            { id: 'play', label: 'Play' },
+                            { id: 'teleport', label: 'Teleport' },
+                          ],
+                          'Zagrać kartę czy teleportować?',
+                        )
+                        if (choice === 'teleport') {
+                          teleportCard(s, c.instanceId)
+                          return
+                        }
+                        if (choice !== 'play') return
+                      }
+                      await playCard(s, c.instanceId, ui)
+                    })
+                  }
                 />
               </div>
             )

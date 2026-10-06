@@ -1,9 +1,22 @@
 /* =========================================================
    MARVEL LEGENDARY: SZATA GRAFICZNA
-   Baza: #063A4F (głęboki teal). Akcenty: cyan (klikalne),
+   Baza: granat (#183561). Akcenty: cyan (klikalne),
    gold (VP/wyróżnienia), hot (zagrożenie/zamknij).
    Fonty: Big Shoulders Display (nagłówki), Manrope (tekst).
    Bez internetu wchodzą fonty zastępcze.
+
+   SPIS TREŚCI
+    0. Tokeny
+    1. Baza (reset, typografia, tło)
+    2. Przyciski
+    3. Karty i sloty (+ odznaki na kartach)
+    4. Plansza (Mastermind, miasto, HQ, zagrane)
+    5. Talie i stosy (deck, discard, teleport)
+    6. Ręka (wachlarz)
+    7. Stałe panele (statystyki, zakończ turę, log, hamburger, drawery)
+    8. Modale i okna (zoom, log, stosy, capture, historia, debug)
+    9. Do sprawdzenia (prawdopodobnie nieużywane)
+   10. Media queries (wąskie ekrany, telefony, reduced motion)
    ========================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Manrope:wght@400;600;800&display=swap');
@@ -13,6 +26,7 @@
    ========================================================= */
 
 :root {
+  /* Kolory */
   --base: #183561;
   --deep: #111f3f;
   --abyss: #090f26;
@@ -25,21 +39,26 @@
   --text: #eaf1fb;
   --muted: #9fb3d1;
 
+  /* Typografia */
   --font-display: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
   --font-body: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
+  /* Kształty i efekty */
   --radius: 6px;
   --glow-cyan: 0 0 0 2px var(--cyan), 0 0 22px rgba(56, 225, 255, 0.55);
+
+  /* Wymiary kart i stosów (na telefonie nadpisywane w sekcji 10) */
+  --card-w: 120px;
+  --pile-gap: 32px; /* odstęp między stosami: talia, discard, teleport */
 
   /* Prawy margines wewnątrz panelu planszy (padding 14 + ramka 1): talie stoją w jednej kolumnie */
   --board-inset: 15px;
 }
 
-
-
 /* =========================================================
-   1. LAYOUT OGÓLNY
+   1. BAZA
    ========================================================= */
+
 *,
 *::before,
 *::after {
@@ -112,19 +131,20 @@ p {
   line-height: 1.5;
 }
 
+details summary {
+  cursor: pointer;
+  margin: 8px 0;
+  font-weight: 800;
+  color: var(--cyan);
+}
+
+/* Wiersz kart (HQ, zagrane, miasto) */
 .row {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
   min-height: 170px;
   align-items: flex-start;
-}
-
-details summary {
-  cursor: pointer;
-  margin: 8px 0;
-  font-weight: 800;
-  color: var(--cyan);
 }
 
 /* =========================================================
@@ -166,9 +186,8 @@ button:disabled {
 
 .card {
   position: relative;
-  width: 120px;
+  width: var(--card-w);
   aspect-ratio: 5 / 7;
-  box-sizing: border-box;
   border: 0 solid transparent;
   border-radius: var(--radius);
   background: var(--deep);
@@ -203,9 +222,8 @@ button:disabled {
 }
 
 .slot-empty {
-  width: 120px;
+  width: var(--card-w);
   aspect-ratio: 5 / 7;
-  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -217,25 +235,133 @@ button:disabled {
   font-size: 18px;
 }
 
-.captive-badge {
-  display: block;
-  margin: 6px auto 0;
-  padding: 2px 10px;
-  border: none;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #ffd76e, var(--gold));
-  color: #2a1b00;
-  font-size: 12px;
-}
-
 .markers {
   color: var(--gold);
   font-size: 14px;
   font-weight: 600;
 }
 
+/* --- Linia warunku (ikony + tekst) --- */
+
+.condition-line {
+  display: inline;
+}
+
+.condition-icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  display: inline-block;
+}
+
+/* --- Odznaka aktualnej siły (prawy dolny róg karty) --- */
+
+.attack-modifier-badge {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  z-index: 10;
+  width: 62px;
+  height: 62px;
+}
+
+.attack-modifier-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.attack-modifier-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 900;
+  text-shadow:
+    2px 0 0 #000,
+    -2px 0 0 #000,
+    0 2px 0 #000,
+    0 -2px 0 #000,
+    2px 2px 0 #000,
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000;
+}
+
+/* --- Odznaka złapanych kart (lewy górny róg karty) --- */
+
+.captured-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 10;
+  width: 20px;
+  height: 26px;
+  border-radius: 4px;
+  background: linear-gradient(160deg, #ffcf75, #ffa72c);
+  box-shadow: 0 0 0 1.5px #000, 0 2px 5px rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.captured-badge-value {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 900;
+  color: #000;
+}
+
+/* --- Miniaturki złapanych kart (w oknie zoomu) --- */
+
+.captured-cards-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.captured-thumb {
+  position: relative;
+  width: 44px;
+  aspect-ratio: 5 / 7;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s;
+}
+
+.captured-thumb:hover {
+  transform: scale(1.3);
+  z-index: 20;
+}
+
+.captured-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.captured-thumb-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  font-size: 7px;
+  text-align: center;
+  background: var(--deep);
+  color: var(--muted);
+}
+
 /* =========================================================
-   4. PLANSZA: MASTERMIND + MIASTO, REKRUTACJA
+   4. PLANSZA: MASTERMIND + MIASTO, REKRUTACJA, ZAGRANE
    ========================================================= */
 
 .board-top {
@@ -269,18 +395,6 @@ button:disabled {
   color: var(--text);
 }
 
-.officer-slot {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding-right: 14px;
-  margin-right: 8px;
-  border-right: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 13px;
-}
-
 /* Miasto zajmuje resztę szerokości panelu; talia villainów jest dosunięta do prawej */
 .city-slot {
   flex: 1;
@@ -301,12 +415,25 @@ button:disabled {
   margin-left: auto;
 }
 
-/* Rekrutacja: prawa krawędź talii bohaterów = krawędź talii villainów */
+/* Rekrutacja: oficer + HQ + talia bohaterów */
+.officer-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-right: 14px;
+  margin-right: 8px;
+  border-right: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* Prawa krawędź talii bohaterów = krawędź talii villainów */
 .recruit-row {
   padding-right: var(--board-inset);
 }
 
-/* Zagrane karty + talia gracza */
+/* Zagrane karty + talia gracza (talia, discard i teleport: sekcja 5) */
 .row-with-deck {
   display: flex;
   gap: 12px;
@@ -319,188 +446,161 @@ button:disabled {
 }
 
 /* =========================================================
-   5. PANEL DEBUG
+   5. TALIE I STOSY (rewers + grubość stosu)
    ========================================================= */
 
-.debug {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin: 12px 0;
-  padding: 10px 12px;
-  border: 1px dashed rgba(255, 193, 69, 0.5);
-  border-radius: var(--radius);
-  background: rgba(1, 18, 26, 0.5);
+.deck-pile {
+  position: relative;
+  width: var(--card-w);
+  aspect-ratio: 5 / 7;
+  flex-shrink: 0;
+  margin-left: 4px; /* miejsce na lewą ściankę talii */
 }
 
-.debug-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.deck-pile.clickable {
+  cursor: pointer;
 }
 
-.debug input[type='number'] {
-  width: 56px;
-  padding: 6px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--abyss);
-  color: var(--text);
-}
-
-/* =========================================================
-   6. MODALE (popupy, zoom karty)
-   ========================================================= */
-
-.modal-overlay {
-  position: fixed;
+.deck-face {
+  position: absolute;
   inset: 0;
-  z-index: 100;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.deck-face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.deck-back-fallback {
+  width: 100%;
+  height: 100%;
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.06) 0 8px, transparent 8px 16px),
+    linear-gradient(160deg, #0d5b7a, var(--deep));
+}
+
+.deck-empty {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
-  background: rgba(1, 12, 18, 0.78);
-  backdrop-filter: blur(8px);
+  border: 2px dashed var(--line);
+  border-radius: var(--radius);
 }
 
-.modal-content {
-  position: relative;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  padding: 20px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: linear-gradient(170deg, var(--panel-solid), var(--deep));
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(56, 225, 255, 0.08);
-}
-
-/* Okno pojawia się tylko po akcji gracza, więc animacja wejścia jest uzasadniona */
-.modal-content {
-  animation: pop 0.18s ease-out;
-}
-
-@keyframes pop {
-  from {
-    opacity: 0;
-    transform: scale(0.94) translateY(8px);
-  }
-}
-
-.close-button {
+/* Liczba kart: pastylka przy dolnej krawędzi rewersu */
+.deck-count {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: var(--hot);
-  color: #fff;
-  font-size: 14px;
-  line-height: 1;
-}
-
-/* Zoom karty */
-
-.zoom-button {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  z-index: 10;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: rgba(1, 18, 26, 0.7);
-  backdrop-filter: blur(4px);
-  font-size: 12px;
-  line-height: 1;
-}
-
-.zoom-content {
-  max-width: 520px;
-}
-
-.zoom-body {
-  display: flex;
-  gap: 18px;
-  align-items: flex-start;
-}
-
-.zoom-image {
-  width: 250px;
-  max-width: 100%;
-  flex-shrink: 0;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-}
-
-.zoom-details p {
-  margin: 6px 0;
-  color: var(--text);
-}
-
-.zoom-details strong {
-  color: var(--gold);
-}
-
-/* =========================================================
-   7. LOG
-   ========================================================= */
-
-.log-bar {
-  position: fixed;
-  top: 0;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
-  width: 1000px;
-  max-width: calc(100vw - 80px);
-  z-index: 55;
-  margin-bottom: 0;
-  padding: 10px 16px;
+  padding: 2px 14px;
   border: 1px solid var(--line);
-  border-top: none;
-  border-radius: 0 0 14px 14px;
-  background: var(--panel);
-  backdrop-filter: blur(6px);
-  font-size: 14px;
+  border-radius: 999px;
+  background: rgba(1, 18, 26, 0.75);
+  backdrop-filter: blur(4px);
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.deck-empty .deck-count {
+  position: static;
+  transform: none;
+  border: none;
+  background: none;
+  color: var(--muted);
+}
+
+/* Podpis stosu (np. "Teleport"): ciemna pastylka nad cieniem stosu */
+.deck-label {
+  position: relative;
+  z-index: 1;
+  margin-top: 22px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 0.75rem;
+  text-align: center;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-  transition: border-color 0.15s;
 }
 
-.log-bar:hover {
-  border-color: var(--cyan);
+/* Talia bohaterów: dosunięta do prawej krawędzi wiersza HQ */
+.deck-end {
+  margin-left: auto;
 }
 
-.log-modal {
-  max-width: 900px;
-  width: 90vw;
+/* Stosy gracza: talia stoi w kolumnie z pozostałymi taliami,
+   discard i teleport "wiszą" po jej prawej stronie (pozycjonowane po data-deck-id).
+   Teleport jest dalej od talii niż discard: talia | discard | teleport */
+.deck-group {
+  position: relative;
+  flex-shrink: 0;
 }
 
-.log-list {
-  max-height: 60vh;
-  overflow-y: auto;
-  margin-bottom: 12px;
-  text-align: left;
-  font-size: 14px;
+.deck-group > .deck-pile[data-deck-id='discard'] {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin-left: var(--pile-gap);
 }
 
-.log-list div {
-  padding: 4px 0;
-  border-bottom: 1px solid var(--line);
+.deck-group > .deck-pile[data-deck-id='teleport'] {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin-left: calc(2 * var(--pile-gap) + var(--card-w));
 }
 
 /* =========================================================
-   8. STAŁE PANELE PRZYKLEJONE DO EKRANU
-   (z-index 50: nad planszą, pod modalami = 100)
+   6. RĘKA: WACHLARZ PRZYKLEJONY DO DOŁU EKRANU
+   ========================================================= */
+
+.hand-dock {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  z-index: 50;
+  pointer-events: none; /* pusty obszar nie blokuje klikania w planszę */
+}
+
+.hand-fan {
+  display: flex;
+  justify-content: center;
+  padding: 0 40px 6px;
+}
+
+.hand-slot {
+  pointer-events: auto; /* same karty są klikalne */
+  margin-left: -34px; /* nakładanie kart */
+  transform-origin: 50% 130%;
+  transform: translateY(var(--drop)) rotate(var(--rot));
+  transition: transform 0.18s;
+}
+
+.hand-slot:first-child {
+  margin-left: 0;
+}
+
+.hand-slot:hover {
+  z-index: 20;
+  transform: translateY(-36px) rotate(0deg) scale(1.12);
+}
+
+/* Uniesieniem zajmuje się .hand-slot, więc wyłączamy podwójny efekt */
+.hand-slot .clickable:hover {
+  transform: none;
+}
+
+/* =========================================================
+   7. STAŁE PANELE PRZYKLEJONE DO EKRANU
+   z-index: 50 plansza i panele, 54-56 drawery, 55 log, 60 hamburger, 100 modale
    ========================================================= */
 
 /* --- Statystyki: lewy górny róg --- */
@@ -532,6 +632,38 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-clickable {
+  cursor: pointer;
+}
+
+.stat-clickable:hover {
+  opacity: 0.8;
+}
+
+.stat-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.stat-label {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
 }
 
 .stat-info-icon {
@@ -572,67 +704,6 @@ button:disabled {
   font-size: 13px;
 }
 
-.stat {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.stat-icon {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-}
-
-.stat-label {
-  color: var(--muted);
-  font-weight: 600;
-}
-
-.stat-value {
-  font-family: var(--font-display);
-  font-size: 26px;
-  font-weight: 900;
-  line-height: 1;
-}
-
-/* --- Talia i stosy: lewy dolny róg --- */
-
-.piles-panel {
-  position: fixed;
-  bottom: 12px;
-  left: 12px;
-  z-index: 50;
-  width: 100px;
-  max-height: 60vh;
-  overflow-y: auto;
-  padding: 10px 14px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--panel);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-  display: flex;
-  flex-direction: column; /* przyciski jeden pod drugim */
-  gap: 8px;
-}
-
-.pile-line {
-  font-weight: 800;
-}
-
-.piles-row {
-  min-height: 0;
-}
-
-.pile-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  max-height: 70vh;
-  overflow-y: auto; /* przewijanie, gdy kart jest dużo */
-}
-
 /* --- Zakończ turę: prawy dolny róg, największy i najgorętszy przycisk --- */
 
 .end-turn-button {
@@ -654,172 +725,35 @@ button:disabled {
   box-shadow: 0 10px 40px rgba(255, 61, 87, 0.85);
 }
 
-/* =========================================================
-   9. WĄSKIE EKRANY I PREFERENCJE
-   ========================================================= */
+/* --- Log: pasek na górze ekranu --- */
 
-@media (max-width: 1100px) {
-  .stats-panel {
-    padding: 8px 10px;
-  }
-  .stat-value {
-    font-size: 20px;
-  }
-}
-
-@media (max-width: 700px) {
-  .board-top {
-    flex-direction: column;
-  }
-  .zoom-body {
-    flex-direction: column;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-/* =========================================================
-   RĘKA: WACHLARZ PRZYKLEJONY DO DOŁU EKRANU
-   ========================================================= */
-
-.hand-dock {
+.log-bar {
   position: fixed;
-  left: 50%;
-  bottom: 0;
-  transform: translateX(-50%);
-  z-index: 50;
-  pointer-events: none; /* pusty obszar nie blokuje klikania w planszę */
-}
-
-.hand-fan {
-  display: flex;
-  justify-content: center;
-  padding: 0 40px 6px;
-}
-
-.hand-slot {
-  pointer-events: auto; /* same karty są klikalne */
-  margin-left: -34px; /* nakładanie kart */
-  transform-origin: 50% 130%;
-  transform: translateY(var(--drop)) rotate(var(--rot));
-  transition: transform 0.18s;
-}
-
-.hand-slot:first-child {
-  margin-left: 0;
-}
-
-.hand-slot:hover {
-  z-index: 20;
-  transform: translateY(-36px) rotate(0deg) scale(1.12);
-}
-
-/* uniesieniem zajmuje się teraz .hand-slot, więc wyłączamy podwójny efekt */
-.hand-slot .clickable:hover {
-  transform: none;
-}
-/* =========================================================
-   TALIE (rewers + grubość stosu)
-   ========================================================= */
-
-.deck-pile {
-  position: relative;
-  width: 120px;
-  aspect-ratio: 5 / 7;
-  flex-shrink: 0;
-  margin-left: 4px; /* miejsce na lewą ściankę talii */
-}
-
-.deck-face {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.deck-face img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.deck-back-fallback {
-  width: 100%;
-  height: 100%;
-  background:
-    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.06) 0 8px, transparent 8px 16px),
-    linear-gradient(160deg, #0d5b7a, var(--deep));
-}
-
-.deck-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px dashed var(--line);
-  border-radius: var(--radius);
-  box-sizing: border-box;
-}
-
-/* Liczba kart: pastylka na środku rewersu */
-.deck-count {
-  position: absolute;
-  bottom: 10px; /* było: top: 50% */
-  left: 50%;
-  transform: translateX(-50%); /* było: translate(-50%, -50%) */
-  padding: 2px 14px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: rgba(1, 18, 26, 0.75);
-  backdrop-filter: blur(4px);
-  font-family: var(--font-display);
-  font-size: 28px; /* było: 34px, żeby mniej zasłaniała dół grafiki */
-  font-weight: 900;
-  line-height: 1.1;
-}
-
-.deck-empty .deck-count {
-  position: static;
-  transform: none;
-  border: none;
-  background: none;
-  color: var(--muted);
-}
-
-/* Talia bohaterów: dosunięta do prawej krawędzi wiersza HQ */
-.deck-end {
-  margin-left: auto;
-}
-
-.deck-group {
-  position: relative;
-}
-
-.deck-group > .deck-pile:nth-child(2) {
-  position: absolute;
   top: 0;
-  left: 100%;
-  margin-left: 32px;
-}
-
-.deck-pile.clickable {
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1000px;
+  max-width: calc(100vw - 80px);
+  z-index: 55;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  background: var(--panel);
+  backdrop-filter: blur(6px);
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
+  transition: border-color 0.15s;
 }
 
-.stat-clickable {
-  cursor: pointer;
-}
-.stat-clickable:hover {
-  opacity: 0.8;
+.log-bar:hover {
+  border-color: var(--cyan);
 }
 
-/* =========================================================
-   10. HAMBURGER MENU (prawy górny róg)
-   ========================================================= */
+/* --- Hamburger menu: prawy górny róg --- */
 
 .hamburger-wrap {
   position: fixed;
@@ -844,23 +778,20 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 160px;
   padding: 8px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--panel-solid);
   backdrop-filter: blur(10px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  min-width: 160px;
 }
 
 .hamburger-menu button {
   width: 100%;
 }
 
-/* =========================================================
-   11. WYSUWANE PANELE (drawer): Info (prawa krawędź), Debug (lewa krawędź)
-   z-index 54/55: nad planszą (50), pod hamburgerem (60) i modalami (100)
-   ========================================================= */
+/* --- Wysuwane panele (drawer): Info (prawa krawędź), Debug (lewa krawędź) --- */
 
 .drawer-tab {
   position: fixed;
@@ -944,115 +875,134 @@ button:disabled {
   white-space: normal;
 }
 
-.condition-line {
-  display: inline;
-}
-.condition-icon {
-  width: 1em;
-  height: 1em;
-  vertical-align: -0.15em;
-  display: inline-block;
-}
+/* =========================================================
+   8. MODALE I OKNA
+   ========================================================= */
 
-.attack-modifier-badge {
-  position: absolute;
-  bottom: -8px;
-  right: -8px;
-  z-index: 10;
-  width: 62px;
-  height: 62px;
-}
-
-.attack-modifier-icon {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.attack-modifier-value {
-  position: absolute;
+.modal-overlay {
+  position: fixed;
   inset: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 900;
-  text-shadow:
-    2px 0 0 #000,
-    -2px 0 0 #000,
-    0 2px 0 #000,
-    0 -2px 0 #000,
-    2px 2px 0 #000,
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000;
+  padding: 16px;
+  background: rgba(1, 12, 18, 0.78);
+  backdrop-filter: blur(8px);
 }
 
-.captured-badge {
+/* Okno pojawia się tylko po akcji gracza, więc animacja wejścia jest uzasadniona */
+.modal-content {
+  position: relative;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(170deg, var(--panel-solid), var(--deep));
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(56, 225, 255, 0.08);
+  animation: pop 0.18s ease-out;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
+}
+
+.close-button {
   position: absolute;
-  top: 4px;
-  left: 4px;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--hot);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* --- Zoom karty --- */
+
+.zoom-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
   z-index: 10;
-  width: 20px;
-  height: 26px;
-  border-radius: 4px;
-  background: linear-gradient(160deg, #ffcf75, #ffa72c);
-  box-shadow: 0 0 0 1.5px #000, 0 2px 5px rgba(0, 0, 0, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.captured-badge-value {
-  font-family: var(--font-display);
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(1, 18, 26, 0.7);
+  backdrop-filter: blur(4px);
   font-size: 12px;
-  font-weight: 900;
-  color: #000;
+  line-height: 1;
 }
 
-.captured-cards-row {
+.zoom-content {
+  max-width: 520px;
+}
+
+.zoom-body {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.zoom-image {
+  width: 250px;
+  max-width: 100%;
+  flex-shrink: 0;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.zoom-details p {
+  margin: 6px 0;
+  color: var(--text);
+}
+
+.zoom-details strong {
+  color: var(--gold);
+}
+
+/* --- Historia logu --- */
+
+.log-modal {
+  max-width: 900px;
+  width: 90vw;
+}
+
+.log-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.log-list div {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+/* --- Podgląd stosu (Victory Pool, KO, Discard, Teleport) --- */
+
+.pile-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 12px;
+  max-height: 70vh;
+  overflow-y: auto; /* przewijanie, gdy kart jest dużo */
 }
 
-.captured-thumb {
-  position: relative;
-  width: 44px;
-  aspect-ratio: 5 / 7;
-  border-radius: 6px;
-  overflow: hidden;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-  transition: transform 0.15s;
-}
-
-.captured-thumb:hover {
-  transform: scale(1.3);
-  z-index: 20;
-}
-
-.captured-thumb img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.captured-thumb-fallback {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px;
-  font-size: 7px;
-  text-align: center;
-  background: var(--deep);
-  color: var(--muted);
-}
+/* --- Złapanie Bystandera, rozdzielenie Attack/Recruit, ustawienia --- */
 
 .capture-body {
   display: flex;
@@ -1065,6 +1015,13 @@ button:disabled {
   font-size: 1.5rem;
 }
 
+.split-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
 .settings-row {
   display: flex;
   align-items: center;
@@ -1073,12 +1030,7 @@ button:disabled {
   cursor: pointer;
 }
 
-.split-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-}
+/* --- Historia gier --- */
 
 .history-content {
   max-width: 1300px;
@@ -1112,6 +1064,11 @@ button:disabled {
   word-break: break-word;
 }
 
+.history-table th:nth-child(2),
+.history-table td:nth-child(2) {
+  min-width: 70px;
+}
+
 .history-table th:nth-child(5),
 .history-table td:nth-child(5) {
   min-width: 140px;
@@ -1122,32 +1079,129 @@ button:disabled {
   min-width: 100px;
 }
 
-.history-table th:nth-child(2),
-.history-table td:nth-child(2) {
-  min-width: 70px;
+/* --- Panel debug --- */
+
+.debug {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px dashed rgba(255, 193, 69, 0.5);
+  border-radius: var(--radius);
+  background: rgba(1, 18, 26, 0.5);
 }
 
-.deck-label {
-  margin-top: 14px;
-  text-align: center;
-  font-size: 0.75rem;
-  opacity: 0.8;
+.debug-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.debug input[type='number'] {
+  width: 56px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--abyss);
+  color: var(--text);
 }
 
 /* =========================================================
-   12. WĄSKIE EKRANY (TELEFONY)
+   9. DO SPRAWDZENIA (prawdopodobnie nieużywane)
+   Wyszukaj nazwę klasy w całym projekcie (Ctrl+Shift+F).
+   Jeśli nic nie znajdziesz poza tym plikiem, usuń regułę
+   (razem z jej wersją w sekcji 10).
    ========================================================= */
 
+.captive-badge {
+  display: block;
+  margin: 6px auto 0;
+  padding: 2px 10px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffd76e, var(--gold));
+  color: #2a1b00;
+  font-size: 12px;
+}
+
+.piles-panel {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  z-index: 50;
+  width: 100px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column; /* przyciski jeden pod drugim */
+  gap: 8px;
+}
+
+.pile-line {
+  font-weight: 800;
+}
+
+.piles-row {
+  min-height: 0;
+}
+
+/* =========================================================
+   10. MEDIA QUERIES
+   ========================================================= */
+
+/* --- Węższe okna desktopowe --- */
+
+@media (max-width: 1100px) {
+  .stats-panel {
+    padding: 8px 10px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+}
+
+/* --- Laptopy: za mało miejsca po prawej na discard i teleport obok siebie,
+   więc teleport trafia pod discard --- */
+
+@media (max-width: 1560px) {
+  .deck-group > .deck-pile[data-deck-id='teleport'] {
+    top: calc(100% + 24px);
+    margin-left: var(--pile-gap);
+  }
+}
+
+@media (max-width: 700px) {
+  .board-top {
+    flex-direction: column;
+  }
+
+  .zoom-body {
+    flex-direction: column;
+  }
+}
+
+/* --- Telefony (pion) i telefony poziomo --- */
+
 @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
+  :root {
+    --card-w: 80px; /* karty, sloty i stosy */
+    --pile-gap: 10px;
+  }
+
   .app {
     padding: 40px 8px 150px;
   }
 
-  .card,
-  .slot-empty,
-  .deck-pile {
-    width: 80px;
-  }
+  /* Karty i plansza */
 
   .card-text {
     padding: 2px;
@@ -1159,24 +1213,103 @@ button:disabled {
     min-height: 62px;
   }
 
+  .slot-empty {
+    font-size: 7px;
+  }
+
+  .markers {
+    font-size: 8px;
+  }
+
+  .zone-title {
+    min-height: 20px;
+    margin-bottom: 4px;
+    font-size: 10px;
+  }
+
+  .officer-slot {
+    padding-right: 6px;
+    margin-right: 4px;
+    font-size: 8px;
+  }
+
   .board-top,
   .city-row,
   .recruit-row,
   .row-with-deck {
-    width: 100%;
     max-width: 100%;
     flex-wrap: wrap;
   }
 
-    .recruit-row,
+  .city-row,
+  .recruit-row {
+    width: 100%;
+  }
+
+  .board-top,
   .row-with-deck {
-    padding-left: 0;
+    width: fit-content;
+  }
+
+  .recruit-row,
+  .row-with-deck {
+    padding-left: 6px;
     padding-right: 0;
   }
 
-  .deck-group > .deck-pile:nth-child(2) {
-    margin-left: 10px;
+  .city-slot {
+    min-width: 0;
+    flex: 0 1 auto;
   }
+
+  .mastermind-slot {
+    min-width: 0;
+  }
+
+  .row-with-deck .row {
+    flex: 0 1 auto;
+  }
+
+  .city-row .deck-pile {
+    margin-left: 6px;
+  }
+
+  .deck-end {
+    margin-left: 0;
+  }
+
+  .deck-count {
+    font-size: 11px;
+    bottom: 3px;
+  }
+
+  /* Odznaki na kartach */
+
+  .attack-modifier-badge {
+    width: 24px;
+    height: 24px;
+    bottom: -3px;
+    right: -3px;
+  }
+
+  .attack-modifier-value {
+    font-size: 9px;
+  }
+
+  .captured-badge {
+    width: 9px;
+    height: 12px;
+  }
+
+  .captured-badge-value {
+    font-size: 6px;
+  }
+
+  .captured-thumb {
+    width: 21px;
+  }
+
+  /* Panele */
 
   .stats-panel {
     top: 4px;
@@ -1202,13 +1335,6 @@ button:disabled {
     width: 120px;
   }
 
-  .piles-panel {
-    width: 42px;
-    padding: 4px 6px;
-    bottom: 4px;
-    left: 4px;
-  }
-
   .hand-fan {
     padding: 0 6px 3px;
   }
@@ -1224,104 +1350,31 @@ button:disabled {
     font-size: 10px;
   }
 
-  .zoom-image {
-    width: 110px;
-  }
-
-  .captured-thumb {
-    width: 21px;
-  }
-
-  .deck-count {
-    font-size: 11px;
-    bottom: 3px;
-  }
-
-  .attack-modifier-badge {
-    width: 24px;
-    height: 24px;
-    bottom: -3px;
-    right: -3px;
-  }
-
-  .attack-modifier-value {
-    font-size: 9px;
-  }
-
-  .captured-badge {
-    width: 9px;
-    height: 12px;
-  }
-
-  .captured-badge-value {
-    font-size: 6px;
-  }
-
   .log-bar {
     max-width: calc(60vw - 16px);
     font-size: 10px;
     padding: 4px 7px;
   }
-    .zone-title {
-    min-height: 20px;
-    margin-bottom: 4px;
-    font-size: 10px;
+
+  .zoom-image {
+    width: 110px;
   }
 
-  .slot-empty {
-    font-size: 7px;
-  }
+  /* Z sekcji 9 */
 
-  .markers {
-    font-size: 8px;
+  .piles-panel {
+    width: 42px;
+    padding: 4px 6px;
+    bottom: 4px;
+    left: 4px;
   }
+}
 
-  .officer-slot {
-    padding-right: 6px;
-    margin-right: 4px;
-    font-size: 8px;
-  }
+/* --- Preferencje: wyłączenie animacji --- */
 
-  .board-top,
-  .city-row,
-  .recruit-row,
-  .row-with-deck {
-    flex-wrap: wrap;
-  }
-
-  .city-slot,
-  .mastermind-slot {
-    min-width: 0;
-  }
-
-    .city-slot {
-    flex: 0 1 auto;
-  }
-
-  .row-with-deck .row {
-    flex: 0 1 auto;
-  }
-
-  .city-row .deck-pile,
-  .deck-end {
-    margin-left: 0;
-  }
-
-    .board-top,
-  .row-with-deck {
-    width: fit-content;
-    max-width: 100%;
-  }
-
-  .recruit-row {
-    padding-left: 6px;
-  }
-
-  .row-with-deck {
-    padding-left: 6px;
-  }
-
-  .city-row .deck-pile {
-    margin-left: 6px;
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
   }
 }
