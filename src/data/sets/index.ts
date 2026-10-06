@@ -1,8 +1,9 @@
 import type { SchemeDef, SetData } from '../../engine/types'
 import { CORE_SET } from './01_Core_Set'
+import { DARK_CITY_SET } from './02_Dark_City'
 
 // Wszystkie zestawy dostępne w grze. Dodatek = nowy folder + wpis tutaj
-export const ALL_SETS: SetData[] = [CORE_SET]
+export const ALL_SETS: SetData[] = [CORE_SET, DARK_CITY_SET]
 
 // Szuka scheme'u po id we wszystkich zestawach
 export function findScheme(id: string): SchemeDef {

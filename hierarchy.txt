@@ -3,11 +3,13 @@ Volume serial number is F61C-D8DD
 C:\USERS\THEEX\DESKTOP\REACT\MARVELLEGENDARYREACT\SRC
 |   App.css
 |   App.tsx
+|   gameLog.ts
 |   GameScreen.tsx
 |   index.css
 |   main.tsx
 |   useCardFlip.ts
 |   useGame.ts
+|   useSettings.ts
 |   
 +---assets
 |       hero.png
@@ -15,16 +17,21 @@ C:\USERS\THEEX\DESKTOP\REACT\MARVELLEGENDARYREACT\SRC
 |       vite.svg
 |       
 +---components
+|       AttackSplitPrompt.tsx
 |       CaptivesPrompt.tsx
+|       CapturePrompt.tsx
+|       CardImage.tsx
 |       CardView.tsx
 |       ChoicePrompt.tsx
 |       DebugPanel.tsx
 |       DeckPile.tsx
+|       GameHistoryMenu.tsx
 |       GameInfoPanel.tsx
 |       HamburgerMenu.tsx
 |       LogPanel.tsx
 |       OptionPrompt.tsx
 |       PilePrompt.tsx
+|       SettingsMenu.tsx
 |       SetupMenu.css
 |       SetupMenu.tsx
 |       SlideDrawer.tsx
@@ -32,21 +39,26 @@ C:\USERS\THEEX\DESKTOP\REACT\MARVELLEGENDARYREACT\SRC
 |       TacticPrompt.tsx
 |       
 +---data
+|   +---gameModes
+|   |       darkCityAdvancedSolo.ts
+|   |       index.ts
+|   |       
 |   \---sets
 |       |   index.ts
 |       |   setup.ts
 |       |   
-|       \---01_Core_Set
-|               cards.ts
-|               content.ts
-|               heroAbilities.ts
-|               index.ts
-|               masterStrikeAbilities.ts
-|               replacementAbilities.ts
-|               schemes.ts
-|               tacticAbilities.ts
-|               villainAbilities.ts
-|               
+|       +---01_Core_Set
+|       |       cards.ts
+|       |       content.ts
+|       |       heroAbilities.ts
+|       |       index.ts
+|       |       masterStrikeAbilities.ts
+|       |       replacementAbilities.ts
+|       |       schemes.ts
+|       |       tacticAbilities.ts
+|       |       villainAbilities.ts
+|       |       
+|       \---02_Dark_City
 \---engine
         buildSetup.ts
         cardAbilities.ts
@@ -54,13 +66,16 @@ C:\USERS\THEEX\DESKTOP\REACT\MARVELLEGENDARYREACT\SRC
         combat.ts
         common.ts
         constants.ts
+        debug.ts
         deck.ts
         deckOps.ts
         game.ts
+        gameModeRegistry.ts
         keywords.ts
         random.ts
         recruit.ts
         replacements.ts
+        resources.ts
         schemeRegistry.ts
         setup.ts
         setupChoices.ts
@@ -71,5 +86,6 @@ C:\USERS\THEEX\DESKTOP\REACT\MARVELLEGENDARYREACT\SRC
         villainAbilities.ts
         villainPhase.ts
         villainRequirements.ts
+        vpModifiers.ts
         wounds.ts
         

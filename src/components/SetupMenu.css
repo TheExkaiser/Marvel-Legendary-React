@@ -79,8 +79,8 @@
 }
 
 .tile.checked {
-  border-color: #e23636;
-  background: rgba(226, 54, 54, 0.15);
+  border-color: #00f255;
+  background: rgba(71, 226, 54, 0.15);
 }
 
 .tile:has(input:disabled) {
