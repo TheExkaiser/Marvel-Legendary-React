@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/Marvel-Legendary-React/sw.js', { scope: '/Marvel-Legendary-React/' })})}
