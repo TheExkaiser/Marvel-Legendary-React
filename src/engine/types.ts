@@ -128,11 +128,20 @@ export interface SchemeDef {
   onVillainEscaped?: (state: GameState, villain: CardInstance, lostCaptives: CardInstance[]) => void
   checkLoss?: (state: GameState) => boolean
 
-  // Dodatkowy bonus do siły villaina/mastermina/henchmana, liczony przy każdym sprawdzeniu ataku
-  // (np. Midtown Bank Robbery: +1 za każdego trzymanego bystandera)
   villainStrengthModifier?: (state: GameState, instance: CardInstance) => number
 
-  // Nadpisania domyślnych reguł setupu (patrz engine/setupRules.ts)
+  // Bystander wylosowany z talii złoczyńców wchodzi do miasta jak zwykły villain
+  // (zamiast być captured) — np. Replace Earth's Leaders with Killbots.
+  treatBystandersAsVillains?: boolean
+
+  // Nadpisuje BAZOWĄ siłę (zamiast data.strength) dla kart, które normalnie jej nie mają
+  // (Bystander-jako-Killbot, Hero-jako-Skrull-Villain itp.)
+  villainBaseStrengthOverride?: (state: GameState, instance: CardInstance) => number | undefined
+
+  // Zamiast domyślnego trafienia pokonanej karty do Victory Pool — pozwala np. dać ją
+  // graczowi (Secret Invasion: "you gain it").
+  onVillainDefeated?: (state: GameState, villain: CardInstance) => void
+
   setupRules?: Partial<SetupRules>
 }
 

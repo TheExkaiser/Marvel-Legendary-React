@@ -4,6 +4,7 @@ import { getCardAbility } from './cardAbilities'
 import { getVillainAbilities } from './villainAbilities'
 import { canDefeatVillain } from './villainRequirements'
 import { getEffectiveStrength } from './keywords'
+import { getScheme } from './schemeRegistry'
 import { assertPlaying } from './common'
 import { rescueBystander } from './wounds'
 import { addRecruit } from './resources'
@@ -22,7 +23,6 @@ async function spendAttack(state: GameState, amount: number, ui: UiAdapter): Pro
   }
 
   if (state.attack <= 0 || state.recruit <= 0) {
-    // Brak realnego wyboru: płacimy z tego, co jest (attack najpierw, reszta z recruit)
     const fromAttack = Math.min(state.attack, amount)
     state.attack -= fromAttack
     state.recruit -= amount - fromAttack
@@ -38,15 +38,21 @@ async function spendAttack(state: GameState, amount: number, ui: UiAdapter): Pro
 
 function removeVillainFromCity(state: GameState, index: number): void {
   const villain = state.city[index]!
-  state.defeated.push(villain)
   state.city[index] = null
   addRecruit(state, state.defeatRecruitBonus ?? 0)
   for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) rescueBystander(state)
 
   const rescued = state.captives[villain.instanceId] ?? []
-  state.defeated.push(...rescued)
   delete state.captives[villain.instanceId]
   delete state.attachedCards[villain.instanceId]
+
+  const scheme = getScheme(state)
+  if (scheme.onVillainDefeated) {
+    scheme.onVillainDefeated(state, villain)
+  } else {
+    state.defeated.push(villain)
+  }
+  state.defeated.push(...rescued)
 }
 
 export async function fightVillain(

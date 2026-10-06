@@ -35,9 +35,16 @@
   --board-inset: 15px;
 }
 
+
+
 /* =========================================================
    1. LAYOUT OGÓLNY
    ========================================================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 html,
 body {
@@ -52,6 +59,7 @@ body {
     radial-gradient(900px 650px at 105% 105%, rgba(255, 61, 87, 0.2), transparent 60%),
     linear-gradient(170deg, var(--base) 0%, var(--deep) 55%, var(--abyss) 100%);
   background-attachment: fixed;
+  overflow-x: hidden;
 }
 
 .app {
@@ -1125,7 +1133,7 @@ button:disabled {
 
 @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
   .app {
-    padding: 40px 6px 150px;
+    padding: 40px 8px 150px;
   }
 
   .card,
@@ -1144,15 +1152,19 @@ button:disabled {
     min-height: 62px;
   }
 
-  .board-top {
-    gap: 6px;
-    padding: 6px;
+  .board-top,
+  .city-row,
+  .recruit-row,
+  .row-with-deck {
+    width: 100%;
+    max-width: 100%;
+    flex-wrap: wrap;
   }
 
-  .city-row,
-  .row-with-deck,
-  .recruit-row {
-    gap: 4px;
+    .recruit-row,
+  .row-with-deck {
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .deck-group > .deck-pile:nth-child(2) {

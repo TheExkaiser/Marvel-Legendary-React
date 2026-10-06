@@ -181,7 +181,11 @@ export function getEffectiveStrength(
   instance: { instanceId: string; cardId: string },
 ): number | undefined {
   const attached = state.attachedCards[instance.instanceId]
-  const base = attached ? state.cards[attached.cardId].cost ?? 0 : state.cards[instance.cardId].strength
+  let base = attached ? state.cards[attached.cardId].cost ?? 0 : state.cards[instance.cardId].strength
+
+  const baseOverride = getScheme(state).villainBaseStrengthOverride?.(state, instance)
+  if (baseOverride !== undefined) base = baseOverride
+
   if (base === undefined) return undefined
 
   let total = base

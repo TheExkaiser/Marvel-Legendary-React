@@ -2,7 +2,9 @@ import type { SchemeDef } from '../../../engine/types'
 import { gainWound } from '../../../engine/game'
 import { revealCards } from '../../../engine/keywords'
 import { CITY_NAMES } from '../../../engine/constants'
-import { resolveVillainDeckCard, checkEndConditions } from '../../../engine/villainPhase'
+import { resolveVillainDeckCard, checkEndConditions, enterCity } from '../../../engine/villainPhase'
+import { refillHq } from '../../../engine/recruit'
+import { shuffle } from '../../../engine/random'
 
 const COSMIC_CUBE: SchemeDef = {
   id: 'coreset_cosmic_cube',
@@ -161,11 +163,111 @@ const PORTALS_TO_THE_DARK_DIMENSION: SchemeDef = {
         state.cityMarkers[index].push('Dark Portal')
       }
     }
-
-    // Twist 7: Evil Wins — obsłużone przez checkLoss
   },
 
   checkLoss: (state) => state.twistsRevealed >= 7,
+}
+
+const REPLACE_EARTHS_LEADERS_WITH_KILLBOTS: SchemeDef = {
+  id: 'coreset_replace_earths_leaders_with_killbots',
+  name: "Replace Earth's Leaders with Killbots",
+  img: '',
+  twistCount: 5,
+  text:
+    'Setup: 5 Twists. 3 additional Twists next to this Scheme. 18 total Bystanders in the Villain Deck.\n' +
+    'Special Rules: Bystanders in the Villain Deck count as Killbot Villains, with Attack equal to the number of Twists next to this Scheme.\n' +
+    'Twist: Put the Twist next to this Scheme.\n' +
+    'Evil Wins: If 5 "Killbots" escape.',
+
+  setupRules: {
+    bystandersInVillainDeck: 18,
+  },
+
+  treatBystandersAsVillains: true,
+
+  setup: (state) => {
+    state.counters['twistsNextToScheme'] = 3
+  },
+
+  villainBaseStrengthOverride: (state, instance) => {
+    const data = state.cards[instance.cardId]
+    if (data.kind !== 'bystander') return undefined
+    return state.counters['twistsNextToScheme'] ?? 0
+  },
+
+  onTwist: async (state) => {
+    state.counters['twistsNextToScheme'] = (state.counters['twistsNextToScheme'] ?? 0) + 1
+  },
+
+  onVillainEscaped: (state, villain) => {
+    if (state.cards[villain.cardId].kind !== 'bystander') return
+    state.counters['killbotsEscaped'] = (state.counters['killbotsEscaped'] ?? 0) + 1
+  },
+
+  checkLoss: (state) => (state.counters['killbotsEscaped'] ?? 0) >= 5,
+}
+
+const SECRET_INVASION_OF_THE_SKRULL_SHAPESHIFTERS: SchemeDef = {
+  id: 'coreset_secret_invasion_of_the_skrull_shapeshifters',
+  name: 'Secret Invasion of the Skrull Shapeshifters',
+  img: '',
+  twistCount: 8,
+  text:
+    'Setup: 8 Twists. 6 Heroes. Skrull Villain Group required. Shuffle 12 random Heroes from the Hero Deck into the Villain Deck.\n' +
+    "Special Rules: Heroes in the Villain Deck count as Skrull Villains with Attack equal to the Hero's Cost +2. If you defeat that Hero, you gain it.\n" +
+    'Twist: The highest-cost Hero from the HQ moves into the Sewers as a Skrull Villain, as above.\n' +
+    'Evil Wins: If 6 Heroes get into the Escaped Villains pile.',
+
+  setupRules: {
+    heroes: 6,
+    requiredVillainGroups: ['coreset_skrulls'],
+  },
+
+  setup: (state) => {
+    const movedHeroes = state.heroDeck.splice(-12, 12)
+    state.villainDeck = shuffle([...state.villainDeck, ...movedHeroes])
+  },
+
+  villainBaseStrengthOverride: (state, instance) => {
+    const data = state.cards[instance.cardId]
+    if (!data.hero) return undefined
+    return (data.cost ?? 0) + 2
+  },
+
+  onTwist: async (state, n, ui) => {
+    const candidates = state.hq.filter((c): c is NonNullable<typeof c> => !!c)
+    if (candidates.length === 0) return
+
+    let highest = candidates[0]
+    for (const c of candidates) {
+      if ((state.cards[c.cardId].cost ?? 0) > (state.cards[highest.cardId].cost ?? 0)) {
+        highest = c
+      }
+    }
+
+    const index = state.hq.findIndex((c) => c?.instanceId === highest.instanceId)
+    state.hq[index] = null
+    refillHq(state)
+
+    await enterCity(state, highest, ui)
+    checkEndConditions(state)
+  },
+
+  onVillainDefeated: (state, villain) => {
+    const data = state.cards[villain.cardId]
+    if (data.hero) {
+      state.discard.push(villain)
+    } else {
+      state.defeated.push(villain)
+    }
+  },
+
+  onVillainEscaped: (state, villain) => {
+    if (!state.cards[villain.cardId].hero) return
+    state.counters['heroesEscaped'] = (state.counters['heroesEscaped'] ?? 0) + 1
+  },
+
+  checkLoss: (state) => (state.counters['heroesEscaped'] ?? 0) >= 6,
 }
 
 // Wszystkie schematy tego zestawu. Nowy scheme = nowy obiekt wyżej + wpis tutaj
@@ -175,4 +277,6 @@ export const CORE_SCHEMES: SchemeDef[] = [
   MIDTOWN_BANK_ROBBERY,
   NEGATIVE_ZONE_PRISON_BREAKOUT,
   PORTALS_TO_THE_DARK_DIMENSION,
+  REPLACE_EARTHS_LEADERS_WITH_KILLBOTS,
+  SECRET_INVASION_OF_THE_SKRULL_SHAPESHIFTERS
 ]

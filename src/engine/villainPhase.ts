@@ -17,7 +17,7 @@ export async function resolveVillainDeckCard(
   const data = state.cards[card.cardId]
   logEvent(state, `Tura ${state.turn}: odkryto ${data.name}`)
 
-  if (data.kind === 'bystander') {
+  if (data.kind === 'bystander' && !getScheme(state).treatBystandersAsVillains) {
     await captureBystander(state, card, ui)
   } else if (data.kind === 'twist') {
     await resolveTwist(state, card, ui)
@@ -31,12 +31,7 @@ export async function resolveVillainDeckCard(
 /** Odkrywa wierzchnią kartę talii złoczyńców i rozpatruje ją według jej rodzaju. */
 export async function villainPhase(state: GameState, ui: UiAdapter): Promise<void> {
   const card = state.villainDeck.pop()
-  if (!card) {
-    // Nie da się odkryć karty z pustej talii złoczyńców – gracze przegrywają
-    logEvent(state, 'Talia złoczyńców jest pusta – przegrana')
-    state.status = 'lost'
-    return
-  }
+  if (!card) return
 
   await resolveVillainDeckCard(state, card, ui)
 
@@ -61,8 +56,9 @@ async function resolveMasterStrike(
   await getGameMode(state).onMasterStrikeResolved?.(state, ui)
 }
 
-/** Wprowadza złoczyńcę do miasta (przesuwa pozostałych); najdalszy może uciec. */
-async function enterCity(state: GameState, villain: CardInstance, ui: UiAdapter): Promise<void> {
+/** Wprowadza złoczyńcę (albo pseudo-villaina: Bystandera/Bohatera ze scheme'owej reguły)
+ * do miasta (przez Sewers); przesuwa pozostałych, najdalszy może uciec. */
+export async function enterCity(state: GameState, villain: CardInstance, ui: UiAdapter): Promise<void> {
   await ui.revealCard(villain, `${state.cards[villain.cardId].name} enters the city`)
 
   let moving: CardInstance | null = villain
