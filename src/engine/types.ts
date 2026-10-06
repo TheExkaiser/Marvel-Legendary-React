@@ -96,6 +96,7 @@ export interface GameState {
   pendingSurgeOfPower: number // Surge of Power zagrane, zanim próg 8 Recruit został osiągnięty w tej turze
   attackGainedThisTurn: number
   debugUsed: boolean // true, jeśli użyto czegokolwiek z Debug Panelu — taka gra nie trafia do logu
+  masterStrikeAutoDrawUsedThisTurn: boolean // Dark City: wymuszone dobranie po Master Strike tylko raz na turę
 }
 
 export interface GameSetup {

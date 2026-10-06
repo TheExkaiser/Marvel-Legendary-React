@@ -9,8 +9,13 @@ export const DARK_CITY_ADVANCED_SOLO: GameModeDef = {
     henchmenCopiesPerGroup: 3,
   },
 
-  // Master Strike: automatycznie odkryj i rozpatrz kolejną kartę z talii złoczyńców.
+  // Master Strike: automatycznie odkryj i rozpatrz kolejną kartę z talii złoczyńców —
+  // ale tylko RAZ na turę. Jeśli ta wymuszona karta sama okaże się Master Strike'iem,
+  // jej własna logika się odpali, ale NIE wymusi kolejnego dobrania w tej samej turze.
   onMasterStrikeResolved: async (state, ui) => {
+    if (state.masterStrikeAutoDrawUsedThisTurn) return
+    state.masterStrikeAutoDrawUsedThisTurn = true
+
     const card = state.villainDeck.pop()
     if (!card) return
     await resolveVillainDeckCard(state, card, ui)

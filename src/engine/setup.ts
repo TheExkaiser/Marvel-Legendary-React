@@ -123,6 +123,7 @@ export function createGameState(setup: GameSetup): GameState {
     bonusDrawNextTurn: 0,
     status: 'playing',
     debugUsed: false,
+    masterStrikeAutoDrawUsedThisTurn: false,
   }
 
   refillHq(state)

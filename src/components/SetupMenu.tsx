@@ -130,7 +130,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   return (
     <div className="setup-menu">
       <h1>Marvel Legendary</h1>
-      <h2>Nowa gra</h2>
+      <h2>New Game</h2>
 
       <button onClick={() => setHistoryOpen(true)}>Game History</button>
 
@@ -153,7 +153,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
       <section>
         <h3>Game Mode</h3>
         <select value={choices.gameModeId} onChange={(e) => update({ gameModeId: e.target.value })}>
-          <option value="">— wybierz —</option>
+          <option value="">— select —</option>
           {GAME_MODES.map((m) => (
             <option key={m.id} value={m.id}>
               {m.name}
@@ -165,7 +165,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
       <section>
         <h3>Scheme</h3>
         <select value={choices.schemeId} onChange={(e) => update({ schemeId: e.target.value })}>
-          <option value="">— wybierz —</option>
+          <option value="">— select —</option>
           {schemes.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
@@ -180,7 +180,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
           value={choices.mastermindId}
           onChange={(e) => update({ mastermindId: e.target.value })}
         >
-          <option value="">— wybierz —</option>
+          <option value="">— select —</option>
           {masterminds.map((m) => (
             <option key={m.card.id} value={m.card.id}>
               {m.card.name}
@@ -190,7 +190,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
       </section>
 
       <PickList
-        title="Bohaterowie"
+        title="Heroes"
         items={heroGroups}
         selected={choices.heroIds}
         max={rules.heroes}
@@ -198,7 +198,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
         onChange={(heroIds) => update({ heroIds })}
       />
       <PickList
-        title="Grupy villainów"
+        title="Villain Groups"
         items={villainGroups}
         selected={choices.villainGroupIds}
         max={rules.villainGroups}
@@ -206,7 +206,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
         onChange={(villainGroupIds) => update({ villainGroupIds })}
       />
       <PickList
-        title="Grupy henchmenów"
+        title="Henchmen"
         items={henchmenGroups}
         selected={choices.henchmenGroupIds}
         max={rules.henchmenGroups}
@@ -224,13 +224,13 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
 
       <div className="setup-buttons">
         <button onClick={() => safely(() => setChoices(completeChoices({}, activeSets, GAME_MODES)))}>
-          Losuj wszystko
+          Randomize
         </button>
         <button onClick={() => safely(() => setChoices(completeChoices(choices, activeSets, GAME_MODES)))}>
-          Dolosuj brakujące
+          Randomize Missing
         </button>
         <button onClick={() => setChoices({ ...EMPTY_CHOICES, gameModeId: GAME_MODES[0]?.id ?? '' })}>
-          Wyczyść
+          Clear
         </button>
         {import.meta.env.DEV && (
           <button onClick={() => setChoices(pruneChoices(DEBUG_PRESET, activeSets, GAME_MODES))}>
