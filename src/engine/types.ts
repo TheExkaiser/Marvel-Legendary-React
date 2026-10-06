@@ -163,6 +163,7 @@ export interface CardGroup {
   id: string
   name: string
   cards: DeckEntry[]
+  icon?: string // np. 'icons/heroes/spider-man.png' (plik w folderze public/)
 }
 
 /** Karty wspólne dla całej gry (zwykle z Core Setu). */
@@ -185,6 +186,7 @@ export interface SetData {
   henchmenGroups: CardGroup[]
   masterminds: MastermindData[]
   shared?: SharedCards   // tylko zestawy, które je dostarczają (Core Set)
+  icon?: string // np. 'icons/heroes/spider-man.png' (plik w folderze public/)
 }
 
 /** Ile czego trzeba wybrać w setupie. Scheme może nadpisać część pól. */

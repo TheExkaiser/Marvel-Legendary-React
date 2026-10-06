@@ -1,16 +1,48 @@
 .setup-menu {
-  max-width: 640px;
+  box-sizing: border-box;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 16px 48px;
+  padding: 8px max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left));
   text-align: left;
 }
 
+.setup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.setup-header h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+/* Dwie kolumny, każda przewija się osobno */
+.setup-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) 1fr;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.setup-col {
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
 .setup-menu section {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .setup-menu h3 {
   margin: 0 0 6px;
+  font-size: 1rem;
 }
 
 .setup-menu select {
@@ -19,40 +51,131 @@
   font-size: 1rem;
 }
 
-.pick-list {
-  display: flex;
-  flex-wrap: wrap;
+/* Kafelki z ikonkami */
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
   gap: 8px;
 }
 
-.pick {
+.tile {
+  min-width: 0;
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  gap: 4px;
+  padding: 6px 4px;
   border: 1px solid rgba(128, 128, 128, 0.5);
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
+  text-align: center;
 }
 
-.pick.checked {
+.tile input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tile.checked {
   border-color: #e23636;
   background: rgba(226, 54, 54, 0.15);
 }
 
+.tile:has(input:disabled) {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tile:has(input:focus-visible) {
+  outline: 2px solid #e2a136;
+}
+
+.tile-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(128, 128, 128, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tile-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tile-fallback {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.tile-name {
+  font-size: 0.75rem;
+  line-height: 1.1;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+/* Dolny pasek */
+.setup-footer {
+  padding-top: 8px;
+  border-top: 1px solid rgba(128, 128, 128, 0.3);
+}
+
 .setup-problems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0 0 6px;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
   color: #e2a136;
-  padding-left: 20px;
 }
 
 .setup-buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 16px;
 }
 
 .setup-start {
   margin-left: auto;
   font-weight: bold;
+}
+
+/* Telefon poziomo (mała wysokość ekranu) */
+@media (max-height: 500px) {
+  .setup-header h1 {
+    font-size: 1.1rem;
+  }
+    .tile-grid {
+    grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+    gap: 6px;
+  }
+  .tile-icon {
+    width: 40px;
+    height: 40px;
+  }
+  .tile-name {
+    font-size: 0.65rem;
+  }
+  .setup-buttons button {
+    padding: 4px 10px;
+  }
+}
+
+/* Telefon pionowo: wracamy do jednej kolumny */
+@media (max-width: 600px) and (orientation: portrait) {
+  .setup-body {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+  .setup-col {
+    overflow: visible;
+  }
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { CardData } from '../engine/types'
+import { CardImage } from './CardImage'
 
 interface CardViewProps {
   data: CardData
@@ -70,7 +71,7 @@ function CapturedBadge({ count }: { count: number }) {
 function CardZoomContent({ data, capturedCards }: { data: CardData; capturedCards?: CardData[] }) {
   return (
     <div className="zoom-body">
-      {data.img && <img src={data.img} alt={data.name} className="zoom-image" />}
+      {data.img && <CardImage src={data.img} alt={data.name} className="zoom-image" large />}
       <div className="zoom-details">
         {data.hero !== undefined && (
           <p><strong>Hero:</strong> {data.hero}</p>
@@ -146,7 +147,7 @@ function CapturedCardThumbnail({ data }: { data: CardData }) {
         }}
       >
         {data.img ? (
-          <img src={data.img} alt={data.name} />
+          <CardImage src={data.img} alt={data.name} />
         ) : (
           <div className="captured-thumb-fallback">{data.name}</div>
         )}
@@ -184,7 +185,7 @@ export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, c
         <AttackModifierBadge data={data} effectiveStrength={effectiveStrength} />
 
         {data.img ? (
-          <img src={data.img} alt={data.name} />
+          <CardImage src={data.img} alt={data.name} />
         ) : (
           <div className="card-text">
             <strong>{data.name}</strong>

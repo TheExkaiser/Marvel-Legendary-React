@@ -26,10 +26,40 @@ function safely(action: () => void): void {
   }
 }
 
+function iconSrc(path: string): string {
+  return import.meta.env.BASE_URL + path
+}
+
+interface IconTileProps {
+  name: string
+  icon?: string
+  checked: boolean
+  disabled?: boolean
+  onToggle: () => void
+}
+
+function IconTile({ name, icon, checked, disabled, onToggle }: IconTileProps) {
+  const [failed, setFailed] = useState(false)
+  return (
+    <label className={checked ? 'tile checked' : 'tile'} title={name}>
+      <input type="checkbox" checked={checked} disabled={disabled} onChange={onToggle} />
+      <span className="tile-icon">
+        {icon && !failed ? (
+          <img src={iconSrc(icon)} alt="" loading="lazy" onError={() => setFailed(true)} />
+        ) : (
+          <span className="tile-fallback">{name.charAt(0)}</span>
+        )}
+      </span>
+      <span className="tile-name">{name}</span>
+    </label>
+  )
+}
+
 // ---------- Lista checkboxów z limitem ----------
 
 interface PickListProps {
   title: string
+  iconFolder: string
   items: CardGroup[]
   selected: string[]
   max: number
@@ -37,27 +67,26 @@ interface PickListProps {
   onChange: (ids: string[]) => void
 }
 
-function PickList({ title, items, selected, max, required, onChange }: PickListProps) {
+function PickList({ title, iconFolder, items, selected, max, required, onChange }: PickListProps) {
   const full = selected.length >= max
   return (
     <section>
       <h3>
         {title} ({selected.length}/{max})
       </h3>
-      <div className="pick-list">
+      <div className="tile-grid">
         {items.map((item) => {
           const checked = selected.includes(item.id)
           const locked = checked && required.includes(item.id)
           return (
-            <label key={item.id} className={checked ? 'pick checked' : 'pick'}>
-              <input
-                type="checkbox"
-                checked={checked}
-                disabled={locked || (!checked && full)}
-                onChange={() => onChange(toggleId(selected, item.id))}
-              />
-              {item.name}
-            </label>
+            <IconTile
+              key={item.id}
+              name={item.name}
+              icon={item.icon ?? `${iconFolder}/${item.id}.png`}
+              checked={checked}
+              disabled={locked || (!checked && full)}
+              onToggle={() => onChange(toggleId(selected, item.id))}
+            />
           )
         })}
       </div>
@@ -127,120 +156,129 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
     onStart(setup, logMeta)
   }
 
-  return (
+    return (
     <div className="setup-menu">
-      <h1>Marvel Legendary</h1>
-      <h2>New Game</h2>
+      <header className="setup-header">
+        <h1>Marvel Legendary</h1>
+        <button onClick={() => setHistoryOpen(true)}>Game History</button>
+      </header>
 
-      <button onClick={() => setHistoryOpen(true)}>Game History</button>
+      <div className="setup-body">
+        <div className="setup-col setup-left">
+          <section>
+            <h3>Zestawy</h3>
+            <div className="tile-grid">
+              {sets.map((set) => (
+                <IconTile
+                  key={set.id}
+                  name={set.name}
+                  icon={set.icon ?? `icons/sets/${set.id}.png`}
+                  checked={enabledSetIds.includes(set.id)}
+                  onToggle={() => toggleSet(set.id)}
+                />
+              ))}
+            </div>
+          </section>
 
-      <section>
-        <h3>Zestawy</h3>
-        <div className="pick-list">
-          {sets.map((set) => (
-            <label key={set.id} className="pick">
-              <input
-                type="checkbox"
-                checked={enabledSetIds.includes(set.id)}
-                onChange={() => toggleSet(set.id)}
-              />
-              {set.name}
-            </label>
-          ))}
+          <section>
+            <h3>Game Mode</h3>
+            <select value={choices.gameModeId} onChange={(e) => update({ gameModeId: e.target.value })}>
+              <option value="">— select —</option>
+              {GAME_MODES.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+          </section>
+
+          <section>
+            <h3>Scheme</h3>
+            <select value={choices.schemeId} onChange={(e) => update({ schemeId: e.target.value })}>
+              <option value="">— select —</option>
+              {schemes.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </section>
+
+          <section>
+            <h3>Mastermind</h3>
+            <select
+              value={choices.mastermindId}
+              onChange={(e) => update({ mastermindId: e.target.value })}
+            >
+              <option value="">— select —</option>
+              {masterminds.map((m) => (
+                <option key={m.card.id} value={m.card.id}>
+                  {m.card.name}
+                </option>
+              ))}
+            </select>
+          </section>
         </div>
-      </section>
 
-      <section>
-        <h3>Game Mode</h3>
-        <select value={choices.gameModeId} onChange={(e) => update({ gameModeId: e.target.value })}>
-          <option value="">— select —</option>
-          {GAME_MODES.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.name}
-            </option>
-          ))}
-        </select>
-      </section>
-
-      <section>
-        <h3>Scheme</h3>
-        <select value={choices.schemeId} onChange={(e) => update({ schemeId: e.target.value })}>
-          <option value="">— select —</option>
-          {schemes.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-      </section>
-
-      <section>
-        <h3>Mastermind</h3>
-        <select
-          value={choices.mastermindId}
-          onChange={(e) => update({ mastermindId: e.target.value })}
-        >
-          <option value="">— select —</option>
-          {masterminds.map((m) => (
-            <option key={m.card.id} value={m.card.id}>
-              {m.card.name}
-            </option>
-          ))}
-        </select>
-      </section>
-
-      <PickList
-        title="Heroes"
-        items={heroGroups}
-        selected={choices.heroIds}
-        max={rules.heroes}
-        required={rules.requiredHeroes}
-        onChange={(heroIds) => update({ heroIds })}
-      />
-      <PickList
-        title="Villain Groups"
-        items={villainGroups}
-        selected={choices.villainGroupIds}
-        max={rules.villainGroups}
-        required={rules.requiredVillainGroups}
-        onChange={(villainGroupIds) => update({ villainGroupIds })}
-      />
-      <PickList
-        title="Henchmen"
-        items={henchmenGroups}
-        selected={choices.henchmenGroupIds}
-        max={rules.henchmenGroups}
-        required={rules.requiredHenchmenGroups}
-        onChange={(henchmenGroupIds) => update({ henchmenGroupIds })}
-      />
-
-      {problems.length > 0 && (
-        <ul className="setup-problems">
-          {problems.map((p) => (
-            <li key={p}>{p}</li>
-          ))}
-        </ul>
-      )}
-
-      <div className="setup-buttons">
-        <button onClick={() => safely(() => setChoices(completeChoices({}, activeSets, GAME_MODES)))}>
-          Randomize
-        </button>
-        <button onClick={() => safely(() => setChoices(completeChoices(choices, activeSets, GAME_MODES)))}>
-          Randomize Missing
-        </button>
-        <button onClick={() => setChoices({ ...EMPTY_CHOICES, gameModeId: GAME_MODES[0]?.id ?? '' })}>
-          Clear
-        </button>
-        {import.meta.env.DEV && (
-          <button onClick={() => setChoices(pruneChoices(DEBUG_PRESET, activeSets, GAME_MODES))}>
-            Preset debug
-          </button>
-        )}
-        <button className="setup-start" disabled={problems.length > 0} onClick={() => safely(start)}>
-          Start
-        </button>
+        <div className="setup-col setup-right">
+          <PickList
+            title="Heroes"
+            items={heroGroups}
+            iconFolder="icons/heroes"
+            selected={choices.heroIds}
+            max={rules.heroes}
+            required={rules.requiredHeroes}
+            onChange={(heroIds) => update({ heroIds })}
+          />
+          <PickList
+            title="Villain Groups"
+            items={villainGroups}
+            iconFolder="icons/villainGroups"
+            selected={choices.villainGroupIds}
+            max={rules.villainGroups}
+            required={rules.requiredVillainGroups}
+            onChange={(villainGroupIds) => update({ villainGroupIds })}
+          />
+          <PickList
+            title="Henchmen"
+            items={henchmenGroups}
+            iconFolder="icons/henchmen"
+            selected={choices.henchmenGroupIds}
+            max={rules.henchmenGroups}
+            required={rules.requiredHenchmenGroups}
+            onChange={(henchmenGroupIds) => update({ henchmenGroupIds })}
+          />
+        </div>
       </div>
+
+      <footer className="setup-footer">
+        {problems.length > 0 && (
+          <ul className="setup-problems">
+            {problems.map((p) => (
+              <li key={p}>{p}</li>
+            ))}
+          </ul>
+        )}
+        <div className="setup-buttons">
+          <button onClick={() => safely(() => setChoices(completeChoices({}, activeSets, GAME_MODES)))}>
+            Randomize
+          </button>
+          <button onClick={() => safely(() => setChoices(completeChoices(choices, activeSets, GAME_MODES)))}>
+            Randomize Missing
+          </button>
+          <button onClick={() => setChoices({ ...EMPTY_CHOICES, gameModeId: GAME_MODES[0]?.id ?? '' })}>
+            Clear
+          </button>
+          {import.meta.env.DEV && (
+            <button onClick={() => setChoices(pruneChoices(DEBUG_PRESET, activeSets, GAME_MODES))}>
+              Preset debug
+            </button>
+          )}
+          <button className="setup-start" disabled={problems.length > 0} onClick={() => safely(start)}>
+            Start
+          </button>
+        </div>
+      </footer>
 
       {historyOpen && (
         <GameHistoryMenu

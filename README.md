@@ -1,5 +1,14 @@
 # React + TypeScript + Vite
 
+TWORZENIE PROXY KART (LOD)
+W terminalu: "npm run proxies". 
+Przeglądarka wtedy będzie najpierw zaczytywała proxy, a dopiero po przybliżeniu faktyczne obrazki. 
+
+BUILD I DEPLOY
+W terminau: "npm run deploy"
+Po kilku minutach zmiany będą widoczne na stronie
+
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
