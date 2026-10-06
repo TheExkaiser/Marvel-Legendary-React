@@ -1,10 +1,31 @@
 # React + TypeScript + Vite
 
-TWORZENIE PROXY KART (LOD)
-W terminalu: "npm run proxies". 
-Przeglądarka wtedy będzie najpierw zaczytywała proxy, a dopiero po przybliżeniu faktyczne obrazki. 
+## Obrazki
 
-BUILD I DEPLOY
+### Ikonki (zestawy i grupy kart)
+
+Pliki w `public/icons/`, nazwa pliku = `id` z danych:
+
+- `public/icons/sets/<id zestawu>.png`
+- `public/icons/heroes/<id bohatera>.png`
+- `public/icons/villains/<id grupy złoczyńców>.png`
+- `public/icons/henchmen/<id grupy poplecznika>.png`
+
+Kwadratowe, najlepiej 128×128. Brak pliku = w menu pojawia się pierwsza litera nazwy.
+
+### Obrazki kart i proxy
+
+Duże obrazki kart są w `public/cards/`. Na planszy używamy ich małych wersji
+z `public/cards-small/` (WebP), a duży obrazek ładuje się dopiero w oknie zoomu.
+
+Po dodaniu nowych kart (np. nowy dodatek) uruchom:
+
+    npm run proxies
+
+Skrypt `scripts/make-proxies.mjs` wygeneruje brakujące miniatury (istniejące pomija).
+Szerokość miniatury ustawia stała `WIDTH` w skrypcie.
+
+## BUILD I DEPLOY
 W terminau: "npm run deploy"
 Po kilku minutach zmiany będą widoczne na stronie
 

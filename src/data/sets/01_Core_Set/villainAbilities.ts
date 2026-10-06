@@ -311,8 +311,7 @@ registerVillainAbilities('villain-melter', {
       'Melter (Fight): KO the revealed card or put it back?',
     )
     if (choice === 'ko') {
-      state.deck.pop()
-      state.ko.push(top)
+      koCard(state, top.instanceId)
     }
   },
 })
@@ -506,5 +505,49 @@ registerVillainAbilities('villain-skrull-shapeshifters', {
       state.discard.push(attached)
       delete state.attachedCards[self.instanceId]
     }
+  },
+})
+
+// ---------- Spider-Foes ----------
+
+// Doctor Octopus: normalnie dobierasz 6 kart, więc +2 daje osiem
+registerVillainAbilities('villain-doctor-octopus', {
+  onFight: async (state) => {
+    state.bonusDrawNextTurn += 2
+  },
+})
+
+// Green Goblin: porywa Bystandera
+registerVillainAbilities('villain-green-goblin', {
+  onAmbush: async (state, _ui, self) => {
+    const bystander = state.bystanders.pop()
+    if (!bystander) return
+    const list = state.captives[self.instanceId] ?? []
+    list.push(bystander)
+    state.captives[self.instanceId] = list
+  },
+})
+
+// The Lizard: "each other player gains a Wound", czyli u nas gracz, ale tylko w Sewers
+registerVillainAbilities('villain-the-lizard', {
+  onFight: async (state, ui, self) => {
+    const index = state.city.findIndex((c) => c?.instanceId === self.instanceId)
+    const location = index !== -1 ? CITY_NAMES[index] : undefined
+    if (location !== 'Sewers') return
+
+    await gainWound(state, ui)
+  },
+})
+
+// Venom: nie można go pokonać bez Bohatera (karty startowe też mają pole hero)
+registerDefeatRequirement('villain-venom', (state) =>
+  haveCards(state).some((c) => state.cards[c.cardId].hero !== undefined),
+)
+
+registerDefeatRequirement('villain-venom', (state) => hasCard(state, { type: 'covert' }))
+
+registerVillainAbilities('villain-venom', {
+  onEscape: async (state, ui) => {
+    await gainWound(state, ui)
   },
 })

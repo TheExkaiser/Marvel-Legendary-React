@@ -687,6 +687,57 @@ export const SKRULLS_CARDS: DeckEntry[] = [
   },
 ]
 
+export const SPIDER_FOES_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'villain-doctor-octopus',
+      name: 'Doctor Octopus',
+      img: '/cards/core-set/villain-doctor-octopus.webp',
+      strength: 4,
+      vp: 2,
+      villainGroup: 'Spider-Foes',
+      text: 'Fight: When you draw a new hand of cards at the end of this turn, draw eight cards instead of six.',
+    },
+    count: 2,
+  },
+  {
+    card: {
+      id: 'villain-green-goblin',
+      name: 'Green Goblin',
+      img: '/cards/core-set/villain-green-goblin.webp',
+      strength: 6,
+      vp: 4,
+      villainGroup: 'Spider-Foes',
+      text: 'Ambush: Green Goblin captures a Bystander.',
+    },
+    count: 2,
+  },
+  {
+    card: {
+      id: 'villain-the-lizard',
+      name: 'The Lizard',
+      img: '/cards/core-set/villain-the-lizard.webp',
+      strength: 3,
+      vp: 2,
+      villainGroup: 'Spider-Foes',
+      text: 'Fight: If you fight the Lizard in the Sewers, each other player gains a Wound.',
+    },
+    count: 2,
+  },
+  {
+    card: {
+      id: 'villain-venom',
+      name: 'Venom',
+      img: '/cards/core-set/villain-venom.webp',
+      strength: 5,
+      vp: 3,
+      villainGroup: 'Spider-Foes',
+      text: "You can't defeat Venom unless you have a Hero. Escape: Each player gains a Wound.",
+    },
+    count: 2,
+  },
+]
+
 export const DOOMBOT_LEGION_CARDS: DeckEntry[] = [
   {
     card: {

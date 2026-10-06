@@ -6,6 +6,7 @@ import { getScheme } from './engine/schemeRegistry'
 import { sumVictoryPoints } from './engine/keywords'
 import {
   playCard,
+  teleportCard,
   recruitHero,
   recruitOfficer,
   fightVillain,
@@ -96,7 +97,7 @@ function GameScreen({
   const scheme = getScheme(state)
   const [viewingCaptivesOf, setViewingCaptivesOf] = useState<string | null>(null)
   
-  const [viewingPile, setViewingPile] = useState<'victory' | 'ko' | 'discard' | null>(null)
+  const [viewingPile, setViewingPile] = useState<'victory' | 'ko' | 'discard' | 'teleport' | null>(null)
 
   const [historyOpen, setHistoryOpen] = useState(false)
   const loggedRef = useRef(false)
@@ -108,10 +109,15 @@ function GameScreen({
       ? state.cards[state.discard[state.discard.length - 1].cardId]
       : undefined
 
+  const teleported = state.teleported ?? []
+  const teleportTop =
+    teleported.length > 0 ? state.cards[teleported[teleported.length - 1].cardId] : undefined
+
   const pileViews = {
     victory: { title: 'Victory Pool', cards: state.defeated },
     ko: { title: "KO'd cards", cards: state.ko },
     discard: { title: 'Discard', cards: state.discard },
+    teleport: { title: 'Teleport', cards: teleported },
   }
 
   return (
@@ -251,6 +257,17 @@ function GameScreen({
             topCard={discardTop}
             onClick={() => setViewingPile('discard')}
           />
+          
+          {teleported.length > 0 && (
+            <DeckPile
+              count={teleported.length}
+              deckId="teleport"
+              topCard={teleportTop}
+              label="Teleport"
+              onClick={() => setViewingPile('teleport')}
+            />
+          )}
+
         </div>
       </div>
 

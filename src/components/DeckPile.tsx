@@ -6,7 +6,19 @@ const BACK_SOURCES = ['cardback.webp', 'cardback.png']
 const EDGE_COLORS = ['#f4eedb', '#d8d0b8'] // na przemian jasny i ciemny = wrażenie stosu kartek
 const MAX_THICKNESS = 9 // px
 
-export function DeckPile({ count, deckId, topCard, onClick }: { count: number; deckId?: string; topCard?: CardData;onClick?: () => void }) {  // Numer aktualnie próbowanego pliku z BACK_SOURCES (po ostatnim = brak obrazka)
+export function DeckPile({
+  count,
+  deckId,
+  topCard,
+  onClick,
+  label,
+}: {
+  count: number
+  deckId?: string
+  topCard?: CardData
+  onClick?: () => void
+  label?: string
+}) {
   const [srcIndex, setSrcIndex] = useState(0)
 
   // Pusta talia: przerywany kontur zamiast rewersu
@@ -54,6 +66,7 @@ export function DeckPile({ count, deckId, topCard, onClick }: { count: number; d
 )}
         <span className="deck-count">{count}</span>
       </div>
+      {label && <div className="deck-label">{label}</div>}
     </div>
   )
 }

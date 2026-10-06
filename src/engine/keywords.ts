@@ -4,6 +4,7 @@ import { getDiscardReplacement } from './replacements'
 import { getVpModifier } from './vpModifiers'
 import { CITY_NAMES } from './constants'
 import { getScheme } from './schemeRegistry'
+import { addRecruit } from './resources'
 
 export function countPlayedThisTurn(
   state: GameState,
@@ -77,15 +78,16 @@ export function sumVictoryPoints(state: GameState, pile: CardInstance[]): number
 
 // DECK + HAND + PLAYED + DISCARD = wszystkie karty, które gracz aktualnie posiada
 export function allOwnedCards(state: GameState): CardInstance[] {
-  return [...state.deck, ...state.hand, ...state.played, ...state.discard]
+  return [...state.deck, ...state.hand, ...state.played, ...state.discard, ...(state.teleported ?? [])]
 }
 
 export function koCard(state: GameState, instanceId: string): void {
-  for (const pile of [state.hand, state.discard, state.played]) {
+  for (const pile of [state.hand, state.discard, state.played, state.deck]) {
     const index = pile.findIndex((c) => c.instanceId === instanceId)
     if (index !== -1) {
       const [card] = pile.splice(index, 1)
       state.ko.push(card)
+      if (state.koRecruitBonus) addRecruit(state, state.koRecruitBonus)
       return
     }
   }

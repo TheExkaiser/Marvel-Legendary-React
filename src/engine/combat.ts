@@ -8,6 +8,8 @@ import { getScheme } from './schemeRegistry'
 import { assertPlaying } from './common'
 import { rescueBystander } from './wounds'
 import { addRecruit } from './resources'
+import { CITY_NAMES } from './constants'
+import { drawCards } from './deckOps'
 
 /** Ile Attack faktycznie masz do dyspozycji w tej turze (uwzględnia God of Thunder: Recruit jako Attack). */
 function availableAttack(state: GameState): number {
@@ -38,6 +40,7 @@ async function spendAttack(state: GameState, amount: number, ui: UiAdapter): Pro
 
 function removeVillainFromCity(state: GameState, index: number): void {
   const villain = state.city[index]!
+  const location = CITY_NAMES[index]
   state.city[index] = null
   addRecruit(state, state.defeatRecruitBonus ?? 0)
   for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) rescueBystander(state)
@@ -53,6 +56,13 @@ function removeVillainFromCity(state: GameState, index: number): void {
     state.defeated.push(villain)
   }
   state.defeated.push(...rescued)
+
+  // Bonusy za pokonanie Villaina w konkretnych lokacjach (Night Hunter, Nowhere to Hide)
+  for (const bonus of state.locationDefeatBonuses ?? []) {
+    if (!bonus.locations.includes(location)) continue
+    if (bonus.recruit) addRecruit(state, bonus.recruit)
+    if (bonus.draw) drawCards(state, bonus.draw)
+  }
 }
 
 export async function fightVillain(

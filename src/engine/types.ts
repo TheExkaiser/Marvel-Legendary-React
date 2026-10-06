@@ -17,6 +17,7 @@ export interface CardData {
   flavor?: string
   conditionIcons?: string[]   // ikony warunku "jeśli zagrano X w tej turze" (może być kilka, np. ['strength','strength'])
   conditionText?: string      // efekt, który zachodzi przy spełnionym warunku
+  keywords?: string[] // słowa kluczowe karty, np. ['teleport']
   henchman?: boolean   // podtyp villaina: grupa identycznych kart
   villainGroup?: string
 }
@@ -39,6 +40,12 @@ export interface MastermindData {
 }
 
 export type GameStatus = 'playing' | 'won' | 'lost'
+
+export interface LocationDefeatBonus {
+  locations: string[] // nazwy lokacji z CITY_NAMES
+  recruit?: number
+  draw?: number
+}
 
 export interface GameState {
   cards: Record<string, CardData>
@@ -81,12 +88,15 @@ export interface GameState {
   attack: number
   recruit: number
   defeatRecruitBonus?: number
+  koRecruitBonus?: number // Absorb Energies: Recruit za każdą skasowaną (KO) kartę gracza w tej turze
+  locationDefeatBonuses?: LocationDefeatBonus[] // Night Hunter, Nowhere to Hide: bonus za pokonanie Villaina w wybranych lokacjach w tej turze
   defeatRescueBonus?: number
   copiedCardIds?: Record<string, string>   // instanceId -> cardId skopiowanej karty (Copy Powers), reset co turę
   turn: number
   extraTurnsQueued: number
   bonusDrawNextTurn: number
   extraCardToHand?: string // instanceId karty zarezerwowanej przez Electromagnetic Bubble
+  teleported?: CardInstance[] // Teleport: karty odłożone na bok, na koniec tury wracają do ręki jako dodatkowe
   status: GameStatus
   locationAttackModifiers: Record<string, number>
   mastermindAttackModifierThisTurn: number

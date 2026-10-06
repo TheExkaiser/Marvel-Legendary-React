@@ -52,6 +52,28 @@ function addReservedCardToHand(state: GameState): void {
   state.hand.push(card)
 }
 
+/** Teleport: zamiast zagrać kartę, odkładasz ją na bok. Na koniec tury wróci do ręki jako dodatkowa. */
+export function teleportCard(state: GameState, instanceId: string): void {
+  assertPlaying(state)
+  const index = state.hand.findIndex((c) => c.instanceId === instanceId)
+  if (index === -1) throw new Error(`Karty ${instanceId} nie ma w ręce`)
+
+  const data = state.cards[state.hand[index].cardId]
+  if (!(data.keywords ?? []).includes('teleport')) {
+    throw new Error('Ta karta nie ma Teleportu')
+  }
+
+  const [instance] = state.hand.splice(index, 1)
+  state.teleported = [...(state.teleported ?? []), instance]
+}
+
+/** Karty z puli Teleport dołączają do nowej ręki (do standardowych kart). */
+function addTeleportedCardsToHand(state: GameState): void {
+  if (!state.teleported?.length) return
+  state.hand.push(...state.teleported)
+  state.teleported = []
+}
+
 /** Koniec tury: sprzątanie, nowa ręka, a potem faza złoczyńcy (chyba że jest dodatkowa tura). */
 export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   assertPlaying(state)
@@ -63,6 +85,8 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.attack = 0
   state.recruit = 0
   state.defeatRecruitBonus = 0
+  state.koRecruitBonus = 0
+  state.locationDefeatBonuses = []
   state.defeatRescueBonus = 0
   state.copiedCardIds = {}
   state.locationAttackModifiers = {}
@@ -81,10 +105,12 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
     state.extraTurnsQueued -= 1
     drawCards(state, drawAmount)
     addReservedCardToHand(state)
+    addTeleportedCardsToHand(state)
   } else {
     state.turn += 1
     drawCards(state, drawAmount)
     addReservedCardToHand(state)
+    addTeleportedCardsToHand(state)
     await villainPhase(state, ui)
   }
 

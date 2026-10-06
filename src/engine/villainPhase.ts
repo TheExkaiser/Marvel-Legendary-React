@@ -7,6 +7,7 @@ import { getVillainAbilities } from './villainAbilities'
 import { ESCAPE_LIMIT } from './constants'
 import { logEvent } from './common'
 import { captureBystander } from './wounds'
+import { runMasterStrikeReactions } from './masterStrikeReactions'
 
 /** Rozpatruje pojedynczą kartę z talii złoczyńców, według jej rodzaju (bez pop'owania z talii). */
 export async function resolveVillainDeckCard(
@@ -45,6 +46,8 @@ async function resolveMasterStrike(
   ui: UiAdapter,
 ): Promise<void> {
   await ui.revealCard(card, 'Odkryto: Master Strike!')
+
+  await runMasterStrikeReactions(state, ui)
 
   const ability = getCardAbility(state.masterStrikeId)
   if (ability) {

@@ -23,6 +23,7 @@ import {
   MASTERS_OF_EVIL_CARDS,
   RADIATION_CARDS,
   SKRULLS_CARDS,
+  SPIDER_FOES_CARDS,
   DOOMBOT_LEGION_CARDS,
   HAND_NINJAS_CARDS,
   SAVAGE_LAND_MUTATES_CARDS,
@@ -62,6 +63,7 @@ export const CORE_VILLAIN_GROUPS: CardGroup[] = [
   { id: 'coreset_masters_of_evil', name: 'Masters of Evil', cards: MASTERS_OF_EVIL_CARDS },
   { id: 'coreset_radiation', name: 'Radiation', cards: RADIATION_CARDS },
   { id: 'coreset_skrulls', name: 'Skrulls', cards: SKRULLS_CARDS },
+  { id: 'coreset_spider_foes', name: 'Spider-Foes', cards: SPIDER_FOES_CARDS },
 ]
 
 export const CORE_HENCHMEN_GROUPS: CardGroup[] = [

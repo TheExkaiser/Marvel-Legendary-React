@@ -1,7 +1,7 @@
 // Barrel: publiczne API silnika. Reszta kodu nadal importuje z './game'.
 export { createGameState, startGame } from './setup'
 export { drawCards, takeTopCards } from './deckOps'
-export { playCard, endTurn } from './turn'
+export { playCard, endTurn, teleportCard } from './turn'
 export { villainPhase } from './villainPhase'
 export { recruitHero, recruitOfficer } from './recruit'
 export {
