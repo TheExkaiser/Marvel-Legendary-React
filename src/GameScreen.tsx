@@ -35,6 +35,7 @@ import { AttackSplitPrompt } from './components/AttackSplitPrompt'
 import { useEffect, useRef } from 'react'
 import { appendGameLogEntry, formatDate, formatTime, type GameLogMeta } from './gameLog'
 import { GameHistoryMenu } from './components/GameHistoryMenu'
+import { NumberPrompt } from './components/NumberPrompt'
 
 
 // ---------- Stałe ----------
@@ -71,6 +72,8 @@ function GameScreen({
     closeCapturePrompt,
     attackSplitPrompt,
     answerAttackSplitPrompt,
+    numberPrompt,
+    answerNumberPrompt,
  } = useGame(setup, settings)
     const discardIds = new Set(state.discard.map((c) => c.instanceId))
   useCardFlip(discardIds)
@@ -371,6 +374,16 @@ function GameScreen({
           maxFromAttack={attackSplitPrompt.maxFromAttack}
           maxFromRecruit={attackSplitPrompt.maxFromRecruit}
           onConfirm={answerAttackSplitPrompt}
+        />
+      )}
+
+      {numberPrompt && (
+        <NumberPrompt
+          prompt={numberPrompt.prompt}
+          initial={numberPrompt.initial}
+          min={numberPrompt.min}
+          max={numberPrompt.max}
+          onConfirm={answerNumberPrompt}
         />
       )}
 

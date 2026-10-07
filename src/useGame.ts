@@ -31,6 +31,13 @@ interface AttackSplitPromptState {
   maxFromRecruit: number
 }
 
+interface NumberPromptState {
+  prompt: string
+  min: number
+  max: number
+  initial: number
+}
+
 export function useGame(setup: GameSetup, settings: Settings) {
   const [state] = useState<GameState>(() => createGameState(setup))
   const [, setVersion] = useState(0)
@@ -41,12 +48,15 @@ export function useGame(setup: GameSetup, settings: Settings) {
   const [infoPrompt, setInfoPrompt] = useState<InfoPromptState | null>(null)
   const [capturePrompt, setCapturePrompt] = useState<CapturePromptState | null>(null)
   const [attackSplitPrompt, setAttackSplitPrompt] = useState<AttackSplitPromptState | null>(null)
+  const [numberPrompt, setNumberPrompt] = useState<NumberPromptState | null>(null)
 
   const resolveCardRef = useRef<((choice: CardInstance | null) => void) | null>(null)
   const resolveOptionRef = useRef<((choice: string | null) => void) | null>(null)
   const resolveInfoRef = useRef<(() => void) | null>(null)
   const resolveCaptureRef = useRef<(() => void) | null>(null)
   const resolveAttackSplitRef = useRef<((split: AttackSplit) => void) | null>(null)
+  const resolveNumberRef = useRef<((value: number) => void) | null>(null)
+  const lastNumberRef = useRef(3) // ostatnio wybrana liczba, podpowiadana w kolejnym oknie
 
   const ui: UiAdapter = {
     choose(options, choiceOpts) {
@@ -93,6 +103,17 @@ export function useGame(setup: GameSetup, settings: Settings) {
         setAttackSplitPrompt({ cost, maxFromAttack, maxFromRecruit })
       })
     },
+    chooseNumber(prompt, opts) {
+      return new Promise((resolve) => {
+        resolveNumberRef.current = resolve
+        setNumberPrompt({
+          prompt,
+          min: opts?.min ?? 0,
+          max: opts?.max ?? 20,
+          initial: opts?.initial ?? lastNumberRef.current,
+        })
+      })
+    },
   }
 
   // Uruchamia grę RAZ, po pierwszym wyrenderowaniu (dopiero wtedy `ui` może pokazywać popupy)
@@ -135,6 +156,13 @@ export function useGame(setup: GameSetup, settings: Settings) {
     setAttackSplitPrompt(null)
   }
 
+  function answerNumberPrompt(value: number) {
+    lastNumberRef.current = value
+    resolveNumberRef.current?.(value)
+    resolveNumberRef.current = null
+    setNumberPrompt(null)
+  }
+
   async function act(action: (state: GameState, ui: UiAdapter) => void | Promise<void>) {
     try {
       await action(state, ui)
@@ -165,5 +193,7 @@ function debugAct(action: (state: GameState, ui: UiAdapter) => void | Promise<vo
     attackSplitPrompt,
     answerAttackSplitPrompt,
     debugAct,
+    numberPrompt,
+    answerNumberPrompt,
   }
 }

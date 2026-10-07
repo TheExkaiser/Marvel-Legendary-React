@@ -8,6 +8,7 @@ export interface ChoiceOptions {
 export interface TextOption {
   id: string
   label: string
+  icon?: string // ścieżka względem public/, np. 'icons/attack.png'
 }
 
 export interface AttackSplit {
@@ -28,4 +29,8 @@ export interface UiAdapter {
   showCapture(capturer: CardInstance, bystander: CardInstance, message: string): Promise<void>
   // God of Thunder: gracz ustawia proporcję, w jakiej płaci koszt ataku z Attack vs Recruit.
   chooseAttackSplit(cost: number, maxFromAttack: number, maxFromRecruit: number): Promise<AttackSplit>
+  chooseNumber(
+    prompt: string,
+    options?: { min?: number; max?: number; initial?: number },
+  ): Promise<number>
 }

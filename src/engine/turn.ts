@@ -7,6 +7,7 @@ import { assertPlaying } from './common'
 import { drawCards } from './deckOps'
 import { villainPhase } from './villainPhase'
 import { addRecruit, addAttack } from './resources'
+import { applyVersatile } from './versatile'
 
 /** Zagrywa kartę z ręki: dolicza attack/recruit i odpala jej zdolność. */
 export async function playCard(
@@ -33,6 +34,11 @@ export async function playCard(
   const ability = getCardAbility(instance.cardId)
   if (ability) {
     await ability(state, { self: instance, ui })
+  }
+
+  // Versatile po zdolności, bo zdolność może go zmienić (Against All Odds)
+  if (data.versatile) {
+    await applyVersatile(state, ui, data.versatile, instance)
   }
 
   // Dopiero po zdolności, żeby "zagrano wcześniej w tej turze" nie liczyło samej karty
@@ -86,6 +92,8 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.recruit = 0
   state.defeatRecruitBonus = 0
   state.koRecruitBonus = 0
+  state.recruitsToDeckTop = 0
+  state.versatileBothThisTurn = false
   state.locationDefeatBonuses = []
   state.defeatRescueBonus = 0
   state.copiedCardIds = {}

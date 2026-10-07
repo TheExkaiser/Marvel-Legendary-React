@@ -1,4 +1,4 @@
-import type { GameState } from './types'
+import type { GameState, CardInstance } from './types'
 import { assertPlaying } from './common'
 
 /** Uzupełnia puste sloty HQ z talii bohaterów. */
@@ -7,6 +7,16 @@ export function refillHq(state: GameState): void {
     if (state.hq[i] === null) {
       state.hq[i] = state.heroDeck.pop() ?? null
     }
+  }
+}
+
+/** Zrekrutowana karta trafia do odrzuconych, a jeśli zagrano Backflip, na wierzch talii. */
+function placeRecruitedCard(state: GameState, instance: CardInstance): void {
+  if ((state.recruitsToDeckTop ?? 0) > 0) {
+    state.recruitsToDeckTop! -= 1
+    state.deck.push(instance) // wierzch talii to koniec tablicy
+  } else {
+    state.discard.push(instance)
   }
 }
 
@@ -23,7 +33,7 @@ export function recruitHero(state: GameState, instanceId: string): void {
   }
 
   state.recruit -= cost
-  state.discard.push(instance)
+  placeRecruitedCard(state, instance)
   state.hq[index] = null
   refillHq(state)
 }
@@ -41,5 +51,5 @@ export function recruitOfficer(state: GameState): void {
   if (!instance) throw new Error('Brak dostępnych oficerów')
 
   state.recruit -= cost
-  state.discard.push(instance)
+  placeRecruitedCard(state, instance)
 }

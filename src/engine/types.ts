@@ -18,6 +18,7 @@ export interface CardData {
   conditionIcons?: string[]   // ikony warunku "jeśli zagrano X w tej turze" (może być kilka, np. ['strength','strength'])
   conditionText?: string      // efekt, który zachodzi przy spełnionym warunku
   keywords?: string[] // słowa kluczowe karty, np. ['teleport']
+  versatile?: number // Versatile N: przy zagraniu wybierasz +N Attack albo +N Recruit
   henchman?: boolean   // podtyp villaina: grupa identycznych kart
   villainGroup?: string
 }
@@ -97,6 +98,8 @@ export interface GameState {
   bonusDrawNextTurn: number
   extraCardToHand?: string // instanceId karty zarezerwowanej przez Electromagnetic Bubble
   teleported?: CardInstance[] // Teleport: karty odłożone na bok, na koniec tury wracają do ręki jako dodatkowe
+  recruitsToDeckTop?: number // Backflip: ile następnych zrekrutowanych Bohaterów trafia na wierzch talii zamiast do odrzuconych
+  versatileBothThisTurn?: boolean // Against All Odds: do końca tury Versatile daje i Attack, i Recruit
   status: GameStatus
   locationAttackModifiers: Record<string, number>
   mastermindAttackModifierThisTurn: number

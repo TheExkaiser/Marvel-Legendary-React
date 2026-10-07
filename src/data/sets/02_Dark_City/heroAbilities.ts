@@ -1,10 +1,12 @@
 import { registerCardAbility } from '../../../engine/cardAbilities'
-import { drawCards, rescueBystander, addAttack, takeTopCards } from '../../../engine/game'
+import { drawCards, rescueBystander, addAttack, addRecruit, takeTopCards, gainWound, peekTopCard } from '../../../engine/game'
 import { discardCard, koCard, countPlayedThisTurn } from '../../../engine/keywords'
-import { registerDiscardReplacement } from '../../../engine/replacements'
+import { registerDiscardReplacement, registerWoundReplacement } from '../../../engine/replacements'
 import { CITY_NAMES } from '../../../engine/constants'
 import type { CardInstance, GameState } from '../../../engine/types'
 import { registerMasterStrikeReaction } from '../../../engine/masterStrikeReactions'
+import type { UiAdapter } from '../../../engine/ui'
+import { applyVersatile } from '../../../engine/versatile'
 
 
 // ---------- Angel ----------
@@ -222,4 +224,124 @@ registerCardAbility('hero-cable-army-of-one', async (state, { ui }) => {
   }
 
   if (koCount > 0) addAttack(state, koCount)
+})
+
+// ---------- Colossus ----------
+
+registerCardAbility('hero-colossus-draw-their-fire', async (state, { ui }) => {
+  await gainWound(state, ui)
+})
+
+// Invulnerability: zamiast zdobywać Ranę, możesz odrzucić tę kartę z ręki i dobrać dwie karty
+registerWoundReplacement('hero-colossus-invulnerability', async (state, ui, self) => {
+  // Zamiennik działa tylko z ręki (gainWound sprawdza też zagrane karty)
+  if (!state.hand.some((c) => c.instanceId === self.instanceId)) return false
+
+  const chosen = await ui.choose([self], {
+    prompt: 'Invulnerability: odrzucić tę kartę zamiast zdobywać Ranę? (dobierzesz 2 karty)',
+    optional: true,
+  })
+  if (!chosen) return false
+
+  await discardCard(state, self.instanceId, ui)
+
+  // Gdyby coś zatrzymało kartę w ręce, to jej nie odrzucono i Rana nie jest zastąpiona
+  if (state.hand.some((c) => c.instanceId === self.instanceId)) return false
+
+  drawCards(state, 2)
+  return true
+})
+
+// Russian Heavy Tank: gdy masz dostać Ranę, możesz ujawnić tę kartę.
+// Rana trafia do Ciebie normalnie, a Ty dobierasz kartę.
+registerWoundReplacement('hero-colossus-russian-heavy-tank', async (state, ui, self) => {
+  if (!state.hand.some((c) => c.instanceId === self.instanceId)) return false
+
+  const chosen = await ui.choose([self], {
+    prompt: 'Russian Heavy Tank: ujawnić tę kartę i dobrać kartę? (Rana i tak trafia do Ciebie)',
+    optional: true,
+  })
+  if (chosen) drawCards(state, 1)
+
+  return false // Rana nie jest zastępowana, gainWound zdobywa ją normalnie
+})
+
+registerCardAbility('hero-colossus-silent-statue', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'strength' }) > 0) {
+    addAttack(state, 2)
+  }
+})
+
+// ---------- Daredevil ----------
+
+// Wspólna część: wybierz liczbę, odkryj wierzchnią kartę talii, zwróć true jeśli koszt się zgadza.
+// Brak karty do odkrycia (pusta talia i odrzucone) = brak pytania i brak trafienia.
+async function guessTopCardCost(state: GameState, ui: UiAdapter, cardName: string): Promise<boolean> {
+  if (!peekTopCard(state)) return false
+
+  const guess = await ui.chooseNumber(`${cardName}: wybierz liczbę (koszt wierzchniej karty talii)`)
+
+  const top = peekTopCard(state)
+  if (!top) return false
+
+  const cost = state.cards[top.cardId].cost ?? 0
+  const hit = cost === guess
+  await ui.showInfo(top, `${cardName}: wybrano ${guess}, koszt karty to ${cost}. ${hit ? 'Trafiłeś!' : 'Pudło.'}`)
+  return hit
+}
+
+// Backflip: licznik w state, hak w recruit.ts zrobimy w kroku 3
+registerCardAbility('hero-daredevil-backflip', async (state) => {
+  state.recruitsToDeckTop = (state.recruitsToDeckTop ?? 0) + 1
+})
+
+registerCardAbility('hero-daredevil-radar-sense', async (state, { ui }) => {
+  if (await guessTopCardCost(state, ui, 'Radar Sense')) addAttack(state, 2)
+})
+
+registerCardAbility('hero-daredevil-blind-justice', async (state, { ui }) => {
+  if (await guessTopCardCost(state, ui, 'Blind Justice')) drawCards(state, 1)
+})
+
+registerCardAbility('hero-daredevil-the-man-without-fear', async (state, { ui }) => {
+  while (await guessTopCardCost(state, ui, 'The Man Without Fear')) {
+    drawCards(state, 1)
+  }
+})
+
+// ---------- Domino ----------
+
+registerCardAbility('hero-domino-lucky-break', async (state, { self, ui }) => {
+  drawCards(state, 1)
+  if (countPlayedThisTurn(state, { team: 'x-force' }) > 0) {
+    await applyVersatile(state, ui, 1, self)
+  }
+})
+
+// Ready for Anything: Versatile 2 jest w danych karty (versatile: 2), obsługuje go playCard
+
+registerCardAbility('hero-domino-specialized-ammunition', async (state, { ui }) => {
+  if (state.hand.length === 0) return
+
+  const chosen = await ui.choose(state.hand, {
+    prompt: 'Specialized Ammunition: możesz odrzucić kartę z ręki',
+    optional: true,
+  })
+  if (!chosen) return
+
+  const data = state.cards[chosen.cardId]
+  await discardCard(state, chosen.instanceId, ui)
+
+  // Jeśli efekt zastępczy zatrzymał kartę w ręce, to nie została odrzucona
+  if (state.hand.some((c) => c.instanceId === chosen.instanceId)) return
+
+  if (data.recruit !== undefined) addRecruit(state, 4)
+  if (data.attack !== undefined) addAttack(state, 4)
+})
+
+// Against All Odds: sam Versatile 5 jest w danych karty. Tu tylko warunek X-Force.
+registerCardAbility('hero-domino-against-all-odds', async (state) => {
+  if (countPlayedThisTurn(state, { team: 'x-force' }) > 0) {
+    state.versatileBothThisTurn = true
+  }
 })

@@ -26,6 +26,10 @@ function safely(action: () => void): void {
   }
 }
 
+function byName<T extends { name: string }>(items: T[]): T[] {
+  return [...items].sort((a, b) => a.name.localeCompare(b.name, 'en'))
+}
+
 function iconSrc(path: string): string {
   return import.meta.env.BASE_URL + path
 }
@@ -109,9 +113,9 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   const activeSets = sets.filter((s) => enabledSetIds.includes(s.id))
   const schemes = activeSets.flatMap((s) => s.schemes)
   const masterminds = activeSets.flatMap((s) => s.masterminds)
-  const heroGroups = activeSets.flatMap((s) => s.heroes)
-  const villainGroups = activeSets.flatMap((s) => s.villainGroups)
-  const henchmenGroups = activeSets.flatMap((s) => s.henchmenGroups)
+  const heroGroups = byName(activeSets.flatMap((s) => s.heroes))
+  const villainGroups = byName(activeSets.flatMap((s) => s.villainGroups))
+  const henchmenGroups = byName(activeSets.flatMap((s) => s.henchmenGroups))
 
   const gameMode = GAME_MODES.find((m) => m.id === choices.gameModeId)
   const scheme = schemes.find((s) => s.id === choices.schemeId)
