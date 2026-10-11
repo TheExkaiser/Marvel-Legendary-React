@@ -23,7 +23,7 @@ function shuffled<T>(items: T[], rng: Rng): T[] {
 }
 
 function randomItem<T>(items: T[], rng: Rng, what: string): T {
-  if (items.length === 0) throw new Error(`Brak dostępnych elementów: ${what}`)
+  if (items.length === 0) throw new Error(`No available options: ${what}`)
   return items[Math.floor(rng() * items.length)]
 }
 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { CardGroup, GameSetup, SetData, SetupChoices } from '../engine/types'
+import type { CardGroup, GameSetup, MastermindData, SetData, SetupChoices } from '../engine/types'
 import { buildSetup, getSetupProblems } from '../engine/buildSetup'
 import { DEFAULT_SETUP_RULES, resolveRules } from '../engine/setupRules'
 import { EMPTY_CHOICES, completeChoices, pruneChoices } from '../engine/setupChoices'
@@ -48,6 +48,13 @@ function sortGroups(sets: SetData[], pick: (s: SetData) => CardGroup[], mode: So
     )
   }
   return byName(all)
+}
+
+function sortMasterminds(sets: SetData[], mode: SortMode): MastermindData[] {
+  const byCardName = (a: MastermindData, b: MastermindData) =>
+    a.card.name.localeCompare(b.card.name, 'en')
+  if (mode === 'set') return sets.flatMap((s) => [...s.masterminds].sort(byCardName))
+  return sets.flatMap((s) => s.masterminds).sort(byCardName) // alpha i team: alfabetycznie
 }
 
 function iconSrc(path: string): string {
@@ -140,7 +147,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   // Pula do wyboru = suma zaznaczonych zestawów
   const activeSets = sets.filter((s) => enabledSetIds.includes(s.id))
   const schemes = activeSets.flatMap((s) => s.schemes)
-  const masterminds = activeSets.flatMap((s) => s.masterminds)
+  const masterminds = sortMasterminds(activeSets, sortMode)
   const nonTeamMode: SortMode = sortMode === 'team' ? 'alpha' : sortMode
   const heroGroups = sortGroups(activeSets, (s) => s.heroes, sortMode)
   const villainGroups = sortGroups(activeSets, (s) => s.villainGroups, nonTeamMode)
@@ -152,9 +159,9 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   const rules = gameMode && scheme ? resolveRules(gameMode, scheme) : DEFAULT_SETUP_RULES
 
   const problems: string[] = []
-  if (!gameMode) problems.push('Wybierz game mode')
-  if (!scheme) problems.push('Wybierz scheme')
-  if (!mastermind) problems.push('Wybierz masterminda')
+  if (!gameMode) problems.push('Select a game mode')
+  if (!scheme) problems.push('Select a scheme')
+  if (!mastermind) problems.push('Select a mastermind')
   problems.push(...getSetupProblems(choices, rules))
 
   function update(patch: Partial<SetupChoices>) {
@@ -199,7 +206,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
       <div className="setup-body">
         <div className="setup-col setup-left">
           <section>
-            <h3>Zestawy</h3>
+            <h3>Sets</h3>
             <div className="tile-grid">
               {sets.map((set) => (
                 <IconTile
@@ -214,11 +221,11 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
           </section>
 
           <section>
-            <h3>Sortowanie</h3>
+            <h3>Sort by</h3>
             <select value={sortMode} onChange={(e) => setSortMode(e.target.value as SortMode)}>
-              <option value="alpha">Alfabetycznie</option>
-              <option value="set">Set + alfabetycznie</option>
-              <option value="team">Team + alfabetycznie</option>
+              <option value="alpha">Alphabetical</option>
+              <option value="set">Set order + alphabetical</option>
+              <option value="team">Team + alphabetical</option>
             </select>
           </section>
 
@@ -245,24 +252,26 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
               ))}
             </select>
           </section>
-
-          <section>
-            <h3>Mastermind</h3>
-            <select
-              value={choices.mastermindId}
-              onChange={(e) => update({ mastermindId: e.target.value })}
-            >
-              <option value="">— select —</option>
-              {masterminds.map((m) => (
-                <option key={m.card.id} value={m.card.id}>
-                  {m.card.name}
-                </option>
-              ))}
-            </select>
-          </section>
         </div>
 
         <div className="setup-col setup-right">
+          <section>
+            <h3>Mastermind</h3>
+            <div className="tile-grid">
+              {masterminds.map((m) => (
+                <IconTile
+                  key={m.card.id}
+                  name={m.card.name}
+                  icon={`icons/masterminds/${m.card.id}.png`}
+                  checked={choices.mastermindId === m.card.id}
+                  onToggle={() =>
+                    update({ mastermindId: choices.mastermindId === m.card.id ? '' : m.card.id })
+                  }
+                />
+              ))}
+            </div>
+          </section>
+
           <PickList
             title="Heroes"
             items={heroGroups}

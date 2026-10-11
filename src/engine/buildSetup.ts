@@ -4,7 +4,7 @@ import { resolveRules } from './setupRules'
 /** Szuka elementu po id; getId mówi, skąd wziąć id (masterminda mają je w card.id). */
 function pick<T>(items: T[], getId: (item: T) => string, id: string, what: string): T {
   const found = items.find((item) => getId(item) === id)
-  if (!found) throw new Error(`Nie znaleziono (${what}): ${id}`)
+  if (!found) throw new Error(`Not found (${what}): ${id}`)
   return found
 }
 
@@ -16,29 +16,29 @@ function checkList(
   problems: string[],
 ): void {
   if (ids.length !== expected) {
-    problems.push(`${label}: wybrano ${ids.length}, wymagane ${expected}`)
+    problems.push(`${label}: selected ${ids.length}, required ${expected}`)
   }
   if (new Set(ids).size !== ids.length) {
-    problems.push(`${label}: ten sam element wybrany dwa razy`)
+    problems.push(`${label}: the same item is selected twice`)
   }
   for (const id of required) {
-    if (!ids.includes(id)) problems.push(`${label}: brakuje wymaganego elementu ${id}`)
+    if (!ids.includes(id)) problems.push(`${label}: missing required item ${id}`)
   }
 }
 
 /** Lista problemów z wyborami (pusta = OK). Menu użyje tego do pokazywania błędów bez wyjątków. */
 export function getSetupProblems(choices: SetupChoices, rules: SetupRules): string[] {
   const problems: string[] = []
-  checkList('Bohaterowie', choices.heroIds, rules.heroes, rules.requiredHeroes, problems)
+  checkList('Heroes', choices.heroIds, rules.heroes, rules.requiredHeroes, problems)
   checkList(
-    'Grupy villainów',
+    'Villain Groups',
     choices.villainGroupIds,
     rules.villainGroups,
     rules.requiredVillainGroups,
     problems,
   )
   checkList(
-    'Grupy henchmenów',
+    'Henchmen',
     choices.henchmenGroupIds,
     rules.henchmenGroups,
     rules.requiredHenchmenGroups,
@@ -59,7 +59,7 @@ export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: Ga
   const rules = resolveRules(gameMode, scheme)
 
   const problems = getSetupProblems(choices, rules)
-  if (problems.length > 0) throw new Error(`Niepoprawny setup:\n${problems.join('\n')}`)
+  if (problems.length > 0) throw new Error(`Invalid setup:\n${problems.join('\n')}`)
 
   const mastermind = pick(
     sets.flatMap((s) => s.masterminds),
@@ -72,17 +72,17 @@ export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: Ga
   const villainPool = sets.flatMap((s) => s.villainGroups)
   const henchmenPool = sets.flatMap((s) => s.henchmenGroups)
 
-  const heroes = choices.heroIds.map((id) => pick(heroPool, (g) => g.id, id, 'bohater'))
+  const heroes = choices.heroIds.map((id) => pick(heroPool, (g) => g.id, id, 'hero'))
   const villains = choices.villainGroupIds.map((id) =>
-    pick(villainPool, (g) => g.id, id, 'grupa villainów'),
+    pick(villainPool, (g) => g.id, id, 'villain group'),
   )
   const henchmen = choices.henchmenGroupIds.map((id) =>
-    pick(henchmenPool, (g) => g.id, id, 'grupa henchmenów'),
+    pick(henchmenPool, (g) => g.id, id, 'henchmen group'),
   )
 
   // Na razie bierzemy karty wspólne z pierwszego zestawu, który je ma (Core Set)
   const shared = sets.map((s) => s.shared).find((s) => s !== undefined)
-  if (!shared) throw new Error('Żaden wybrany zestaw nie zawiera kart wspólnych (rany, oficerowie...)')
+  if (!shared) throw new Error('None of the selected sets contains shared cards (wounds, officers...)')
 
   return {
     startingCards: shared.startingCards,

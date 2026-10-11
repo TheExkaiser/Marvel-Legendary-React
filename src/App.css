@@ -62,6 +62,52 @@ body {
   overflow-x: hidden;
 }
 
+/* Suwaki w kolorach gry (Firefox, Chrome 121+, Safari 18.2+). Dziedziczą się na wszystkie przewijane elementy. */
+:root {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 225, 255, 0.45) rgba(9, 15, 38, 0.6);
+}
+
+/* Starsze przeglądarki WebKit */
+@supports not (scrollbar-color: auto) {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(9, 15, 38, 0.6);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(56, 225, 255, 0.45);
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--cyan);
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+/* Motyw "image": ten sam kolorystyczny theme, ale grafika zamiast gradientu.
+   Kod ustawia <html data-theme="image"> oraz zmienną --bg-image (ścieżka z BASE_URL). */
+:root[data-theme='image'] body {
+  background: none;
+}
+
+:root[data-theme='image']::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(rgba(9, 15, 38, 0.35), rgba(9, 15, 38, 0.6)), /* przyciemnienie dla czytelności tekstu */
+    var(--bg-image) center / cover no-repeat;
+}
+
 .app {
   max-width: 1000px;
   margin: 0 auto;

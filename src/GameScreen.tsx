@@ -224,7 +224,7 @@ function GameScreen({
               onClick={() => act((s) => recruitOfficer(s))}
             />
           )}
-          <div>Pozostało: {state.officerDeck.length}</div>
+          <div>Remaining: {state.officerDeck.length}</div>
         </div>
         {state.hq.map((instance, i) =>
           instance ? (
@@ -300,7 +300,7 @@ function GameScreen({
                             { id: 'play', label: 'Play' },
                             { id: 'teleport', label: 'Teleport' },
                           ],
-                          'Zagrać kartę czy teleportować?',
+                            'Play the card or teleport it?',
                         )
                         if (choice === 'teleport') {
                           await teleportCard(s, c.instanceId, ui)
@@ -324,7 +324,7 @@ function GameScreen({
         onClick={() => act(endTurn)}
         disabled={state.status !== 'playing'}
       >
-        Zakończ turę
+        End Turn
       </button>
 
       {/* ===== Popupy: wybór karty, wybór opcji, info, jeńcy ===== */}

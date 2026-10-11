@@ -1,4 +1,5 @@
 import type { Settings } from '../useSettings'
+import { THEMES } from '../theme'
 
 interface SettingsMenuProps {
   settings: Settings
@@ -19,6 +20,16 @@ export function SettingsMenu({ settings, onChange, onClose }: SettingsMenuProps)
             onChange={(e) => onChange('showRevealPopups', e.target.checked)}
           />
           Show reveal popups (Twist, Master Strike, villain enters city, bystander captured)
+        </label>
+        <label className="settings-row">
+          Theme
+          <select value={settings.theme} onChange={(e) => onChange('theme', e.target.value)}>
+            {THEMES.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
         </label>
       </div>
     </div>
