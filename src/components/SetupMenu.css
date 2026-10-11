@@ -120,6 +120,22 @@
   overflow-wrap: normal;
   word-break: normal;
 }
+
+.tile-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.tile-team {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
 /* Dolny pasek */
 .setup-footer {
   padding-top: 8px;
@@ -163,6 +179,10 @@
   }
   .tile-name {
     font-size: 0.65rem;
+  }
+  .tile-team {
+    width: 11px;
+    height: 11px;
   }
   .setup-buttons button {
     padding: 4px 10px;

@@ -1,7 +1,15 @@
 import { registerCardAbility } from '../../../engine/cardAbilities'
 import { drawCards, rescueBystander, addAttack, addRecruit, takeTopCards, gainWound, peekTopCard } from '../../../engine/game'
-import { discardCard, koCard, countPlayedThisTurn } from '../../../engine/keywords'
-import { registerDiscardReplacement, registerWoundReplacement } from '../../../engine/replacements'
+import { discardCard, koCard, countPlayedThisTurn, getEffectiveStrength, haveZone, discardCardChecked, koFromHandOrDiscard, koFromVictoryPile, villainsIn, isVillainCard } from '../../../engine/keywords'
+import { claimTacticFree, defeatVillainFree, defeatVillainFromDeck } from '../../../engine/combat'
+import { canDefeatVillain } from '../../../engine/villainRequirements'
+import { teleportCard, registerTeleportHook } from '../../../engine/turn'
+import { refillHq } from '../../../engine/recruit'
+import { shuffle } from '../../../engine/random'
+import { rescueCard } from '../../../engine/wounds'
+import { drawRevealed } from '../../../engine/deckOps'
+import { getCardData } from '../../../engine/cardData'
+import { registerDiscardReplacement, registerWoundReplacement, registerDiscardShield, isEnemyEffect } from '../../../engine/replacements'
 import { CITY_NAMES } from '../../../engine/constants'
 import type { CardInstance, GameState } from '../../../engine/types'
 import { registerMasterStrikeReaction } from '../../../engine/masterStrikeReactions'
@@ -41,11 +49,7 @@ registerCardAbility('hero-angel-drop-off-a-friend', async (state, { ui }) => {
   if (!chosen) return
 
   const cost = state.cards[chosen.cardId].cost ?? 0
-  await discardCard(state, chosen.instanceId, ui)
-
-  // Jeśli efekt zastępczy zatrzymał kartę w ręce, to nie została odrzucona i nie ma bonusu
-  const stillInHand = state.hand.some((c) => c.instanceId === chosen.instanceId)
-  if (!stillInHand) addAttack(state, cost)
+  if (await discardCardChecked(state, chosen.instanceId, ui)) addAttack(state, cost)
 })
 
 registerCardAbility('hero-angel-strength-of-spirit', async (state, { ui }) => {
@@ -62,11 +66,10 @@ registerCardAbility('hero-angel-strength-of-spirit', async (state, { ui }) => {
     })
     if (!chosen) break
 
-    await discardCard(state, chosen.instanceId, ui)
-    if (state.hand.some((c) => c.instanceId === chosen.instanceId)) {
-      kept.add(chosen.instanceId)
-    } else {
+    if (await discardCardChecked(state, chosen.instanceId, ui)) {
       discarded++
+    } else {
+      kept.add(chosen.instanceId)
     }
   }
 
@@ -84,14 +87,7 @@ registerCardAbility('hero-bishop-whatever-the-cost', async (state, { ui }) => {
   drawCards(state, 1)
   if (countPlayedThisTurn(state, { type: 'covert' }) === 0) return
 
-  const options = [...state.hand, ...state.discard]
-  if (options.length === 0) return
-
-  const chosen = await ui.choose(options, {
-    prompt: 'Whatever the Cost: możesz KO kartę z ręki lub stosu odrzuconych',
-    optional: true,
-  })
-  if (chosen) koCard(state, chosen.instanceId)
+  await koFromHandOrDiscard(state, ui, 'Whatever the Cost: możesz KO kartę z ręki lub stosu odrzuconych')
 })
 
 registerCardAbility('hero-bishop-concussive-blast', async (state) => {
@@ -173,15 +169,8 @@ registerCardAbility('hero-blade-stalk-the-prey', async (state, { ui }) => {
   state.city[fromIndex] = occupant ?? null
 })
 
-function countVillainsInPile(state: GameState, pile: CardInstance[]): number {
-  return pile.filter((c) => {
-    const data = state.cards[c.cardId]
-    return data.villainGroup !== undefined || data.henchman === true
-  }).length
-}
-
 registerCardAbility('hero-blade-vampiric-surge', async (state) => {
-  addAttack(state, countVillainsInPile(state, state.defeated))
+  addAttack(state, villainsIn(state, state.defeated).length)
 })
 
 // ---------- Cable ----------
@@ -193,11 +182,7 @@ registerMasterStrikeReaction('hero-cable-disaster-survivalist', async (state, ui
   })
   if (!chosen) return
 
-  await discardCard(state, self.instanceId, ui)
-
-  // Jeśli efekt zastępczy zatrzymał kartę w ręce, to nie została odrzucona i nie ma bonusu
-  const stillInHand = state.hand.some((c) => c.instanceId === self.instanceId)
-  if (!stillInHand) state.bonusDrawNextTurn += 3
+  if (await discardCardChecked(state, self.instanceId, ui)) state.bonusDrawNextTurn += 3
 })
 
 // Strike at the Heart of Evil: +2 Attack tylko przeciwko Masterminds = Mastermind jest o 2 słabszy w tej turze
@@ -243,10 +228,8 @@ registerWoundReplacement('hero-colossus-invulnerability', async (state, ui, self
   })
   if (!chosen) return false
 
-  await discardCard(state, self.instanceId, ui)
-
   // Gdyby coś zatrzymało kartę w ręce, to jej nie odrzucono i Rana nie jest zastąpiona
-  if (state.hand.some((c) => c.instanceId === self.instanceId)) return false
+  if (!(await discardCardChecked(state, self.instanceId, ui))) return false
 
   drawCards(state, 2)
   return true
@@ -330,10 +313,7 @@ registerCardAbility('hero-domino-specialized-ammunition', async (state, { ui }) 
   if (!chosen) return
 
   const data = state.cards[chosen.cardId]
-  await discardCard(state, chosen.instanceId, ui)
-
-  // Jeśli efekt zastępczy zatrzymał kartę w ręce, to nie została odrzucona
-  if (state.hand.some((c) => c.instanceId === chosen.instanceId)) return
+  if (!(await discardCardChecked(state, chosen.instanceId, ui))) return
 
   if (data.recruit !== undefined) addRecruit(state, 4)
   if (data.attack !== undefined) addAttack(state, 4)
@@ -344,4 +324,433 @@ registerCardAbility('hero-domino-against-all-odds', async (state) => {
   if (countPlayedThisTurn(state, { team: 'x-force' }) > 0) {
     state.versatileBothThisTurn = true
   }
+})
+
+// ---------- Pomocnicze: "Hero" i koszty ----------
+
+// Zdobyty Villain (Mind Control) też jest Bohaterem, dlatego dane przez getCardData
+function isHero(state: GameState, c: CardInstance): boolean {
+  const d = getCardData(state, c)
+  return d.kind === undefined && d.villainGroup === undefined && !d.henchman
+}
+
+// Zagrywana karta nie jest jeszcze w cardsPlayedThisTurn, więc to są "other Heroes"
+function otherHeroesPlayed(state: GameState): number {
+  return state.cardsPlayedThisTurn.filter((c) => isHero(state, c)).length
+}
+
+// "Hero you have" = haveZone (ręka + zagrane + odrzucone)
+function distinctHeroCosts(state: GameState): number {
+  const costs = new Set<number>()
+  for (const c of haveZone(state)) {
+    if (isHero(state, c)) costs.add(getCardData(state, c).cost ?? 0)
+  }
+  return costs.size
+}
+
+// ---------- Elektra ----------
+
+registerCardAbility('hero-elektra-first-strike', async (state) => {
+  if (state.cardsPlayedThisTurn.length === 0) addAttack(state, 1)
+})
+
+registerCardAbility('hero-elektra-ninjitsu', async (state) => {
+  drawCards(state, 1)
+  if (countPlayedThisTurn(state, { type: 'covert' }) > 0) addRecruit(state, 2)
+})
+
+registerCardAbility('hero-elektra-sai-blades', async (state) => {
+  const cheapHeroes = state.cardsPlayedThisTurn.filter((c) => {
+    const cost = getCardData(state, c).cost
+    return isHero(state, c) && cost !== undefined && cost <= 2
+  }).length
+  addAttack(state, cheapHeroes)
+})
+
+// Silent Meditation: hak w recruit.ts (placeRecruitedCard)
+registerCardAbility('hero-elektra-silent-meditation', async (state) => {
+  state.recruitsToHand = (state.recruitsToHand ?? 0) + 1
+  if (countPlayedThisTurn(state, { team: 'marvel-knights' }) > 0) addRecruit(state, 2)
+})
+
+// ---------- Forge ----------
+
+// Dirty Work: tech -> Villain w Sewers ma -2 Attack do końca tury (endTurn zeruje modyfikatory)
+registerCardAbility('hero-forge-dirty-work', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'tech' }) === 0) return
+  state.locationAttackModifiers['Sewers'] = (state.locationAttackModifiers['Sewers'] ?? 0) - 2
+})
+
+registerCardAbility('hero-forge-reboot', async (state, { ui }) => {
+  if (countPlayedThisTurn(state, { type: 'tech' }) === 0) return
+  if (state.hand.length === 0) return
+
+  const chosen = await ui.choose(state.hand, {
+    prompt: 'Reboot: możesz odrzucić kartę (dobierzesz 2 karty)',
+    optional: true,
+  })
+  if (!chosen) return
+
+  if (!(await discardCardChecked(state, chosen.instanceId, ui))) return
+  drawCards(state, 2)
+})
+
+// Overdrive: Versatile 3 jest w danych karty, obsługuje go playCard
+
+// B.F.G.: tech, tech -> pokonaj Mastermind raz za darmo
+registerCardAbility('hero-forge-bfg', async (state, { ui }) => {
+  if (countPlayedThisTurn(state, { type: 'tech' }) < 2) return
+  if (state.tactics.length === 0) return
+  await claimTacticFree(state, ui)
+})
+
+// ---------- Ghost Rider ----------
+
+registerCardAbility('hero-ghost-rider-blazing-hellfire', async (state, { ui }) => {
+  const options = villainsIn(state, state.defeated)
+  if (options.length === 0) return
+
+  const chosen = await ui.choose(options, {
+    prompt: 'Blazing Hellfire: możesz KO Villaina ze stosu Victory (+3 Attack)',
+    optional: true,
+  })
+  if (!chosen) return
+
+  koFromVictoryPile(state, chosen.instanceId)
+  addAttack(state, 3)
+})
+
+registerCardAbility('hero-ghost-rider-hell-on-wheels', async (state) => {
+  if (countPlayedThisTurn(state, { team: 'marvel-knights' }) > 0) addRecruit(state, 2)
+})
+
+registerCardAbility('hero-ghost-rider-infernal-chains', async (state, { ui }) => {
+  drawCards(state, 1)
+  if (countPlayedThisTurn(state, { type: 'strength' }) === 0) return
+
+  const targets = state.city.filter(
+    (c): c is CardInstance =>
+      !!c &&
+      (getEffectiveStrength(state, c) ?? Infinity) <= 3 &&
+      canDefeatVillain(state, c.cardId),
+  )
+  if (targets.length === 0) return
+
+  const chosen = await ui.choose(targets, {
+    prompt: 'Infernal Chains: pokonaj za darmo Villaina o sile 3 lub mniejszej',
+    optional: true,
+  })
+  if (chosen) await defeatVillainFree(state, chosen.instanceId, ui)
+})
+
+// Penance Stare (solo): KO jednego Villaina ze swojego stosu Victory, +1 Attack.
+registerCardAbility('hero-ghost-rider-penance-stare', async (state, { ui }) => {
+  const options = villainsIn(state, state.defeated)
+  if (options.length === 0) return
+
+  const chosen = await ui.choose(options, {
+    prompt: 'Penance Stare: wybierz Villaina do KO ze stosu Victory (+1 Attack)',
+    optional: false,
+  })
+  if (!chosen) return
+
+  // Marvel Knights: Villain wraca do Twojego stosu Victory, czyli po prostu go nie kasujemy
+  if (countPlayedThisTurn(state, { team: 'marvel-knights' }) === 0) {
+    koFromVictoryPile(state, chosen.instanceId)
+  }
+  addAttack(state, 1)
+})
+
+// ---------- Iceman ----------
+
+// Zagrywana karta nie jest jeszcze w cardsPlayedThisTurn, więc countPlayedThisTurn liczy tylko "inne" karty.
+// Zdobyty Villain (Mind Control) ma type: [], więc nie liczy się jako ranged.
+registerCardAbility('hero-iceman-deep-freeze', async (state) => {
+  drawCards(state, 1)
+  addRecruit(state, countPlayedThisTurn(state, { type: 'ranged' }))
+})
+
+registerCardAbility('hero-iceman-ice-slide', async (state) => {
+  addAttack(state, countPlayedThisTurn(state, { type: 'ranged' }))
+})
+
+// Frost Spike Armor sama jest strength, więc nie liczy siebie. Warunek ranged spełnia się, gdy count > 0.
+registerCardAbility('hero-iceman-frost-spike-armor', async (state) => {
+  drawCards(state, countPlayedThisTurn(state, { type: 'ranged' }))
+})
+
+// Impenetrable Ice Wall: reaguje tylko na efekty Villaina / Master Strike'a / Taktyki (isEnemyEffect)
+registerWoundReplacement('hero-iceman-impenetrable-ice-wall', async (state, ui, self) => {
+  if (!isEnemyEffect(state)) return false
+  if (!state.hand.some((c) => c.instanceId === self.instanceId)) return false
+
+  const chosen = await ui.choose([self], {
+    prompt: 'Impenetrable Ice Wall: ujawnić tę kartę zamiast zdobywać Ranę?',
+    optional: true,
+  })
+  return !!chosen
+})
+
+registerDiscardShield('hero-iceman-impenetrable-ice-wall', async (state, ui, self) => {
+  const chosen = await ui.choose([self], {
+    prompt: 'Impenetrable Ice Wall: ujawnić tę kartę zamiast odrzucać kartę?',
+    optional: true,
+  })
+  return !!chosen
+})
+
+registerDiscardShield('hero-iceman-impenetrable-ice-wall', async (state, ui, self) => {
+  const chosen = await ui.choose([self], {
+    prompt: 'Impenetrable Ice Wall: ujawnić tę kartę zamiast odrzucać kartę?',
+    optional: true,
+  })
+  return !!chosen
+})
+
+// ---------- Iron Fist ----------
+
+registerCardAbility('hero-iron-fist-focus-chi', async (state) => {
+  addRecruit(state, distinctHeroCosts(state))
+})
+
+registerCardAbility('hero-iron-fist-wield-the-iron-fist', async (state) => {
+  addAttack(state, distinctHeroCosts(state))
+})
+
+registerCardAbility('hero-iron-fist-ancient-legacy', async (state, { self, ui }) => {
+  drawCards(state, 1)
+  if (countPlayedThisTurn(state, { type: 'strength' }) >= 2) {
+    await applyVersatile(state, ui, 2, self)
+  }
+})
+
+// Living Weapon: odkrywaj z talii, aż dwie karty mają ten sam koszt, i dobierz wszystkie odkryte.
+// Rana ma koszt 0 (brak kosztu = 0).
+registerCardAbility('hero-iron-fist-living-weapon', async (state, { ui }) => {
+  const revealed: CardInstance[] = []
+  const seenCosts = new Set<number>()
+
+  while (true) {
+    const [card] = takeTopCards(state, 1)
+    if (!card) break // talia i odrzucone wyczerpane: dobierasz to, co odkryto
+    revealed.push(card)
+
+    const cost = state.cards[card.cardId].cost ?? 0
+    const pair = seenCosts.has(cost)
+    await ui.showInfo(
+      card,
+      pair
+        ? `Living Weapon: ${revealed.length}. karta, koszt ${cost}, para!`
+        : `Living Weapon: ${revealed.length}. karta, koszt ${cost}`,
+    )
+    if (pair) break
+    seenCosts.add(cost)
+  }
+
+  drawRevealed(state, revealed)
+})
+
+// ---------- Jean Grey ----------
+
+registerCardAbility('hero-jean-grey-psychic-search', async (state) => {
+  if (countPlayedThisTurn(state, { team: 'x-men' }) > 0) rescueBystander(state)
+})
+
+registerCardAbility('hero-jean-grey-read-your-thoughts', async (state) => {
+  state.rescueRecruitBonus = (state.rescueRecruitBonus ?? 0) + 1
+})
+
+registerCardAbility('hero-jean-grey-mind-over-matter', async (state) => {
+  state.rescueDrawBonus = (state.rescueDrawBonus ?? 0) + 1
+})
+
+// Najpierw bonus, potem ratunek, żeby uratowani Bystanderzy też go uruchomili
+registerCardAbility('hero-jean-grey-telekinetic-mastery', async (state) => {
+  state.rescueAttackBonus = (state.rescueAttackBonus ?? 0) + 1
+  const xmen = countPlayedThisTurn(state, { team: 'x-men' })
+  for (let i = 0; i < xmen; i++) rescueBystander(state)
+})
+
+// ---------- Nightcrawler ----------
+
+// Bamf! i Blend Into Shadows: sam Teleport jest w silniku (słowo kluczowe), bez własnej zdolności
+
+registerCardAbility('hero-nightcrawler-swashbuckler', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'covert' }) > 0 && countPlayedThisTurn(state, { type: 'instinct' }) > 0) {
+    addAttack(state, 3)
+  }
+})
+
+// Along for the Ride: przy zagraniu ALBO teleporcie możesz teleportować do 3 innych kart z ręki (bez sprawdzania słowa kluczowego)
+async function teleportUpToThree(state: GameState, ui: UiAdapter, selfId: string): Promise<void> {
+  for (let i = 0; i < 3; i++) {
+    const options = state.hand.filter((c) => c.instanceId !== selfId)
+    if (options.length === 0) return
+    const chosen = await ui.choose(options, {
+      prompt: `Along for the Ride: Teleport kolejnej karty (${i}/3), zamknij aby zakończyć`,
+      optional: true,
+    })
+    if (!chosen) return
+    await teleportCard(state, chosen.instanceId, ui, true)
+  }
+}
+
+registerCardAbility('hero-nightcrawler-along-for-the-ride', async (state, { self, ui }) => {
+  await teleportUpToThree(state, ui, self.instanceId)
+})
+registerTeleportHook('hero-nightcrawler-along-for-the-ride', async (state, ui, self) => {
+  console.log('Along hook', { ui, self })
+  await teleportUpToThree(state, ui, self.instanceId)
+})
+
+// ---------- Professor X ----------
+
+registerCardAbility('hero-professor-x-class-dismissed', async (state, { ui }) => {
+  const options = state.hq.filter((c): c is CardInstance => !!c)
+  if (options.length > 0) {
+    const chosen = await ui.choose(options, {
+      prompt: 'Class Dismissed: możesz włożyć Bohatera z HQ pod spód talii Bohaterów',
+      optional: true,
+    })
+    if (chosen) {
+      const slot = state.hq.findIndex((c) => c?.instanceId === chosen.instanceId)
+      state.hq[slot] = null
+      state.heroDeck.unshift(chosen) // wierzch talii to koniec tablicy, więc spód to początek
+      refillHq(state)
+    }
+  }
+
+  if (countPlayedThisTurn(state, { type: 'instinct' }) > 0) {
+    await koFromHandOrDiscard(state, ui, 'Class Dismissed: możesz KO kartę z ręki lub stosu odrzuconych')
+  }
+})
+
+registerCardAbility('hero-professor-x-psionic-astral-form', async (state) => {
+  if (countPlayedThisTurn(state, { team: 'x-men' }) > 0) addAttack(state, 2)
+})
+
+registerCardAbility('hero-professor-x-telepathic-probe', async (state, { ui }) => {
+  const top = state.villainDeck[state.villainDeck.length - 1]
+  if (!top) return
+  const data = state.cards[top.cardId]
+
+  if (data.kind === 'bystander') {
+    const chosen = await ui.choose([top], { prompt: 'Telepathic Probe: uratować tego Bystandera?', optional: true })
+    if (chosen) {
+      state.villainDeck.pop()
+      rescueCard(state, top)
+    }
+    return
+  }
+
+  if (!isVillainCard(data)) {
+    await ui.showInfo(top, 'Telepathic Probe: to nie Villain ani Bystander')
+    return
+  }
+
+  const chosen = await ui.choose([top], {
+    prompt: `Telepathic Probe: walczyć z ${data.name} teraz (siła ${getEffectiveStrength(state, top) ?? 0})?`,
+    optional: true,
+  })
+  if (!chosen) return
+
+  const ok = await defeatVillainFromDeck(state, ui, true)
+  if (!ok) await ui.showInfo(top, 'Telepathic Probe: za mało Attack, Villain zostaje na talii')
+})
+
+// Mind Control: samo zdobycie Villaina robi offerMindControl w combat.ts (mindControlThisTurn)
+registerCardAbility('hero-professor-x-mind-control', async (state) => {
+  state.mindControlThisTurn = true
+})
+
+// ---------- Punisher ----------
+
+registerCardAbility('hero-punisher-boom-goes-the-dynamite', async (state, { ui }) => {
+  const top = peekTopCard(state)
+  if (top) {
+    const cost = state.cards[top.cardId].cost ?? 0
+    await ui.showInfo(top, `Boom Goes the Dynamite: koszt ${cost}${cost === 0 ? ', KO' : ''}`)
+    if (cost === 0) koCard(state, top.instanceId)
+  }
+  if (countPlayedThisTurn(state, { type: 'tech' }) > 0) drawCards(state, 1)
+})
+
+registerCardAbility('hero-punisher-hail-of-bullets', async (state, { ui }) => {
+  const top = state.villainDeck[state.villainDeck.length - 1]
+  if (!top) return
+  const data = state.cards[top.cardId]
+  if (!isVillainCard(data)) {
+    await ui.showInfo(top, 'Hail of Bullets: to nie Villain')
+    return
+  }
+
+  addAttack(state, data.vp ?? 0)
+  if (countPlayedThisTurn(state, { type: 'tech' }) < 2) return
+
+  const chosen = await ui.choose([top], { prompt: 'Hail of Bullets: pokonać tego Villaina za darmo?', optional: true })
+  if (chosen) await defeatVillainFromDeck(state, ui, false)
+})
+
+// Hostile Interrogation: w solo "each other player" = Ty
+registerCardAbility('hero-punisher-hostile-interrogation', async (state, { ui }) => {
+  if (countPlayedThisTurn(state, { type: 'strength' }) === 0) return
+
+  const top = peekTopCard(state)
+  if (!top) return
+
+  const cost = state.cards[top.cardId].cost ?? 0
+  if (cost < 4) {
+    await ui.showInfo(top, `Hostile Interrogation: koszt ${cost}, zostaje na talii`)
+    return
+  }
+
+  await ui.showInfo(top, `Hostile Interrogation: koszt ${cost}, odrzucona (+1 Recruit)`)
+  state.deck.pop() // peekTopCard gwarantuje, że wierzch to ostatni element talii
+  state.discard.push(top)
+  addRecruit(state, 1)
+})
+
+registerCardAbility('hero-punisher-the-punisher', async (state, { ui }) => {
+  const revealed: CardInstance[] = []
+  const seenCosts = new Set<number>()
+
+  while (state.heroDeck.length > 0) {
+    const card = state.heroDeck.pop()!
+    revealed.push(card)
+
+    const cost = state.cards[card.cardId].cost ?? 0
+    const pair = seenCosts.has(cost)
+    await ui.showInfo(
+      card,
+      pair
+        ? `The Punisher: ${revealed.length}. karta, koszt ${cost}, para!`
+        : `The Punisher: ${revealed.length}. karta, koszt ${cost}`,
+    )
+    if (pair) break
+    seenCosts.add(cost)
+  }
+
+  addAttack(state, revealed.length)
+  state.heroDeck.unshift(...shuffle(revealed)) // na spód talii w losowej kolejności
+})
+
+// ---------- Wolverine ----------
+
+registerCardAbility('hero-wolverine-animal-instincts', async (state) => {
+  drawCards(state, 1)
+  if (countPlayedThisTurn(state, { type: 'instinct' }) > 0) addAttack(state, 2)
+})
+
+registerCardAbility('hero-wolverine-sudden-ambush', async (state) => {
+  if (state.cardsDrawnThisTurn > 0) addAttack(state, 2)
+})
+
+registerCardAbility('hero-wolverine-no-mercy', async (state, { ui }) => {
+  drawCards(state, 1)
+  await koFromHandOrDiscard(state, ui, 'No Mercy: możesz KO kartę z ręki lub stosu odrzuconych')
+})
+
+// Dobiera tyle kart, ile extra kart już dobrano (liczone z góry, bo drawCards zwiększa licznik)
+registerCardAbility('hero-wolverine-reckless-abandon', async (state) => {
+  drawCards(state, state.cardsDrawnThisTurn)
 })

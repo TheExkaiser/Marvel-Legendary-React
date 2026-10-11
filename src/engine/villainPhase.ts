@@ -8,6 +8,7 @@ import { ESCAPE_LIMIT } from './constants'
 import { logEvent } from './common'
 import { captureBystander } from './wounds'
 import { runMasterStrikeReactions } from './masterStrikeReactions'
+import { asEnemyEffect } from './replacements'
 
 /** Rozpatruje pojedynczą kartę z talii złoczyńców, według jej rodzaju (bez pop'owania z talii). */
 export async function resolveVillainDeckCard(
@@ -51,7 +52,7 @@ async function resolveMasterStrike(
 
   const ability = getCardAbility(state.masterStrikeId)
   if (ability) {
-    await ability(state, { self: card, ui })
+    await asEnemyEffect(state, () => ability(state, { self: card, ui }))
   }
 
   state.ko.push(card)
@@ -85,8 +86,9 @@ export async function enterCity(state: GameState, villain: CardInstance, ui: UiA
     getScheme(state).onVillainEscaped?.(state, moving, lost)
 
     const escapeAbilities = getVillainAbilities(moving.cardId)
+    const escapee = moving
     if (escapeAbilities?.onEscape) {
-      await escapeAbilities.onEscape(state, ui, moving)
+      await asEnemyEffect(state, () => escapeAbilities.onEscape!(state, ui, escapee))
     }
   }
 
@@ -95,7 +97,7 @@ export async function enterCity(state: GameState, villain: CardInstance, ui: UiA
 
   const ambushAbilities = getVillainAbilities(villain.cardId)
   if (ambushAbilities?.onAmbush) {
-    await ambushAbilities.onAmbush(state, ui, villain)
+    await asEnemyEffect(state, () => ambushAbilities.onAmbush!(state, ui, villain))
   }
 }
 

@@ -48,6 +48,12 @@ export interface LocationDefeatBonus {
   draw?: number
 }
 
+/** Nadpisanie danych jednej konkretnej karty (np. zdobyty Villain, który działa jak Bohater). */
+export interface InstanceOverride {
+  data: Partial<CardData>
+  abilityId?: string // zdolność, którą karta ma mieć (domyślnie: żadna)
+}
+
 export interface GameState {
   cards: Record<string, CardData>
 
@@ -99,6 +105,13 @@ export interface GameState {
   extraCardToHand?: string // instanceId karty zarezerwowanej przez Electromagnetic Bubble
   teleported?: CardInstance[] // Teleport: karty odłożone na bok, na koniec tury wracają do ręki jako dodatkowe
   recruitsToDeckTop?: number // Backflip: ile następnych zrekrutowanych Bohaterów trafia na wierzch talii zamiast do odrzuconych
+  recruitsToHand?: number // Silent Meditation: ile następnych zrekrutowanych Bohaterów trafia do ręki zamiast do odrzuconych
+  rescueRecruitBonus?: number // Jean Grey: +Recruit za każdego uratowanego Bystandera w tej turze
+  rescueAttackBonus?: number // Jean Grey: +Attack za każdego uratowanego Bystandera w tej turze
+  rescueDrawBonus?: number // Jean Grey: dobranie karty za każdego uratowanego Bystandera w tej turze
+  enemyEffectDepth?: number // >0 w trakcie efektu Villaina / Master Strike'a / Taktyki (Impenetrable Ice Wall)
+  mindControlThisTurn?: boolean // Professor X (Mind Control): po pokonaniu Villaina możesz go zdobyć
+  instanceOverrides?: Record<string, InstanceOverride> // instanceId -> nadpisane dane karty
   versatileBothThisTurn?: boolean // Against All Odds: do końca tury Versatile daje i Attack, i Recruit
   status: GameStatus
   locationAttackModifiers: Record<string, number>

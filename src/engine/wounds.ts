@@ -1,6 +1,8 @@
 import type { GameState, CardInstance } from './types'
 import type { UiAdapter } from './ui'
 import { getWoundReplacement } from './replacements'
+import { addRecruit, addAttack } from './resources'
+import { drawCards } from './deckOps'
 
 /** Gracz zyskuje ranę, chyba że zamiennik (np. Diving Block) ją zastąpi. */
 export async function gainWound(state: GameState, ui: UiAdapter): Promise<void> {
@@ -21,10 +23,24 @@ export function gainWoundSilent(state: GameState): void {
   state.discard.push(wound)
 }
 
-/** Uratowany bystander idzie prosto do Victory Pool. */
+/** Bonusy "whenever you rescue a Bystander this turn" (Jean Grey). */
+export function applyRescueBonuses(state: GameState, count: number): void {
+  if (count <= 0) return
+  if (state.rescueRecruitBonus) addRecruit(state, state.rescueRecruitBonus * count)
+  if (state.rescueAttackBonus) addAttack(state, state.rescueAttackBonus * count)
+  if (state.rescueDrawBonus) drawCards(state, state.rescueDrawBonus * count)
+}
+
+/** Uratowana konkretna karta Bystandera (np. z wierzchu talii złoczyńców) idzie do Victory Pool. */
+export function rescueCard(state: GameState, bystander: CardInstance): void {
+  state.defeated.push(bystander)
+  applyRescueBonuses(state, 1)
+}
+
+/** Uratowany bystander ze stosu idzie prosto do Victory Pool. */
 export function rescueBystander(state: GameState): void {
   const bystander = state.bystanders.pop()
-  if (bystander) state.defeated.push(bystander)
+  if (bystander) rescueCard(state, bystander)
 }
 
 /** Odkryty bystander zostaje jeńcem najdalszego złoczyńcy; przy pustym mieście jeńcem zostaje mastermind. */

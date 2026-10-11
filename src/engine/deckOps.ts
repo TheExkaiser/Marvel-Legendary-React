@@ -34,3 +34,9 @@ export function peekTopCard(state: GameState): CardInstance | undefined {
   if (state.deck.length === 0 && !reshuffleDiscardIntoDeck(state)) return undefined
   return state.deck[state.deck.length - 1]
 }
+
+/** Karty już zdjęte z talii (takeTopCards) trafiają do ręki jako dobrane. */
+export function drawRevealed(state: GameState, cards: CardInstance[]): void {
+  state.hand.push(...cards)
+  state.cardsDrawnThisTurn += cards.length
+}

@@ -32,3 +32,28 @@ export function registerDiscardReplacement(cardId: string, fn: DiscardReplacemen
 export function getDiscardReplacement(cardId: string): DiscardReplacement | undefined {
   return discardRegistry.get(cardId)
 }
+
+/** Opakowuje efekt Villaina / Master Strike'a / Taktyki, żeby tarcze (Impenetrable Ice Wall) wiedziały, że to efekt przeciwnika. */
+export async function asEnemyEffect(state: GameState, fn: () => void | Promise<void>): Promise<void> {
+  state.enemyEffectDepth = (state.enemyEffectDepth ?? 0) + 1
+  try {
+    await fn()
+  } finally {
+    state.enemyEffectDepth! -= 1
+  }
+}
+
+export function isEnemyEffect(state: GameState): boolean {
+  return (state.enemyEffectDepth ?? 0) > 0
+}
+
+// Tarcza przed odrzuceniem karty przez efekt przeciwnika: true = odrzucenie anulowane
+const discardShields = new Map<string, DiscardReplacement>()
+
+export function registerDiscardShield(cardId: string, fn: DiscardReplacement): void {
+  discardShields.set(cardId, fn)
+}
+
+export function getDiscardShields(): [string, DiscardReplacement][] {
+  return [...discardShields.entries()]
+}

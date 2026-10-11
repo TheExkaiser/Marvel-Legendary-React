@@ -1,6 +1,6 @@
 import type { GameState, CardInstance, CardData } from './types'
 import type { UiAdapter } from './ui'
-import { getDiscardReplacement } from './replacements'
+import { getDiscardReplacement, getDiscardShields, isEnemyEffect } from './replacements'
 import { getVpModifier } from './vpModifiers'
 import { CITY_NAMES } from './constants'
 import { getScheme } from './schemeRegistry'
@@ -98,6 +98,14 @@ export async function discardCard(
   instanceId: string,
   ui: UiAdapter,
 ): Promise<void> {
+  // Efekt przeciwnika: tarcze (Impenetrable Ice Wall) mogą anulować odrzucenie
+  if (isEnemyEffect(state)) {
+    for (const [shieldId, shield] of getDiscardShields()) {
+      const holder = state.hand.find((c) => c.cardId === shieldId)
+      if (holder && (await shield(state, ui, holder))) return
+    }
+  }
+
   for (const pile of [state.hand, state.played]) {
     const index = pile.findIndex((c) => c.instanceId === instanceId)
     if (index === -1) continue
@@ -206,7 +214,7 @@ export function getEffectiveStrength(
 
   total += getScheme(state).villainStrengthModifier?.(state, instance) ?? 0
 
-  return total
+  return Math.max(0, total) // siła nie może zejść poniżej 0 (inaczej spendAttack by ją "zwracał")
 }
 
 // Wszystkie karty "złapane" przez villaina/mastermind: jeńcy-bystanderzy + ewentualna
@@ -215,4 +223,41 @@ export function getCapturedCards(state: GameState, instanceId: string): CardData
   const captives = state.captives[instanceId] ?? []
   const attached = state.attachedCards[instanceId]
   return [...captives, ...(attached ? [attached] : [])].map((c) => state.cards[c.cardId])
+}
+
+/** Odrzuca kartę i zwraca true, jeśli faktycznie opuściła rękę/zagrane (efekt zastępczy mógł ją zatrzymać). */
+export async function discardCardChecked(
+  state: GameState,
+  instanceId: string,
+  ui: UiAdapter,
+): Promise<boolean> {
+  await discardCard(state, instanceId, ui)
+  return (
+    !state.hand.some((c) => c.instanceId === instanceId) &&
+    !state.played.some((c) => c.instanceId === instanceId)
+  )
+}
+
+/** "You may KO a card from your hand or discard pile". */
+export async function koFromHandOrDiscard(state: GameState, ui: UiAdapter, prompt: string): Promise<void> {
+  const options = [...state.hand, ...state.discard]
+  if (options.length === 0) return
+  const chosen = await ui.choose(options, { prompt, optional: true })
+  if (chosen) koCard(state, chosen.instanceId)
+}
+
+export function isVillainCard(data: CardData): boolean {
+  return data.villainGroup !== undefined || data.henchman === true
+}
+
+export function villainsIn(state: GameState, pile: CardInstance[]): CardInstance[] {
+  return pile.filter((c) => isVillainCard(state.cards[c.cardId]))
+}
+
+/** KO karty ze stosu Victory. To nie karta gracza, więc bez bonusu koRecruitBonus (Absorb Energies). */
+export function koFromVictoryPile(state: GameState, instanceId: string): void {
+  const index = state.defeated.findIndex((c) => c.instanceId === instanceId)
+  if (index === -1) return
+  const [card] = state.defeated.splice(index, 1)
+  state.ko.push(card)
 }

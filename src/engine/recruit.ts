@@ -10,9 +10,12 @@ export function refillHq(state: GameState): void {
   }
 }
 
-/** Zrekrutowana karta trafia do odrzuconych, a jeśli zagrano Backflip, na wierzch talii. */
+/** Zrekrutowana karta trafia do odrzuconych. Silent Meditation: do ręki, Backflip: na wierzch talii. */
 function placeRecruitedCard(state: GameState, instance: CardInstance): void {
-  if ((state.recruitsToDeckTop ?? 0) > 0) {
+  if ((state.recruitsToHand ?? 0) > 0) {
+    state.recruitsToHand! -= 1
+    state.hand.push(instance)
+  } else if ((state.recruitsToDeckTop ?? 0) > 0) {
     state.recruitsToDeckTop! -= 1
     state.deck.push(instance) // wierzch talii to koniec tablicy
   } else {

@@ -7,6 +7,7 @@ import { GAME_MODES } from '../data/gameModes'
 import { DEBUG_PRESET } from '../data/sets/setup'
 import { consumePendingSetupChoices, type GameLogMeta } from '../gameLog'
 import { GameHistoryMenu } from './GameHistoryMenu'
+import { teamIcon } from '../data/teams'
 import './SetupMenu.css'
 
 interface SetupMenuProps {
@@ -30,6 +31,25 @@ function byName<T extends { name: string }>(items: T[]): T[] {
   return [...items].sort((a, b) => a.name.localeCompare(b.name, 'en'))
 }
 
+type SortMode = 'alpha' | 'set' | 'team'
+
+function groupTeam(g: CardGroup): string | undefined {
+  return g.cards[0]?.card.team?.[0]
+}
+
+function sortGroups(sets: SetData[], pick: (s: SetData) => CardGroup[], mode: SortMode): CardGroup[] {
+  if (mode === 'set') return sets.flatMap((s) => byName(pick(s))) // kolejność setów z tablicy `sets`
+  const all = sets.flatMap(pick)
+  if (mode === 'team') {
+    return [...all].sort(
+      (a, b) =>
+        (groupTeam(a) ?? '').localeCompare(groupTeam(b) ?? '', 'en') ||
+        a.name.localeCompare(b.name, 'en'),
+    )
+  }
+  return byName(all)
+}
+
 function iconSrc(path: string): string {
   return import.meta.env.BASE_URL + path
 }
@@ -37,12 +57,13 @@ function iconSrc(path: string): string {
 interface IconTileProps {
   name: string
   icon?: string
+  teamIcon?: string
   checked: boolean
   disabled?: boolean
   onToggle: () => void
 }
 
-function IconTile({ name, icon, checked, disabled, onToggle }: IconTileProps) {
+function IconTile({ name, icon, teamIcon, checked, disabled, onToggle }: IconTileProps) {
   const [failed, setFailed] = useState(false)
   return (
     <label className={checked ? 'tile checked' : 'tile'} title={name}>
@@ -54,7 +75,12 @@ function IconTile({ name, icon, checked, disabled, onToggle }: IconTileProps) {
           <span className="tile-fallback">{name.charAt(0)}</span>
         )}
       </span>
-      <span className="tile-name">{name}</span>
+      <span className="tile-label">
+        {teamIcon && (
+          <img className="tile-team" src={iconSrc(teamIcon)} alt="" onError={(e) => (e.currentTarget.style.display = 'none')} />
+        )}
+        <span className="tile-name">{name}</span>
+      </span>
     </label>
   )
 }
@@ -87,6 +113,7 @@ function PickList({ title, iconFolder, items, selected, max, required, onChange 
               key={item.id}
               name={item.name}
               icon={item.icon ?? `${iconFolder}/${item.id}.png`}
+              teamIcon={teamIcon(groupTeam(item))}
               checked={checked}
               disabled={locked || (!checked && full)}
               onToggle={() => onChange(toggleId(selected, item.id))}
@@ -108,14 +135,16 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
     return { ...base, gameModeId: base.gameModeId || GAME_MODES[0]?.id || '' }
   })
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [sortMode, setSortMode] = useState<SortMode>('alpha')
 
   // Pula do wyboru = suma zaznaczonych zestawów
   const activeSets = sets.filter((s) => enabledSetIds.includes(s.id))
   const schemes = activeSets.flatMap((s) => s.schemes)
   const masterminds = activeSets.flatMap((s) => s.masterminds)
-  const heroGroups = byName(activeSets.flatMap((s) => s.heroes))
-  const villainGroups = byName(activeSets.flatMap((s) => s.villainGroups))
-  const henchmenGroups = byName(activeSets.flatMap((s) => s.henchmenGroups))
+  const nonTeamMode: SortMode = sortMode === 'team' ? 'alpha' : sortMode
+  const heroGroups = sortGroups(activeSets, (s) => s.heroes, sortMode)
+  const villainGroups = sortGroups(activeSets, (s) => s.villainGroups, nonTeamMode)
+  const henchmenGroups = sortGroups(activeSets, (s) => s.henchmenGroups, nonTeamMode)
 
   const gameMode = GAME_MODES.find((m) => m.id === choices.gameModeId)
   const scheme = schemes.find((s) => s.id === choices.schemeId)
@@ -182,6 +211,15 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
                 />
               ))}
             </div>
+          </section>
+
+          <section>
+            <h3>Sortowanie</h3>
+            <select value={sortMode} onChange={(e) => setSortMode(e.target.value as SortMode)}>
+              <option value="alpha">Alfabetycznie</option>
+              <option value="set">Set + alfabetycznie</option>
+              <option value="team">Team + alfabetycznie</option>
+            </select>
           </section>
 
           <section>

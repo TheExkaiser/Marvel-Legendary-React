@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface NumberPromptProps {
   prompt: string
@@ -12,6 +12,15 @@ export function NumberPrompt({ prompt, initial, min, max, onConfirm }: NumberPro
   const clamp = (n: number) => Math.min(max, Math.max(min, n))
   const [value, setValue] = useState(clamp(initial))
 
+  // Enter zatwierdza wybór, niezależnie od tego, co ma fokus
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Enter') onConfirm(value)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [value, onConfirm])
+
   return (
     <div className="modal-overlay">
       <div className="modal-content number-prompt">
@@ -21,20 +30,15 @@ export function NumberPrompt({ prompt, initial, min, max, onConfirm }: NumberPro
           <button onClick={() => setValue(clamp(value - 1))} disabled={value <= min}>
             −
           </button>
+          {/* type="text" + inputMode: numeryczna klawiatura na telefonie, ale bez strzałek (suwaka) przeglądarki */}
           <input
-            type="number"
+            type="text"
             inputMode="numeric"
-            min={min}
-            max={max}
+            pattern="[0-9]*"
             value={value}
-            autoFocus
-            onFocus={(e) => e.target.select()}
             onChange={(e) => {
-              const n = parseInt(e.target.value, 10)
-              setValue(Number.isNaN(n) ? min : clamp(n))
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') onConfirm(value)
+              const digits = e.target.value.replace(/\D/g, '')
+              setValue(digits === '' ? min : clamp(parseInt(digits, 10)))
             }}
           />
           <button onClick={() => setValue(clamp(value + 1))} disabled={value >= max}>

@@ -1,4 +1,4 @@
-import type { GameState } from './types'
+import type { GameState, CardInstance } from './types'
 import type { UiAdapter } from './ui'
 import { getCardAbility } from './cardAbilities'
 import { canPlayCard } from './cardRequirements'
@@ -8,6 +8,7 @@ import { drawCards } from './deckOps'
 import { villainPhase } from './villainPhase'
 import { addRecruit, addAttack } from './resources'
 import { applyVersatile } from './versatile'
+import { getCardData } from './cardData'
 
 /** Zagrywa kartę z ręki: dolicza attack/recruit i odpala jej zdolność. */
 export async function playCard(
@@ -20,7 +21,7 @@ export async function playCard(
   if (index === -1) throw new Error(`Karty ${instanceId} nie ma w ręce`)
 
   const cardId = state.hand[index].cardId
-  const data = state.cards[cardId]
+  const data = getCardData(state, state.hand[index])
   if (data.kind === 'wound') throw new Error('Rany nie da się zagrać')
   if (!canPlayCard(state, cardId)) {
     throw new Error('Nie można zagrać tej karty: nie da się zapłacić jej kosztu')
@@ -31,7 +32,10 @@ export async function playCard(
   addAttack(state, data.attack ?? 0)
   addRecruit(state, data.recruit ?? 0)
 
-  const ability = getCardAbility(instance.cardId)
+  const override = state.instanceOverrides?.[instance.instanceId]
+  const ability = override
+    ? (override.abilityId ? getCardAbility(override.abilityId) : undefined)
+    : getCardAbility(instance.cardId)
   if (ability) {
     await ability(state, { self: instance, ui })
   }
@@ -58,19 +62,34 @@ function addReservedCardToHand(state: GameState): void {
   state.hand.push(card)
 }
 
-/** Teleport: zamiast zagrać kartę, odkładasz ją na bok. Na koniec tury wróci do ręki jako dodatkowa. */
-export function teleportCard(state: GameState, instanceId: string): void {
+type TeleportHook = (state: GameState, ui: UiAdapter, self: CardInstance) => Promise<void>
+const teleportHooks = new Map<string, TeleportHook>()
+
+/** Efekt "when you Teleport this card" (Along for the Ride). */
+export function registerTeleportHook(cardId: string, fn: TeleportHook): void {
+  teleportHooks.set(cardId, fn)
+}
+
+/** Teleport: zamiast zagrać kartę, odkładasz ją na bok. Na koniec tury wróci do ręki jako dodatkowa.
+ * force = Teleport z efektu innej karty (karta nie musi mieć słowa kluczowego). */
+export async function teleportCard(
+  state: GameState,
+  instanceId: string,
+  ui: UiAdapter,
+  force = false,
+): Promise<void> {
   assertPlaying(state)
   const index = state.hand.findIndex((c) => c.instanceId === instanceId)
   if (index === -1) throw new Error(`Karty ${instanceId} nie ma w ręce`)
 
   const data = state.cards[state.hand[index].cardId]
-  if (!(data.keywords ?? []).includes('teleport')) {
+  if (!force && !(data.keywords ?? []).includes('teleport')) {
     throw new Error('Ta karta nie ma Teleportu')
   }
 
   const [instance] = state.hand.splice(index, 1)
   state.teleported = [...(state.teleported ?? []), instance]
+  await teleportHooks.get(instance.cardId)?.(state, ui, instance)
 }
 
 /** Karty z puli Teleport dołączają do nowej ręki (do standardowych kart). */
@@ -93,6 +112,11 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.defeatRecruitBonus = 0
   state.koRecruitBonus = 0
   state.recruitsToDeckTop = 0
+  state.recruitsToHand = 0
+  state.rescueRecruitBonus = 0
+  state.rescueAttackBonus = 0
+  state.rescueDrawBonus = 0
+  state.mindControlThisTurn = false
   state.versatileBothThisTurn = false
   state.locationDefeatBonuses = []
   state.defeatRescueBonus = 0

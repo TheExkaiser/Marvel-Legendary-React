@@ -1,5 +1,5 @@
 import type { CardGroup } from '../../../engine/types'
-import { ANGEL_CARDS, BISHOP_CARDS, BLADE_CARDS, CABLE_CARDS, COLOSSUS_CARDS, DAREDEVIL_CARDS, DOMINO_CARDS } from './cards'
+import { ANGEL_CARDS, BISHOP_CARDS, BLADE_CARDS, CABLE_CARDS, COLOSSUS_CARDS, DAREDEVIL_CARDS, DOMINO_CARDS, ELEKTRA_CARDS, FORGE_CARDS, GHOST_RIDER_CARDS, ICEMAN_CARDS, IRON_FIST_CARDS, JEAN_GREY_CARDS, NIGHTCRAWLER_CARDS, PROFESSOR_X_CARDS, PUNISHER_CARDS, WOLVERINE_CARDS } from './cards'
 
 export const DARK_CITY_HEROES: CardGroup[] = [
   { id: 'darkcity_angel', name: 'Angel', cards: ANGEL_CARDS },
@@ -9,4 +9,14 @@ export const DARK_CITY_HEROES: CardGroup[] = [
   { id: 'darkcity_colossus', name: 'Colossus', cards: COLOSSUS_CARDS },
   { id: 'darkcity_daredevil', name: 'Daredevil', cards: DAREDEVIL_CARDS },
   { id: 'darkcity_domino', name: 'Domino', cards: DOMINO_CARDS },
+  { id: 'darkcity_elektra', name: 'Elektra', cards: ELEKTRA_CARDS },
+  { id: 'darkcity_forge', name: 'Forge', cards: FORGE_CARDS },
+  { id: 'darkcity_ghost_rider', name: 'Ghost Rider', cards: GHOST_RIDER_CARDS },
+  { id: 'darkcity_iceman', name: 'Iceman', cards: ICEMAN_CARDS },
+  { id: 'darkcity_iron_fist', name: 'Iron Fist', cards: IRON_FIST_CARDS },
+  { id: 'darkcity_jean_grey', name: 'Jean Grey', cards: JEAN_GREY_CARDS },
+  { id: 'darkcity_nightcrawler', name: 'Nightcrawler', cards: NIGHTCRAWLER_CARDS },
+  { id: 'darkcity_professor_x', name: 'Professor X', cards: PROFESSOR_X_CARDS },
+  { id: 'darkcity_punisher', name: 'Punisher', cards: PUNISHER_CARDS },
+  { id: 'darkcity_wolverine', name: 'Wolverine', cards: WOLVERINE_CARDS },
 ]

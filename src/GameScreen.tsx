@@ -26,6 +26,7 @@ import { SlideDrawer } from './components/SlideDrawer'
 import { useCardFlip } from './useCardFlip'
 import { PilePrompt } from './components/PilePrompt'
 import { CITY_NAMES } from './engine/constants'
+import { victoryPile, getCardData } from './engine/cardData'
 import './App.css'
 import { getEffectiveStrength, getCapturedCards } from './engine/keywords'
 import { useSettings } from './useSettings'
@@ -86,7 +87,7 @@ function GameScreen({
 
   const now = new Date()
   const result: 'Lose' | number =
-    state.status === 'lost' ? 'Lose' : sumVictoryPoints(state, state.defeated)
+    state.status === 'lost' ? 'Lose' : sumVictoryPoints(state, victoryPile(state))
 
   appendGameLogEntry({
     id: `${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -158,7 +159,7 @@ function GameScreen({
         turn={state.turn}
         attack={state.attack}
         recruit={state.recruit}
-        victoryPoints={sumVictoryPoints(state, state.defeated)}
+        victoryPoints={sumVictoryPoints(state, victoryPile(state))}
         onVictoryClick={() => setViewingPile('victory')}
         scheme={scheme}
         twistsRevealed={state.twistsRevealed}
@@ -248,7 +249,7 @@ function GameScreen({
       <div className="row-with-deck">
         <div className="row">
           {state.played.map((c) => (
-            <CardView key={c.instanceId} data={state.cards[c.cardId]} flipId={c.instanceId} />
+            <CardView key={c.instanceId} data={getCardData(state, c)} flipId={c.instanceId} />
 
           ))}
         </div>
@@ -286,7 +287,7 @@ function GameScreen({
                 style={{ '--rot': `${angle}deg`, '--drop': `${drop}px` } as CSSProperties}
               >
                 <CardView
-                  data={state.cards[c.cardId]}
+                  data={getCardData(state, c)}
                   flipId={c.instanceId}
                   flipFrom="deck"
                   onClick={() =>
@@ -302,7 +303,7 @@ function GameScreen({
                           'Zagrać kartę czy teleportować?',
                         )
                         if (choice === 'teleport') {
-                          teleportCard(s, c.instanceId)
+                          await teleportCard(s, c.instanceId, ui)
                           return
                         }
                         if (choice !== 'play') return
