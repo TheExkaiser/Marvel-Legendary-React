@@ -178,16 +178,16 @@ function GameScreen({
       <div className="board-top">
         <div className="mastermind-slot">
           <div className="zone-title">Tactics: {state.tactics.length}</div>
-          <StackedMasterStrikes
-            cards={state.stackedMasterStrikes ?? []}
-            cardIndex={state.cards}
-          />          
           <CardView
             data={state.cards[state.mastermind.cardId]}
             onClick={() => act(fightMastermind)}
             effectiveStrength={getEffectiveStrength(state, state.mastermind)}
             capturedCards={getCapturedCards(state, state.mastermind.instanceId)}
           />
+          <StackedMasterStrikes
+            cards={state.stackedMasterStrikes ?? []}
+            cardIndex={state.cards}
+          />          
         </div>
 
         <div className="city-slot">

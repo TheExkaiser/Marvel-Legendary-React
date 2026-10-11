@@ -33,6 +33,7 @@ export async function resolveVillainDeckCard(
 
 /** Odkrywa wierzchnią kartę talii złoczyńców i rozpatruje ją według jej rodzaju. */
 export async function villainPhase(state: GameState, ui: UiAdapter): Promise<void> {
+  if (state.villainDeck.length === 0) state.status = 'lost' 
   const card = state.villainDeck.pop()
   if (!card) return
 

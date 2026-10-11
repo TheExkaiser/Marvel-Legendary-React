@@ -1076,12 +1076,7 @@ export const WOLVERINE_CARDS: DeckEntry[] = [
   },
 ]
 
-const tactic = (id: string, name: string, text: string) => ({
-  id,
-  name,
-  img: `/cards/dark-city/tactic-${id}.webp`,
-  text,
-})
+
 
 export const APOCALYPSE: MastermindData = {
   card: {
@@ -1093,10 +1088,34 @@ export const APOCALYPSE: MastermindData = {
     text: 'Always Leads: Four Horsemen. Four Horsemen Villains get +2 Attack. Apocalypse Wins: When Famine, Pestilence, War, and Death have escaped.',
   },
   tactics: [
-    tactic('apocalypse-apocalyptic-destruction', 'Apocalyptic Destruction', 'Fight: Each other player KOs two Heroes from their discard pile that each cost 1 or more.'),
-    tactic('apocalypse-the-end-of-all-things', 'The End of All Things', 'Fight: Each other player reveals the top three cards of their deck, KOs each one of those cards that cost 1 or more, and puts the rest back in any order.'),
-    tactic('apocalypse-horsemen-are-drawing-nearer', 'Horsemen Are Drawing Nearer', 'Fight: Each other player plays a Four Horsemen Villain from their Victory Pile as if playing it from the Villain Deck.'),
-    tactic('apocalypse-immortal-and-undefeated', 'Immortal and Undefeated', 'Fight: If this is not the final Tactic, rescue six Bystanders and shuffle this Tactic back into the other Tactics.'),
+    {
+      id: 'apocalypse-apocalyptic-destruction',
+      name: 'Apocalyptic Destruction',
+      img: '/cards/dark-city/apocalypse-apocalyptic-destruction.webp',
+      vp: 6,
+      text: 'Fight: Each player reveals their hand and puts all their Heroes that cost 1 or more on top of their deck.'
+    },
+    {
+      id: 'apocalypse-the-end-of-all-things',
+      name: 'The End of All Things',
+      img: '/cards/dark-city/apocalypse-the-end-of-all-things.webp',
+      vp: 6,
+      text: 'Fight: Each other player reveals the top three cards of their deck, KOs each one of those cards that cost 1 or more, and puts the rest back in any order.'
+    },
+    {
+      id: 'apocalypse-horsemen-are-drawing-nearer',
+      name: 'Horsemen Are Drawing Nearer',
+      img: '/cards/dark-city/apocalypse-horsemen-are-drawing-nearer.webp',
+      vp: 6,
+      text: 'Fight: Each other player plays a Four Horsemen Villain from their Victory Pile as if playing it from the Villain Deck.'
+    },
+    {
+      id: 'apocalypse-immortal-and-undefeated',
+      name: 'Immortal and Undefeated',
+      img: '/cards/dark-city/apocalypse-immortal-and-undefeated.webp',
+      vp: 6,
+      text: 'Fight: If this is not the final Tactic, rescue six Bystanders and shuffle this Tactic back into the other Tactics.'
+    }
   ],
   masterStrikeId: 'mastermind-apocalypse-master-strike',
   masterStrikeText: 'Each player reveals their hand and puts all their Heroes that cost 1 or more on top of their deck.',
@@ -1114,10 +1133,34 @@ export const KINGPIN: MastermindData = {
     text: 'Bribe. Always Leads: Streets of New York.',
   },
   tactics: [
-    tactic('kingpin-call-a-hit', 'Call a Hit', "Fight: Choose a Hero from each player's discard pile and KO it."),
-    tactic('kingpin-criminal-empire', 'Criminal Empire', 'Fight: If this is not the final Tactic, reveal the top three cards of the Villain Deck. Play all the Villains you revealed. Put the rest back in random order.'),
-    tactic('kingpin-dirty-cops', 'Dirty Cops', 'Fight: Put a 0 Cost Hero from the KO pile on top of each other player\'s deck.'),
-    tactic('kingpin-mob-war', 'Mob War', 'Fight: Each other player plays a Henchman Villain from their Victory Pile as if playing it from the Villain Deck.'),
+{
+      id: 'kingpin-call-a-hit',
+      name: 'Call a Hit',
+      img: '/cards/dark-city/kingpin-call-a-hit.webp',
+      vp: 6,
+      text: "Fight: Choose a Hero from each player's discard pile and KO it."
+    },
+    {
+      id: 'kingpin-criminal-empire',
+      name: 'Criminal Empire',
+      img: '/cards/dark-city/kingpin-criminal-empire.webp',
+      vp: 6,
+      text: "Fight: If this is not the final Tactic, reveal the top three cards of the Villain Deck. Play all the Villains you revealed. Put the rest back in random order."
+    },
+    {
+      id: 'kingpin-dirty-cops',
+      name: 'Dirty Cops',
+      img: '/cards/dark-city/kingpin-dirty-cops.webp',
+      vp: 6,
+      text: "Fight: Put a 0 Cost Hero from the KO pile on top of each other player's deck."
+    },
+    {
+      id: 'kingpin-mob-war',
+      name: 'Mob War',
+      img: '/cards/dark-city/kingpin-mob-war.webp',
+      vp: 6,
+      text: "Fight: Each other player plays a Henchman Villain from their Victory Pile as if playing it from the Villain Deck."
+    },
   ],
   masterStrikeId: 'mastermind-kingpin-master-strike',
   masterStrikeText: 'Each player reveals a Marvel Knights Hero or discards their hand and draws 5 cards.',
@@ -1199,11 +1242,35 @@ export const MEPHISTO: MastermindData = {
     vp: 6,
     text: "Whenever a player gains a Wound, put it on top of that player's deck. Always Leads: Underworld.",
   },
-  tactics: [
-    tactic('mephisto-damned-if-you-do', 'Damned If You Do...', 'Fight: Each other player KOs a Bystander from their Victory Pile or gains a Wound.'),
-    tactic('mephisto-devilish-torment', 'Devilish Torment', 'Fight: Each other player puts all 0 Cost cards from their discard pile on top of their deck in any order.'),
-    tactic('mephisto-pain-begets-pain', 'Pain Begets Pain', 'Fight: Choose any number of Wounds from your hand and discard pile. The player to your right gains them.'),
-    tactic('mephisto-the-price-of-failure', 'The Price of Failure', 'Fight: Each other player without a Mastermind Tactic in their Victory Pile gains a Wound.'),
+tactics: [
+    {
+      id: 'mephisto-damned-if-you-do',
+      name: 'Damned If You Do...',
+      img: '/cards/dark-city/mephisto-damned-if-you-do.webp',
+      vp: 6,
+      text: 'Fight: Each other player KOs a Bystander from their Victory Pile or gains a Wound.'
+    },
+    {
+      id: 'mephisto-devilish-torment',
+      name: 'Devilish Torment',
+      img: '/cards/dark-city/mephisto-devilish-torment.webp',
+      vp: 6,
+      text: 'Fight: Each other player puts all 0 Cost cards from their discard pile on top of their deck in any order.'
+    },
+    {
+      id: 'mephisto-pain-begets-pain',
+      name: 'Pain Begets Pain',
+      img: '/cards/dark-city/mephisto-pain-begets-pain.webp',
+      vp: 6,
+      text: 'Fight: Choose any number of Wounds from your hand and discard pile. The player to your right gains them.'
+    },
+    {
+      id: 'mephisto-the-price-of-failure',
+      name: 'The Price of Failure',
+      img: '/cards/dark-city/mephisto-the-price-of-failure.webp',
+      vp: 6,
+      text: 'Fight: Each other player without a Mastermind Tactic in their Victory Pile gains a Wound.'
+    }
   ],
   masterStrikeId: 'mastermind-mephisto-master-strike',
   masterStrikeText: 'Each player reveals a Marvel Knights Hero or gains a Wound.',
@@ -1218,12 +1285,36 @@ export const MR_SINISTER: MastermindData = {
     vp: 6,
     text: 'Mr. Sinister gets +1 Attack for each Bystander he has. Always Leads: Marauders.',
   },
-  tactics: [
-    tactic('sinister-human-experimentation', 'Human Experimentation', 'Fight: Mr. Sinister captures Bystanders equal to the number of Villains in the city.'),
-    tactic('sinister-master-geneticist', 'Master Geneticist', 'Fight: Reveal the top seven cards of the Villain Deck. Mr. Sinister captures all of the Bystanders you revealed. Put the rest back in random order.'),
-    tactic('sinister-plans-within-plans', 'Plans Within Plans', "Fight: Mr. Sinister captures a Bystander for each Mr. Sinister Tactic in players' Victory Piles, including this Tactic."),
-    tactic('sinister-telepathic-manipulation', 'Telepathic Manipulation', "Fight: Mr. Sinister captures a Bystander from each other player's Victory Pile."),
-  ],
+tactics: [
+    {
+      id: 'sinister-human-experimentation',
+      name: 'Human Experimentation',
+      img: '/cards/dark-city/sinister-human-experimentation.webp',
+      vp: 6,
+      text: 'Fight: Mr. Sinister captures Bystanders equal to the number of Villains in the city.'
+    },
+    {
+      id: 'sinister-master-geneticist',
+      name: 'Master Geneticist',
+      img: '/cards/dark-city/sinister-master-geneticist.webp',
+      vp: 6,
+      text: 'Fight: Reveal the top seven cards of the Villain Deck. Mr. Sinister captures all of the Bystanders you revealed. Put the rest back in random order.'
+    },
+    {
+      id: 'sinister-plans-within-plans',
+      name: 'Plans Within Plans',
+      img: '/cards/dark-city/sinister-plans-within-plans.webp',
+      vp: 6,
+      text: "Fight: Mr. Sinister captures a Bystander for each Mr. Sinister Tactic in players' Victory Piles, including this Tactic."
+    },
+    {
+      id: 'sinister-telepathic-manipulation',
+      name: 'Telepathic Manipulation',
+      img: '/cards/dark-city/sinister-telepathic-manipulation.webp',
+      vp: 6,
+      text: "Fight: Mr. Sinister captures a Bystander from each other player's Victory Pile."
+    }
+  ], 
   masterStrikeId: 'mastermind-mr-sinister-master-strike',
   masterStrikeText: 'Mr. Sinister captures a Bystander. Then each player with exactly 6 cards reveals a Covert Hero or discards cards equal to the number of Bystanders Mr. Sinister has.',
 }
@@ -1237,11 +1328,35 @@ export const STRYFE: MastermindData = {
     vp: 6,
     text: 'Always Leads: MLF. Stryfe gets +1 Attack for each Master Strike stacked next to him.',
   },
-  tactics: [
-    tactic('stryfe-furious-wrath', 'Furious Wrath', 'Fight: Reveal the top six cards of the Villain Deck. Play all the Master Strikes you revealed. Put the rest back in random order.'),
-    tactic('stryfe-psychic-torment', 'Psychic Torment', 'Fight: Look at the top five cards of your deck. Put one into your hand and discard the rest.'),
-    tactic('stryfe-swift-vengeance', 'Swift Vengeance', 'Fight: A Wound from the Wound Stack becomes a Master Strike that takes effect immediately.'),
-    tactic('stryfe-tide-of-retribution', 'Tide of Retribution', 'Fight: Each other player reveals an X-Force Hero or gains a Wound.'),
+tactics: [
+    {
+      id: 'stryfe-furious-wrath',
+      name: 'Furious Wrath',
+      img: '/cards/dark-city/stryfe-furious-wrath.webp',
+      vp: 6,
+      text: 'Fight: Reveal the top six cards of the Villain Deck. Play all the Master Strikes you revealed. Put the rest back in random order.'
+    },
+    {
+      id: 'stryfe-psychic-torment',
+      name: 'Psychic Torment',
+      img: '/cards/dark-city/stryfe-psychic-torment.webp',
+      vp: 6,
+      text: 'Fight: Look at the top five cards of your deck. Put one into your hand and discard the rest.'
+    },
+    {
+      id: 'stryfe-swift-vengeance',
+      name: 'Swift Vengeance',
+      img: '/cards/dark-city/stryfe-swift-vengeance.webp',
+      vp: 6,
+      text: 'Fight: A Wound from the Wound Stack becomes a Master Strike that takes effect immediately.'
+    },
+    {
+      id: 'stryfe-tide-of-retribution',
+      name: 'Tide of Retribution',
+      img: '/cards/dark-city/stryfe-tide-of-retribution.webp',
+      vp: 6,
+      text: 'Fight: Each other player reveals an X-Force Hero or gains a Wound.'
+    }
   ],
   masterStrikeId: 'mastermind-stryfe-master-strike',
   masterStrikeText: 'Stack this Master Strike next to Stryfe. Then each player reveals an X-Force Hero or discards a card at random.',
