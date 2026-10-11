@@ -133,6 +133,18 @@ function safely(action: () => void): void {
   }
 }
 
+/** Losowy wybór: najpierw elementy wymagane, potem losowe, razem najwyżej `max`. */
+function randomPick(items: PickItem[], required: string[], max: number): string[] {
+  const pool = items.map((i) => i.id)
+  const locked = required.filter((id) => pool.includes(id))
+  const rest = pool.filter((id) => !locked.includes(id))
+  for (let i = rest.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[rest[i], rest[j]] = [rest[j], rest[i]]
+  }
+  return [...locked, ...rest].slice(0, max)
+}
+
 function iconSrc(path: string): string {
   return import.meta.env.BASE_URL + path
 }
@@ -304,25 +316,9 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   })
   const sections = buildSections(visible, activeSets, sortMode, tab === 'heroes')
 
-  // Losowanie tylko dla bieżącej zakładki (reszta wyborów zostaje)
-  const canReroll = tab === 'mastermind' || (!!gameMode && !!scheme)
+    // Losowanie tylko dla bieżącej zakładki (reszta wyborów zostaje), według limitów z tej zakładki
   function rerollCurrent() {
-    safely(() => {
-      switch (tab) {
-        case 'mastermind':
-          update({ mastermindId: completeChoices({ ...choices, mastermindId: '' }, activeSets, GAME_MODES).mastermindId })
-          break
-        case 'heroes':
-          update({ heroIds: completeChoices({ ...choices, heroIds: [] }, activeSets, GAME_MODES).heroIds })
-          break
-        case 'villains':
-          update({ villainGroupIds: completeChoices({ ...choices, villainGroupIds: [] }, activeSets, GAME_MODES).villainGroupIds })
-          break
-        case 'henchmen':
-          update({ henchmenGroupIds: completeChoices({ ...choices, henchmenGroupIds: [] }, activeSets, GAME_MODES).henchmenGroupIds })
-          break
-      }
-    })
+    cat.onChange(randomPick(cat.items, cat.required, cat.max))
   }
 
   // Podsumowanie wyborów (chipsy w stopce, z możliwością usunięcia)
@@ -470,12 +466,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
               >
                 Selected only
               </button>
-              <button
-                className="setup-pill"
-                onClick={rerollCurrent}
-                disabled={!canReroll}
-                title={canReroll ? `Randomize ${cat.title}` : 'Select a game mode and a scheme first'}
-              >
+                            <button className="setup-pill" onClick={rerollCurrent} title={`Randomize ${cat.title}`}>
                 🎲 Random
               </button>
 
