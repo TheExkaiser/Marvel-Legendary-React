@@ -1,5 +1,5 @@
 import type { SetData } from '../../../engine/types'
-import { DARK_CITY_HEROES } from './content'
+import { DARK_CITY_HEROES, DARK_CITY_MASTERMINDS, DARK_CITY_VILLAIN_GROUPS } from './content'
 import './heroAbilities'
 
 export const DARK_CITY_SET: SetData = {
@@ -7,7 +7,7 @@ export const DARK_CITY_SET: SetData = {
   name: 'Dark City',
   schemes: [],
   heroes: DARK_CITY_HEROES,
-  villainGroups: [],
+  villainGroups: DARK_CITY_VILLAIN_GROUPS,
   henchmenGroups: [],
-  masterminds: [],
+  masterminds: DARK_CITY_MASTERMINDS,
 }

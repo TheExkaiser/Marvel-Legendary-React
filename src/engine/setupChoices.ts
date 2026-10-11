@@ -58,7 +58,7 @@ export function completeChoices(
   const mastermind =
     masterminds.find((m) => m.card.id === partial.mastermindId) ??
     randomItem(masterminds, rng, 'mastermind')
-  const rules = resolveRules(gameMode, scheme)
+  const rules = resolveRules(gameMode, scheme, mastermind)
 
   const ids = (groups: { id: string }[]) => groups.map((g) => g.id)
   return {

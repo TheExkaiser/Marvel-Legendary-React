@@ -297,22 +297,11 @@ registerVillainAbilities('villain-baron-zemo', {
 // ---------- Melter ----------
 
 registerVillainAbilities('villain-melter', {
-  onFight: async (state, ui) => {
-    const top = peekTopCard(state)
-    if (!top) return
+  onFight: async (state, ui, self) => {
+    const location = CITY_NAMES[state.city.findIndex((c) => c?.instanceId === self.instanceId)]
+    if (location !== 'Sewers') return
 
-    await ui.showInfo(top, 'Melter (Fight): revealed the top card of your deck')
-
-    const choice = await ui.chooseOption(
-      [
-        { id: 'ko', label: 'KO it' },
-        { id: 'keep', label: 'Put it back' },
-      ],
-      'Melter (Fight): KO the revealed card or put it back?',
-    )
-    if (choice === 'ko') {
-      koCard(state, top.instanceId)
-    }
+    await gainWound(state, ui)
   },
 })
 
@@ -538,11 +527,6 @@ registerVillainAbilities('villain-the-lizard', {
     await gainWound(state, ui)
   },
 })
-
-// Venom: nie można go pokonać bez Bohatera (karty startowe też mają pole hero)
-registerDefeatRequirement('villain-venom', (state) =>
-  haveCards(state).some((c) => state.cards[c.cardId].hero !== undefined),
-)
 
 registerDefeatRequirement('villain-venom', (state) => hasCard(state, { type: 'covert' }))
 

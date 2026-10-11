@@ -36,8 +36,9 @@ export interface DeckEntry {
 export interface MastermindData {
   card: CardData
   tactics: CardData[]
-  masterStrikeId: string   // id, pod którym zarejestrowana jest umiejętność Master Strike
-  masterStrikeText?: string   // opis efektu Master Strike, pokazywany w podglądzie
+  masterStrikeId: string
+  masterStrikeText?: string
+  alwaysLeads?: { villainGroupId?: string; henchmenGroupId?: string } // id z CardGroup, np. 'darkcity_marauders'
 }
 
 export type GameStatus = 'playing' | 'won' | 'lost'
@@ -78,6 +79,7 @@ export interface GameState {
 
   mastermind: CardInstance
   tactics: CardInstance[]
+  stackedMasterStrikes?: CardInstance[] // Stryfe: Master Strike'i ułożone obok mastermina
   masterStrikeId: string
 
   defeated: CardInstance[]
@@ -104,6 +106,7 @@ export interface GameState {
   bonusDrawNextTurn: number
   extraCardToHand?: string // instanceId karty zarezerwowanej przez Electromagnetic Bubble
   teleported?: CardInstance[] // Teleport: karty odłożone na bok, na koniec tury wracają do ręki jako dodatkowe
+  teleportGrantedThisTurn?: string[] // Azazel: instanceId kart z ręki, które w tej turze mają Teleport
   recruitsToDeckTop?: number // Backflip: ile następnych zrekrutowanych Bohaterów trafia na wierzch talii zamiast do odrzuconych
   recruitsToHand?: number // Silent Meditation: ile następnych zrekrutowanych Bohaterów trafia do ręki zamiast do odrzuconych
   rescueRecruitBonus?: number // Jean Grey: +Recruit za każdego uratowanego Bystandera w tej turze

@@ -700,6 +700,32 @@ button:disabled {
   box-shadow: 0 10px 40px rgba(255, 61, 87, 0.85);
 }
 
+.stacked-strikes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stacked-strikes-pile {
+  position: relative;
+  width: 56px;
+  height: 78px;
+  cursor: pointer;
+}
+
+.stacked-strikes-card {
+  position: absolute;
+  width: 48px;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.stacked-strikes-badge {
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
 /* =========================================================
    9. WĄSKIE EKRANY I PREFERENCJE
    ========================================================= */

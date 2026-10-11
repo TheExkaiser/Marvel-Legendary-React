@@ -9,6 +9,7 @@ import { logEvent } from './common'
 import { captureBystander } from './wounds'
 import { runMasterStrikeReactions } from './masterStrikeReactions'
 import { asEnemyEffect } from './replacements'
+import { getMastermindRule } from './mastermindRules'
 
 /** Rozpatruje pojedynczą kartę z talii złoczyńców, według jej rodzaju (bez pop'owania z talii). */
 export async function resolveVillainDeckCard(
@@ -41,7 +42,7 @@ export async function villainPhase(state: GameState, ui: UiAdapter): Promise<voi
 }
 
 /** Master Strike: popup, efekt mastermina, karta idzie do KO, ewentualny hook Game Mode. */
-async function resolveMasterStrike(
+export async function resolveMasterStrike(
   state: GameState,
   card: CardInstance,
   ui: UiAdapter,
@@ -55,7 +56,8 @@ async function resolveMasterStrike(
     await asEnemyEffect(state, () => ability(state, { self: card, ui }))
   }
 
-  state.ko.push(card)
+  const stacked = state.stackedMasterStrikes?.some((c) => c.instanceId === card.instanceId)
+  if (!stacked) state.ko.push(card)
 
   await getGameMode(state).onMasterStrikeResolved?.(state, ui)
 }
@@ -122,7 +124,7 @@ export function checkEndConditions(state: GameState): void {
   const scheme = getScheme(state)
   const escapedTooMany = scheme.escapeLimit !== undefined && state.escaped.length >= scheme.escapeLimit
 
-  if (escapedTooMany || scheme.checkLoss?.(state)) {
+  if (escapedTooMany || scheme.checkLoss?.(state) || getMastermindRule(state)?.checkLoss?.(state)) {
     state.status = 'lost'
   }
 }

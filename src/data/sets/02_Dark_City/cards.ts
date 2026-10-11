@@ -1,4 +1,6 @@
-import type { DeckEntry } from '../../../engine/types'
+import type { CardData, DeckEntry, MastermindData } from '../../../engine/types'
+
+
 
 export const ANGEL_CARDS: DeckEntry[] = [
   {
@@ -1071,5 +1073,268 @@ export const WOLVERINE_CARDS: DeckEntry[] = [
       text: 'Count the number of extra cards you drew this turn. Draw that many cards.',
     },
     count: 1,
+  },
+]
+
+const tactic = (id: string, name: string, text: string) => ({
+  id,
+  name,
+  img: `/cards/dark-city/tactic-${id}.webp`,
+  text,
+})
+
+export const APOCALYPSE: MastermindData = {
+  card: {
+    id: 'mastermind-apocalypse',
+    name: 'Apocalypse',
+    img: '/cards/dark-city/mastermind-apocalypse.webp',
+    strength: 12,
+    vp: 6,
+    text: 'Always Leads: Four Horsemen. Four Horsemen Villains get +2 Attack. Apocalypse Wins: When Famine, Pestilence, War, and Death have escaped.',
+  },
+  tactics: [
+    tactic('apocalypse-apocalyptic-destruction', 'Apocalyptic Destruction', 'Fight: Each other player KOs two Heroes from their discard pile that each cost 1 or more.'),
+    tactic('apocalypse-the-end-of-all-things', 'The End of All Things', 'Fight: Each other player reveals the top three cards of their deck, KOs each one of those cards that cost 1 or more, and puts the rest back in any order.'),
+    tactic('apocalypse-horsemen-are-drawing-nearer', 'Horsemen Are Drawing Nearer', 'Fight: Each other player plays a Four Horsemen Villain from their Victory Pile as if playing it from the Villain Deck.'),
+    tactic('apocalypse-immortal-and-undefeated', 'Immortal and Undefeated', 'Fight: If this is not the final Tactic, rescue six Bystanders and shuffle this Tactic back into the other Tactics.'),
+  ],
+  masterStrikeId: 'mastermind-apocalypse-master-strike',
+  masterStrikeText: 'Each player reveals their hand and puts all their Heroes that cost 1 or more on top of their deck.',
+  alwaysLeads: { villainGroupId: 'darkcity_four_horsemen' },
+}
+
+export const KINGPIN: MastermindData = {
+  card: {
+    id: 'mastermind-kingpin',
+    name: 'Kingpin',
+    img: '/cards/dark-city/mastermind-kingpin.webp',
+    strength: 13,
+    vp: 6,
+    keywords: ['bribe'],
+    text: 'Bribe. Always Leads: Streets of New York.',
+  },
+  tactics: [
+    tactic('kingpin-call-a-hit', 'Call a Hit', "Fight: Choose a Hero from each player's discard pile and KO it."),
+    tactic('kingpin-criminal-empire', 'Criminal Empire', 'Fight: If this is not the final Tactic, reveal the top three cards of the Villain Deck. Play all the Villains you revealed. Put the rest back in random order.'),
+    tactic('kingpin-dirty-cops', 'Dirty Cops', 'Fight: Put a 0 Cost Hero from the KO pile on top of each other player\'s deck.'),
+    tactic('kingpin-mob-war', 'Mob War', 'Fight: Each other player plays a Henchman Villain from their Victory Pile as if playing it from the Villain Deck.'),
+  ],
+  masterStrikeId: 'mastermind-kingpin-master-strike',
+  masterStrikeText: 'Each player reveals a Marvel Knights Hero or discards their hand and draws 5 cards.',
+}
+
+function villainCard(
+  slug: string,
+  name: string,
+  villainGroup: string,
+  strength: number,
+  vp: number,
+  text: string,
+  bribe = false,
+): CardData {
+  return {
+    id: `villain-${slug}`,
+    name,
+    img: `/cards/dark-city/villain-${slug}.webp`,
+    villainGroup,
+    strength,
+    vp,
+    text,
+    ...(bribe ? { keywords: ['bribe'] } : {}),
+  }
+}
+
+export const FOUR_HORSEMEN_CARDS: DeckEntry[] = [
+  {
+    card: villainCard('death', 'Death', 'Four Horsemen', 7, 5,
+      'Fight: Each other player reveals their hand and KOs one of their Heroes that costs 1 or more. Escape: Each player does that same effect.'),
+    count: 2,
+  },
+  {
+    card: villainCard('famine', 'Famine', 'Four Horsemen', 4, 2,
+      'Fight: Each other player reveals an Instinct Hero or discards a card. Escape: Each player does that same effect.'),
+    count: 2,
+  },
+  {
+    card: villainCard('pestilence', 'Pestilence', 'Four Horsemen', 5, 3,
+      'Fight: Each other player reveals the top three cards of their deck, discards each of those cards that costs 1 or more, and puts the rest back in any order. Escape: Each player does that same effect.'),
+    count: 2,
+  },
+  {
+    card: villainCard('war', 'War', 'Four Horsemen', 6, 4,
+      'Fight: Each other player reveals an Instinct Hero or gains a Wound. Escape: Each player does that same effect.'),
+    count: 2,
+  },
+]
+
+export const STREETS_OF_NEW_YORK_CARDS: DeckEntry[] = [
+  {
+    card: villainCard('bullseye', 'Bullseye', 'Streets of New York', 6, 4,
+      'Fight: KO one of your Heroes with a Recruit icon and one of your Heroes with an Attack icon.'),
+    count: 2,
+  },
+  {
+    card: villainCard('hammerhead', 'Hammerhead', 'Streets of New York', 5, 2,
+      'Bribe. Fight: KO one of your Heroes with a Recruit icon.', true),
+    count: 2,
+  },
+  {
+    card: villainCard('jigsaw', 'Jigsaw', 'Streets of New York', 11, 5,
+      'Ambush: Each player discards three cards, then draws two cards. Bribe.', true),
+    count: 2,
+  },
+  {
+    card: villainCard('tombstone', 'Tombstone', 'Streets of New York', 8, 4,
+      'Bribe. Escape: Each player reveals a Strength Hero or gains a Wound.', true),
+    count: 2,
+  },
+]
+
+export const MEPHISTO: MastermindData = {
+  card: {
+    id: 'mastermind-mephisto',
+    name: 'Mephisto',
+    img: '/cards/dark-city/mastermind-mephisto.webp',
+    strength: 10,
+    vp: 6,
+    text: "Whenever a player gains a Wound, put it on top of that player's deck. Always Leads: Underworld.",
+  },
+  tactics: [
+    tactic('mephisto-damned-if-you-do', 'Damned If You Do...', 'Fight: Each other player KOs a Bystander from their Victory Pile or gains a Wound.'),
+    tactic('mephisto-devilish-torment', 'Devilish Torment', 'Fight: Each other player puts all 0 Cost cards from their discard pile on top of their deck in any order.'),
+    tactic('mephisto-pain-begets-pain', 'Pain Begets Pain', 'Fight: Choose any number of Wounds from your hand and discard pile. The player to your right gains them.'),
+    tactic('mephisto-the-price-of-failure', 'The Price of Failure', 'Fight: Each other player without a Mastermind Tactic in their Victory Pile gains a Wound.'),
+  ],
+  masterStrikeId: 'mastermind-mephisto-master-strike',
+  masterStrikeText: 'Each player reveals a Marvel Knights Hero or gains a Wound.',
+}
+
+export const MR_SINISTER: MastermindData = {
+  card: {
+    id: 'mastermind-mr-sinister',
+    name: 'Mr. Sinister',
+    img: '/cards/dark-city/mastermind-mr-sinister.webp',
+    strength: 8,
+    vp: 6,
+    text: 'Mr. Sinister gets +1 Attack for each Bystander he has. Always Leads: Marauders.',
+  },
+  tactics: [
+    tactic('sinister-human-experimentation', 'Human Experimentation', 'Fight: Mr. Sinister captures Bystanders equal to the number of Villains in the city.'),
+    tactic('sinister-master-geneticist', 'Master Geneticist', 'Fight: Reveal the top seven cards of the Villain Deck. Mr. Sinister captures all of the Bystanders you revealed. Put the rest back in random order.'),
+    tactic('sinister-plans-within-plans', 'Plans Within Plans', "Fight: Mr. Sinister captures a Bystander for each Mr. Sinister Tactic in players' Victory Piles, including this Tactic."),
+    tactic('sinister-telepathic-manipulation', 'Telepathic Manipulation', "Fight: Mr. Sinister captures a Bystander from each other player's Victory Pile."),
+  ],
+  masterStrikeId: 'mastermind-mr-sinister-master-strike',
+  masterStrikeText: 'Mr. Sinister captures a Bystander. Then each player with exactly 6 cards reveals a Covert Hero or discards cards equal to the number of Bystanders Mr. Sinister has.',
+}
+
+export const STRYFE: MastermindData = {
+  card: {
+    id: 'mastermind-stryfe',
+    name: 'Stryfe',
+    img: '/cards/dark-city/mastermind-stryfe.webp',
+    strength: 7,
+    vp: 6,
+    text: 'Always Leads: MLF. Stryfe gets +1 Attack for each Master Strike stacked next to him.',
+  },
+  tactics: [
+    tactic('stryfe-furious-wrath', 'Furious Wrath', 'Fight: Reveal the top six cards of the Villain Deck. Play all the Master Strikes you revealed. Put the rest back in random order.'),
+    tactic('stryfe-psychic-torment', 'Psychic Torment', 'Fight: Look at the top five cards of your deck. Put one into your hand and discard the rest.'),
+    tactic('stryfe-swift-vengeance', 'Swift Vengeance', 'Fight: A Wound from the Wound Stack becomes a Master Strike that takes effect immediately.'),
+    tactic('stryfe-tide-of-retribution', 'Tide of Retribution', 'Fight: Each other player reveals an X-Force Hero or gains a Wound.'),
+  ],
+  masterStrikeId: 'mastermind-stryfe-master-strike',
+  masterStrikeText: 'Stack this Master Strike next to Stryfe. Then each player reveals an X-Force Hero or discards a card at random.',
+}
+
+export const EMISSARIES_OF_EVIL_CARDS: DeckEntry[] = [
+  {
+    card: villainCard('egghead', 'Egghead', 'Emissaries of Evil', 4, 2,
+      "Ambush: Reveal the top card of the Villain Deck. If it's a Villain, play it."),
+    count: 2,
+  },
+  {
+    card: villainCard('electro', 'Electro', 'Emissaries of Evil', 6, 4,
+      "Ambush: Reveal the top card of the Villain Deck. If it's a Scheme Twist, play it."),
+    count: 2,
+  },
+  {
+    card: villainCard('gladiator', 'Gladiator', 'Emissaries of Evil', 5, 3,
+      "Ambush: Reveal the top card of the Villain Deck. If it's a Bystander, Gladiator captures it."),
+    count: 2,
+  },
+  {
+    card: villainCard('rhino', 'Rhino', 'Emissaries of Evil', 5, 3,
+      "Ambush: Reveal the top card of the Villain Deck. If it's a Master Strike, each player gains a Wound. Escape: Each player gains a Wound."),
+    count: 2,
+  },
+]
+
+export const MARAUDERS_CARDS: DeckEntry[] = [
+  {
+    card: villainCard('blockbuster', 'Blockbuster', 'Marauders', 4, 2,
+      'Blockbuster gets +2 Attack for each Bystander he has. Ambush: If there is a Villain in the Bank, that Villain and Blockbuster each capture a Bystander.'),
+    count: 2,
+  },
+  {
+    card: villainCard('chimera', 'Chimera', 'Marauders', 3, 3,
+      'Chimera gets +3 Attack for each Bystander she has. Ambush: Reveal the top three cards of the Villain Deck. Chimera captures all the Bystander cards you revealed. Put the rest back in random order.'),
+    count: 2,
+  },
+  {
+    card: villainCard('scalphunter', 'Scalphunter', 'Marauders', 4, 2,
+      'Scalphunter gets +1 Attack for each Bystander he has. Ambush: Each player chooses a Bystander from their Victory Pile. Scalphunter captures those Bystanders.'),
+    count: 2,
+  },
+  {
+    card: villainCard('vertigo', 'Vertigo', 'Marauders', 5, 3,
+      'Fight: Each player discards all the cards in their hand, then draws as many cards as they discarded.'),
+    count: 2,
+  },
+]
+
+export const MLF_CARDS: DeckEntry[] = [
+  {
+    card: villainCard('forearm', 'Forearm', 'MLF', 4, 4,
+      'To fight Forearm, you must also reveal four Hero cards with different card names.'),
+    count: 2,
+  },
+  {
+    card: villainCard('reignfire', 'Reignfire', 'MLF', 6, 4,
+      'Escape: Reignfire becomes a Master Strike that takes effect immediately.'),
+    count: 2,
+  },
+  {
+    card: villainCard('wildside', 'Wildside', 'MLF', 5, 3,
+      'Fight: If you fight Wildside in the Sewers or Bank, KO two of your Heroes.'),
+    count: 2,
+  },
+  {
+    card: villainCard('zero', 'Zero', 'MLF', 0, 2,
+      'To fight Zero, you must also discard three cards that cost 0.'),
+    count: 2,
+  },
+]
+
+export const UNDERWORLD_CARDS: DeckEntry[] = [
+  {
+    card: villainCard('azazel', 'Azazel', 'Underworld', 4, 2,
+      'Fight: A card in your hand gains Teleport this turn.'),
+    count: 2,
+  },
+  {
+    card: villainCard('blackheart', 'Blackheart', 'Underworld', 6, 4,
+      'Ambush: The player to your right reveals a Marvel Knights Hero or gains a Wound. Fight: Same effect. Escape: Same effect.'),
+    count: 2,
+  },
+  {
+    card: villainCard('dracula', 'Dracula', 'Underworld', 3, 4,
+      "Ambush: Dracula captures the top card of the Hero Deck. Dracula gets +Attack equal to that card's Cost. Fight: Gain that card."),
+    count: 2,
+  },
+  {
+    card: villainCard('lilith', 'Lilith, Daughter of Dracula', 'Underworld', 5, 3,
+      'Escape: Each player without Dracula in their Victory Pile gains a Wound.'),
+    count: 2,
   },
 ]

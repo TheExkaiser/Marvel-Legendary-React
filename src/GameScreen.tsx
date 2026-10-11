@@ -37,6 +37,7 @@ import { useEffect, useRef } from 'react'
 import { appendGameLogEntry, formatDate, formatTime, type GameLogMeta } from './gameLog'
 import { GameHistoryMenu } from './components/GameHistoryMenu'
 import { NumberPrompt } from './components/NumberPrompt'
+import { StackedMasterStrikes } from './components/StackedMasterStrikes'
 
 
 // ---------- Stałe ----------
@@ -177,6 +178,10 @@ function GameScreen({
       <div className="board-top">
         <div className="mastermind-slot">
           <div className="zone-title">Tactics: {state.tactics.length}</div>
+          <StackedMasterStrikes
+            cards={state.stackedMasterStrikes ?? []}
+            cardIndex={state.cards}
+          />          
           <CardView
             data={state.cards[state.mastermind.cardId]}
             onClick={() => act(fightMastermind)}

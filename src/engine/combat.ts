@@ -13,15 +13,17 @@ import { drawCards } from './deckOps'
 import { asEnemyEffect } from './replacements'
 import { gainVillainAsHero } from './cardData'
 
-/** Ile Attack faktycznie masz do dyspozycji w tej turze (uwzględnia God of Thunder: Recruit jako Attack). */
-function availableAttack(state: GameState): number {
-  return state.attack + (state.recruitCountsAsAttackThisTurn ? state.recruit : 0)
+/** Czy Recruit płaci za tę kartę jak Attack: God of Thunder (cała tura) albo Bribe (tylko ta karta). */
+function recruitPays(state: GameState, cardId: string): boolean {
+  return state.recruitCountsAsAttackThisTurn || (state.cards[cardId].keywords ?? []).includes('bribe')
 }
 
-/** Płaci koszt w Attack — normalnie wprost z state.attack; z God of Thunder aktywnym
- * i realnym wyborem (oba zasoby > 0) pyta gracza o proporcję. */
-async function spendAttack(state: GameState, amount: number, ui: UiAdapter): Promise<void> {
-  if (!state.recruitCountsAsAttackThisTurn) {
+function availableAttack(state: GameState, cardId: string): number {
+  return state.attack + (recruitPays(state, cardId) ? state.recruit : 0)
+}
+
+async function spendAttack(state: GameState, amount: number, ui: UiAdapter, cardId: string): Promise<void> {
+  if (!recruitPays(state, cardId)) {
     state.attack -= amount
     return
   }
@@ -103,8 +105,8 @@ export async function defeatVillainFromDeck(
 
   if (payAttack) {
     const strength = getEffectiveStrength(state, villain) ?? 0
-    if (availableAttack(state) < strength) return false
-    await spendAttack(state, strength, ui)
+    if (availableAttack(state, villain.cardId) < strength) return false
+    await spendAttack(state, strength, ui, villain.cardId)
   }
 
   state.villainDeck.pop()
@@ -143,11 +145,11 @@ export async function fightVillain(
   }
 
   const strength = getEffectiveStrength(state, villain) ?? 0
-  if (availableAttack(state) < strength) {
-    throw new Error(`Za mało attack: masz ${availableAttack(state)}, siła ${strength}`)
+  if (availableAttack(state, villain.cardId) < strength) {
+    throw new Error(`Za mało attack: masz ${availableAttack(state, villain.cardId)}, siła ${strength}`)
   }
 
-  await spendAttack(state, strength, ui)
+  await spendAttack(state, strength, ui, villain.cardId)
 
   const abilities = getVillainAbilities(villain.cardId)
   if (abilities?.onFight) {
@@ -182,7 +184,9 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
     await asEnemyEffect(state, () => ability(state, { self: tactic, ui }))
   }
 
-  state.defeated.push(tactic)
+  const returned = state.tactics.some((t) => t.instanceId === tactic.instanceId)
+  if (!returned) state.defeated.push(tactic)
+
   addRecruit(state, state.defeatRecruitBonus ?? 0)
   for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) rescueBystander(state)
   if (state.tactics.length === 0) {
@@ -193,11 +197,12 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
 export async function fightMastermind(state: GameState, ui: UiAdapter): Promise<void> {
   assertPlaying(state)
   const strength = getEffectiveStrength(state, state.mastermind) ?? 0
-  if (availableAttack(state) < strength) {
-    throw new Error(`Za mało attack: masz ${availableAttack(state)}, siła ${strength}`)
+  const mmId = state.mastermind.cardId
+  if (availableAttack(state, mmId) < strength) {
+    throw new Error(`Za mało attack: masz ${availableAttack(state, mmId)}, siła ${strength}`)
   }
 
-  await spendAttack(state, strength, ui)
+  await spendAttack(state, strength, ui, mmId)
   await claimTactic(state, ui)
 }
 

@@ -16,7 +16,7 @@ export function AttackSplitPrompt({ cost, maxFromAttack, maxFromRecruit, onConfi
   return (
     <div className="modal-overlay">
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h3>God of Thunder: pay {cost} Attack</h3>
+        <h3>Pay {cost} Attack (Attack / Recruit)</h3>
         <div className="split-row">
           <span>Attack: {fromAttack}</span>
           <button onClick={() => setFromAttack((v) => Math.max(minFromAttack, v - 1))}>▼</button>

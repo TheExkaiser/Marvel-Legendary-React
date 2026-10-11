@@ -3,6 +3,7 @@ import type { UiAdapter } from './ui'
 import { getWoundReplacement } from './replacements'
 import { addRecruit, addAttack } from './resources'
 import { drawCards } from './deckOps'
+import { getMastermindRule } from './mastermindRules'
 
 /** Gracz zyskuje ranę, chyba że zamiennik (np. Diving Block) ją zastąpi. */
 export async function gainWound(state: GameState, ui: UiAdapter): Promise<void> {
@@ -20,7 +21,8 @@ export async function gainWound(state: GameState, ui: UiAdapter): Promise<void> 
 export function gainWoundSilent(state: GameState): void {
   const wound = state.wounds.pop()
   if (!wound) return
-  state.discard.push(wound)
+  if (getMastermindRule(state)?.woundsToDeckTop) state.deck.push(wound) // koniec tablicy = wierzch talii
+  else state.discard.push(wound)
 }
 
 /** Bonusy "whenever you rescue a Bystander this turn" (Jean Grey). */

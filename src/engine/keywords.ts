@@ -5,6 +5,9 @@ import { getVpModifier } from './vpModifiers'
 import { CITY_NAMES } from './constants'
 import { getScheme } from './schemeRegistry'
 import { addRecruit } from './resources'
+import { getMastermindRule } from './mastermindRules'
+import { getStrengthModifier } from './strengthModifiers'
+
 
 export function countPlayedThisTurn(
   state: GameState,
@@ -213,6 +216,8 @@ export function getEffectiveStrength(
   }
 
   total += getScheme(state).villainStrengthModifier?.(state, instance) ?? 0
+  total += getMastermindRule(state)?.villainStrengthModifier?.(state, instance) ?? 0
+  total += getStrengthModifier(instance.cardId)?.(state, instance) ?? 0
 
   return Math.max(0, total) // siła nie może zejść poniżej 0 (inaczej spendAttack by ją "zwracał")
 }

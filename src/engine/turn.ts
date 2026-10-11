@@ -70,6 +70,14 @@ export function registerTeleportHook(cardId: string, fn: TeleportHook): void {
   teleportHooks.set(cardId, fn)
 }
 
+/** Czy karta ma Teleport: własne słowo kluczowe albo nadane na tę turę (Azazel). */
+export function hasTeleport(state: GameState, instance: CardInstance): boolean {
+  return (
+    (state.cards[instance.cardId].keywords ?? []).includes('teleport') ||
+    (state.teleportGrantedThisTurn ?? []).includes(instance.instanceId)
+  )
+}
+
 /** Teleport: zamiast zagrać kartę, odkładasz ją na bok. Na koniec tury wróci do ręki jako dodatkowa.
  * force = Teleport z efektu innej karty (karta nie musi mieć słowa kluczowego). */
 export async function teleportCard(
@@ -82,8 +90,7 @@ export async function teleportCard(
   const index = state.hand.findIndex((c) => c.instanceId === instanceId)
   if (index === -1) throw new Error(`Karty ${instanceId} nie ma w ręce`)
 
-  const data = state.cards[state.hand[index].cardId]
-  if (!force && !(data.keywords ?? []).includes('teleport')) {
+  if (!force && !hasTeleport(state, state.hand[index])) {
     throw new Error('Ta karta nie ma Teleportu')
   }
 
@@ -129,6 +136,7 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.attackGainedThisTurn = 0
   state.pendingSurgeOfPower = 0
   state.masterStrikeAutoDrawUsedThisTurn = false
+  state.teleportGrantedThisTurn = []
 
   const drawAmount = HAND_SIZE + state.bonusDrawNextTurn
   state.bonusDrawNextTurn = 0

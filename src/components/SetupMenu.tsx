@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { CardGroup, GameSetup, SetData, SetupChoices } from '../engine/types'
 import { buildSetup, getSetupProblems } from '../engine/buildSetup'
-import { DEFAULT_SETUP_RULES, resolveRules } from '../engine/setupRules'
+import { DEFAULT_SETUP_RULES, resolveRules, withLedGroup } from '../engine/setupRules'
 import { EMPTY_CHOICES, completeChoices, pruneChoices } from '../engine/setupChoices'
 import { GAME_MODES } from '../data/gameModes'
 import { DEBUG_PRESET } from '../data/sets/setup'
@@ -219,7 +219,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   const gameMode = GAME_MODES.find((m) => m.id === choices.gameModeId)
   const scheme = activeSets.flatMap((s) => s.schemes).find((s) => s.id === choices.schemeId)
   const mastermind = activeSets.flatMap((s) => s.masterminds).find((m) => m.card.id === choices.mastermindId)
-  const rules = gameMode && scheme ? resolveRules(gameMode, scheme) : DEFAULT_SETUP_RULES
+  const rules = gameMode && scheme ? resolveRules(gameMode, scheme, mastermind) : DEFAULT_SETUP_RULES
 
   const problems: string[] = []
   if (!gameMode) problems.push('Select a game mode')
@@ -248,7 +248,14 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
       max: 1,
       required: [],
       single: true,
-      onChange: (ids) => update({ mastermindId: ids[0] ?? '' }),
+      onChange: (ids) => {
+        const id = ids[0] ?? ''
+        const picked = activeSets.flatMap((s) => s.masterminds).find((m) => m.card.id === id)
+        update({
+          mastermindId: id,
+          villainGroupIds: withLedGroup(choices.villainGroupIds, picked, rules.villainGroups),
+        })
+      },
     },
     heroes: {
       title: 'Heroes',

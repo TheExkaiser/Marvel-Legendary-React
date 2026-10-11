@@ -1,4 +1,4 @@
-import type { GameModeDef, SchemeDef, SetupRules } from './types'
+import type { GameModeDef, MastermindData, SchemeDef, SetupRules } from './types'
 
 // Domyślne reguły gry solo — odpowiadają Dark City - Advanced Solo (jedynemu trybowi na razie).
 export const DEFAULT_SETUP_RULES: SetupRules = {
@@ -12,7 +12,22 @@ export const DEFAULT_SETUP_RULES: SetupRules = {
   requiredHenchmenGroups: [],
 }
 
-/** Domyślne reguły + nadpisania z Game Mode + nadpisania z Scheme (Scheme wygrywa). */
-export function resolveRules(gameMode: GameModeDef, scheme: SchemeDef): SetupRules {
-  return { ...DEFAULT_SETUP_RULES, ...gameMode.setupRules, ...scheme.setupRules }
+/** Domyślne reguły + nadpisania z Game Mode + nadpisania z Scheme (Scheme wygrywa)
+ * + Always Leads mastermina (jeśli ma to pole — w tym trybie tylko Apocalypse). */
+export function resolveRules(
+  gameMode: GameModeDef,
+  scheme: SchemeDef,
+  mastermind?: MastermindData,
+): SetupRules {
+  const rules = { ...DEFAULT_SETUP_RULES, ...gameMode.setupRules, ...scheme.setupRules }
+  const led = mastermind?.alwaysLeads?.villainGroupId
+  if (led) rules.requiredVillainGroups = [...new Set([...rules.requiredVillainGroups, led])]
+  return rules
+}
+
+/** Po wyborze mastermina z Always Leads dokleja jego grupę do wybranych (zastępując ostatnią, jeśli brak miejsca). */
+export function withLedGroup(ids: string[], mastermind: MastermindData | undefined, max: number): string[] {
+  const led = mastermind?.alwaysLeads?.villainGroupId
+  if (!led || ids.includes(led)) return ids
+  return [...ids.slice(0, Math.max(0, max - 1)), led]
 }
