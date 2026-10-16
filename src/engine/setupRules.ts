@@ -12,6 +12,10 @@ export const DEFAULT_SETUP_RULES: SetupRules = {
   requiredHenchmenGroups: [],
 }
 
+// Always Leads jest obsługiwane, ale wyłączone: jedyny tryb (Dark City - Advanced Solo) go nie używa.
+// Przy kolejnym trybie można to zamienić na flagę w GameModeDef.
+const ALWAYS_LEADS_ENABLED = false
+
 /** Domyślne reguły + nadpisania z Game Mode + nadpisania z Scheme (Scheme wygrywa)
  * + Always Leads mastermina (jeśli ma to pole — w tym trybie tylko Apocalypse). */
 export function resolveRules(
@@ -20,14 +24,14 @@ export function resolveRules(
   mastermind?: MastermindData,
 ): SetupRules {
   const rules = { ...DEFAULT_SETUP_RULES, ...gameMode.setupRules, ...scheme.setupRules }
-  const led = mastermind?.alwaysLeads?.villainGroupId
+  const led = ALWAYS_LEADS_ENABLED ? mastermind?.alwaysLeads?.villainGroupId : undefined
   if (led) rules.requiredVillainGroups = [...new Set([...rules.requiredVillainGroups, led])]
   return rules
 }
 
 /** Po wyborze mastermina z Always Leads dokleja jego grupę do wybranych (zastępując ostatnią, jeśli brak miejsca). */
 export function withLedGroup(ids: string[], mastermind: MastermindData | undefined, max: number): string[] {
-  const led = mastermind?.alwaysLeads?.villainGroupId
+  const led = ALWAYS_LEADS_ENABLED ? mastermind?.alwaysLeads?.villainGroupId : undefined
   if (!led || ids.includes(led)) return ids
   return [...ids.slice(0, Math.max(0, max - 1)), led]
 }

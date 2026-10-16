@@ -9,8 +9,9 @@ import {
   revealZone,
   haveZone,
   isVillainCard,
+  revealTopCards,
 } from '../../../engine/keywords'
-import { gainWound, takeTopCards, drawCards } from '../../../engine/game'
+import { gainWound, drawCards } from '../../../engine/game'
 import { resolveVillainDeckCard, resolveMasterStrike } from '../../../engine/villainPhase'
 import { shuffle } from '../../../engine/random'
 import { CITY_NAMES } from '../../../engine/constants'
@@ -60,7 +61,7 @@ async function famineEffect(state: GameState, ui: UiAdapter): Promise<void> {
 
 async function pestilenceEffect(state: GameState, ui: UiAdapter): Promise<void> {
   const kept: CardInstance[] = []
-  for (const card of takeTopCards(state, 3)) {
+  for (const card of await revealTopCards(state, ui, 3, 'Pestilence')) {
     if ((state.cards[card.cardId].cost ?? 0) >= 1) state.discard.push(card)
     else kept.push(card)
   }
@@ -370,5 +371,28 @@ registerVillainAbilities('villain-lilith', {
   onEscape: async (state, ui) => {
     const hasDracula = state.defeated.some((c) => state.cards[c.cardId].name === 'Dracula')
     if (!hasDracula) await gainWound(state, ui)
+  },
+})
+
+// ---------- Henchmen ----------
+
+registerVillainAbilities('henchmen-maggia-goons', {
+  onFight: async (state, ui) => {
+    await koHeroes(state, ui, 1, 'Maggia Goons (Fight): KO one of your Heroes')
+  },
+})
+
+registerVillainAbilities('henchmen-phalanx', {
+  onFight: async (state, ui) => {
+    await revealTypeOr(
+      state,
+      ui,
+      'tech',
+      'Tech',
+      'Phalanx (Fight): reveal a Tech Hero or KO one of your Heroes with an Attack icon',
+      async () => {
+        await koHeroWithIcon(state, ui, 'attack')
+      },
+    )
   },
 })

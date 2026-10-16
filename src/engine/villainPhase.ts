@@ -17,6 +17,8 @@ export async function resolveVillainDeckCard(
   card: CardInstance,
   ui: UiAdapter,
 ): Promise<void> {
+  console.log('resolveVillainDeckCard:', state.cards[card.cardId].name, new Error().stack?.split('\n').slice(2, 6).join(' | '))
+  
   const data = state.cards[card.cardId]
   logEvent(state, `Tura ${state.turn}: odkryto ${data.name}`)
 

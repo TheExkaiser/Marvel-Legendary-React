@@ -1,12 +1,27 @@
 import { registerMastermindRule } from '../../../engine/mastermindRules'
+import type { GameState } from '../../../engine/types'
 
-const HORSEMEN = ['Famine', 'Pestilence', 'War', 'Death'] // muszą pasować do `name` kart
+// unikalne nazwy kart głównej grupy złoczyńców (state.cards zawiera tylko karty użyte w tej grze)
+function ledGroupNames(state: GameState): string[] {
+  const group = state.ledVillainGroup
+  if (group === undefined) return []
+  return [...new Set(Object.values(state.cards).filter((c) => c.villainGroup === group).map((c) => c.name))]
+}
 
 registerMastermindRule('mastermind-apocalypse', {
-  villainStrengthModifier: (state, instance) =>
-    state.cards[instance.cardId].villainGroup === 'Four Horsemen' ? 2 : 0,
-  checkLoss: (state) =>
-    HORSEMEN.every((name) => state.escaped.some((c) => state.cards[c.cardId].name === name)),
+  villainStrengthModifier: (state, instance) => {
+    const group = state.ledVillainGroup
+    const bonus = group !== undefined && state.cards[instance.cardId].villainGroup === group ? 2 : 0
+    console.log('apocalypse mod:', state.cards[instance.cardId].name, group, bonus)
+    return bonus
+  },
+  checkLoss: (state) => {
+    const names = ledGroupNames(state)
+    return (
+      names.length > 0 &&
+      names.every((name) => state.escaped.some((c) => state.cards[c.cardId].name === name))
+    )
+  },
 })
 
 registerMastermindRule('mastermind-mephisto', { woundsToDeckTop: true })

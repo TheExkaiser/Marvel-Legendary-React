@@ -38,6 +38,7 @@ import { appendGameLogEntry, formatDate, formatTime, type GameLogMeta } from './
 import { GameHistoryMenu } from './components/GameHistoryMenu'
 import { NumberPrompt } from './components/NumberPrompt'
 import { StackedMasterStrikes } from './components/StackedMasterStrikes'
+import { hasTeleport } from './engine/turn'
 
 
 // ---------- Stałe ----------
@@ -297,8 +298,7 @@ function GameScreen({
                   flipFrom="deck"
                   onClick={() =>
                     act(async (s, ui) => {
-                      const data = s.cards[c.cardId]
-                      if (data.keywords?.includes('teleport')) {
+                      if (hasTeleport(s, c)) {
                         const choice = await ui.chooseOptionWithCard(
                           c,
                           [

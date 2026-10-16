@@ -1,12 +1,39 @@
 import { registerCardAbility } from '../../../engine/cardAbilities'
 import { takeTopCards } from '../../../engine/game'
-import { koCard, isVillainCard, koFromVictoryPile, revealCards } from '../../../engine/keywords'
+import { koCard, isVillainCard, koFromVictoryPile, revealCards, revealTopCards } from '../../../engine/keywords'
 import { resolveVillainDeckCard, resolveMasterStrike } from '../../../engine/villainPhase'
-import type { CardInstance } from '../../../engine/types'
+import type { CardInstance, GameState } from '../../../engine/types'
 import { rescueBystander, gainWound } from '../../../engine/game'
 import { shuffle } from '../../../engine/random'
 import { captureFromSupply, captureForSinister, SINISTER_TACTIC_IDS } from './sinisterCaptives'
+import type { UiAdapter } from '../../../engine/ui'
 
+/** Zdejmuje `count` kart z wierzchu talii złoczyńców i pokazuje każdą z osobna (od wierzchu). */
+async function revealFromVillainDeck(
+  state: GameState,
+  ui: UiAdapter,
+  count: number,
+  label: string,
+): Promise<CardInstance[]> {
+  const revealed: CardInstance[] = []
+  for (let i = 0; i < count; i++) {
+    const card = state.villainDeck.pop()
+    if (card) revealed.push(card)
+  }
+  for (const card of revealed) {
+    await ui.revealCard(card, `${label}: revealed ${state.cards[card.cardId].name}`)
+    console.log(`revealed: ${state.cards[card.cardId].name}`)
+  }
+  return revealed
+}
+
+/** Sinister łapie karty i pokazuje każdą z osobna (jak w jego Master Strike). */
+async function captureAndShowForSinister(state: GameState, ui: UiAdapter, cards: CardInstance[]): Promise<void> {
+  captureForSinister(state, cards)
+  for (const card of cards) {
+    await ui.showCapture(state.mastermind, card, 'Bystander captured by Mr. Sinister')
+  }
+}
 
 // ---------- Apocalypse ----------
 
@@ -29,7 +56,7 @@ registerCardAbility('apocalypse-apocalyptic-destruction', async (state, { ui }) 
 
 registerCardAbility('apocalypse-the-end-of-all-things', async (state, { ui }) => {
   const keep: CardInstance[] = []
-  for (const card of takeTopCards(state, 3)) {
+  for (const card of await revealTopCards(state, ui, 3, 'The End of All Things')) {
     if ((state.cards[card.cardId].cost ?? 0) >= 1) state.ko.push(card)
     else keep.push(card)
   }
@@ -50,11 +77,12 @@ registerCardAbility('apocalypse-the-end-of-all-things', async (state, { ui }) =>
 })
 
 registerCardAbility('apocalypse-horsemen-are-drawing-nearer', async (state, { ui }) => {
-  const horsemen = state.defeated.filter((c) => state.cards[c.cardId].villainGroup === 'Four Horsemen')
+  const group = state.ledVillainGroup
+  const horsemen = state.defeated.filter((c) => group !== undefined && state.cards[c.cardId].villainGroup === group)
   if (horsemen.length === 0) return
 
   const chosen = await ui.choose(horsemen, {
-    prompt: 'Horsemen Are Drawing Nearer: play a Four Horsemen Villain from your Victory Pile',
+    prompt: `Horsemen Are Drawing Nearer: play a ${group} Villain from your Victory Pile`,
     optional: false,
   })
   if (!chosen) return
@@ -118,17 +146,15 @@ registerCardAbility('apocalypse-immortal-and-undefeated', async (state, { self }
 registerCardAbility('kingpin-criminal-empire', async (state, { ui }) => {
   if (state.tactics.length === 0) return // to była ostatnia Taktyka
 
-  const revealed: CardInstance[] = []
-  for (let i = 0; i < 3; i++) {
-    const card = state.villainDeck.pop()
-    if (card) revealed.push(card)
-  }
+  const revealed = await revealFromVillainDeck(state, ui, 3, 'Criminal Empire')
 
   const villains = revealed.filter((c) => isVillainCard(state.cards[c.cardId]))
   const rest = revealed.filter((c) => !villains.includes(c))
-  state.villainDeck.push(...shuffle(rest))
 
   for (const villain of villains) await resolveVillainDeckCard(state, villain, ui)
+
+  // dopiero po rozegraniu, żeby efekty "zagraj wierzchnią kartę" nie trafiały na odłożone karty
+  state.villainDeck.push(...shuffle(rest))
 })
 
 // ---------- Mephisto ----------
@@ -218,12 +244,12 @@ registerCardAbility('mephisto-the-price-of-failure', async (state, { ui }) => {
 
 // ---------- Mr. Sinister ----------
 
-registerCardAbility('sinister-human-experimentation', async (state) => {
+registerCardAbility('sinister-human-experimentation', async (state, { ui }) => {
   const villains = state.city.filter((c) => c && isVillainCard(state.cards[c.cardId])).length
-  captureForSinister(state, captureFromSupply(state, villains))
+  await captureAndShowForSinister(state, ui, captureFromSupply(state, villains))
 })
 
-registerCardAbility('sinister-master-geneticist', async (state) => {
+registerCardAbility('sinister-master-geneticist', async (state, { ui }) => {
   const revealed: CardInstance[] = []
   for (let i = 0; i < 7; i++) {
     const card = state.villainDeck.pop()
@@ -233,37 +259,43 @@ registerCardAbility('sinister-master-geneticist', async (state) => {
   const bystanders = revealed.filter((c) => state.cards[c.cardId].kind === 'bystander')
   const rest = revealed.filter((c) => !bystanders.includes(c))
 
+  // pokazujemy karty po kolei, od wierzchu: Bystanderzy jako przejęcie, reszta jako reveal
+  for (const card of revealed) {
+    if (state.cards[card.cardId].kind === 'bystander') {
+      await ui.showCapture(state.mastermind, card, 'Master Geneticist: Bystander captured by Mr. Sinister')
+    } else {
+      await ui.revealCard(card, `Master Geneticist: revealed ${state.cards[card.cardId].name}`)
+    }
+  }
+
   captureForSinister(state, bystanders)
   state.villainDeck.push(...shuffle(rest))
 })
 
-registerCardAbility('sinister-plans-within-plans', async (state) => {
+registerCardAbility('sinister-plans-within-plans', async (state, { ui }) => {
   const inPile = state.defeated.filter((c) => SINISTER_TACTIC_IDS.includes(c.cardId)).length
-  captureForSinister(state, captureFromSupply(state, inPile + 1)) // +1 = ta Taktyka (jeszcze nie w Victory Pile)
+  await captureAndShowForSinister(state, ui, captureFromSupply(state, inPile + 1)) // +1 = ta Taktyka (jeszcze nie w Victory Pile)
 })
 
-registerCardAbility('sinister-telepathic-manipulation', async (state) => {
+registerCardAbility('sinister-telepathic-manipulation', async (state, { ui }) => {
   const index = state.defeated.findIndex((c) => state.cards[c.cardId].kind === 'bystander')
   if (index === -1) return
 
   const [bystander] = state.defeated.splice(index, 1)
-  captureForSinister(state, [bystander])
+  await captureAndShowForSinister(state, ui, [bystander])
 })
 
 // ---------- Stryfe ----------
 
 registerCardAbility('stryfe-furious-wrath', async (state, { ui }) => {
-  const revealed: CardInstance[] = []
-  for (let i = 0; i < 6; i++) {
-    const card = state.villainDeck.pop()
-    if (card) revealed.push(card)
-  }
+  const revealed = await revealFromVillainDeck(state, ui, 6, 'Furious Wrath')
 
   const strikes = revealed.filter((c) => state.cards[c.cardId].kind === 'masterstrike')
   const rest = revealed.filter((c) => !strikes.includes(c))
-  state.villainDeck.push(...shuffle(rest))
 
   for (const strike of strikes) await resolveVillainDeckCard(state, strike, ui)
+
+  state.villainDeck.push(...shuffle(rest))
 })
 
 registerCardAbility('stryfe-psychic-torment', async (state, { ui }) => {

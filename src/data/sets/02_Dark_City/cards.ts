@@ -1453,3 +1453,34 @@ export const UNDERWORLD_CARDS: DeckEntry[] = [
     count: 2,
   },
 ]
+
+export const MAGGIA_GOONS_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'henchmen-maggia-goons',
+      name: 'Maggia Goons',
+      img: '/cards/dark-city/henchmen-maggia-goons.webp',
+      strength: 4,
+      vp: 1,
+      henchman: true,
+      keywords: ['bribe'],
+      text: 'Bribe. Fight: KO one of your Heroes.',
+    },
+    count: 10,
+  },
+]
+
+export const PHALANX_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'henchmen-phalanx',
+      name: 'Phalanx',
+      img: '/cards/dark-city/henchmen-phalanx.webp',
+      strength: 3,
+      vp: 1,
+      henchman: true,
+      text: 'Fight: Reveal a Tech Hero or KO one of your Heroes with an Attack icon.',
+    },
+    count: 10,
+  },
+]

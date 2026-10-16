@@ -81,6 +81,7 @@ export interface GameState {
   tactics: CardInstance[]
   stackedMasterStrikes?: CardInstance[] // Stryfe: Master Strike'i ułożone obok mastermina
   masterStrikeId: string
+    ledVillainGroup?: string // główna grupa złoczyńców tej gry (nazwa z villainGroup), np. dla taktyk Apocalypse'a zamiast "Four Horsemen"
 
   defeated: CardInstance[]
   wounds: CardInstance[]

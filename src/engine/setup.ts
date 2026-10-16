@@ -107,6 +107,7 @@ export function createGameState(setup: GameSetup): GameState {
     mastermind: { instanceId: mastermind.card.id, cardId: mastermind.card.id },
     tactics: shuffle(mastermind.tactics.map((t) => ({ instanceId: t.id, cardId: t.id }))),
     masterStrikeId: mastermind.masterStrikeId,
+    ledVillainGroup: villainCards.map((e) => e.card.villainGroup).find((g) => g !== undefined),
 
     // Scheme + Game Mode
     schemeId: scheme.id,
@@ -126,6 +127,7 @@ export function createGameState(setup: GameSetup): GameState {
     masterStrikeAutoDrawUsedThisTurn: false,
   }
 
+  console.log('ledVillainGroup:', state.ledVillainGroup, villainCards.map((e) => [e.card.name, e.card.villainGroup]))
   refillHq(state)
   scheme.setup?.(state)
   return state

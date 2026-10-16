@@ -19,7 +19,7 @@ const COSMIC_CUBE: SchemeDef = {
     'Twist 8: Evil Wins!',
 
   onTwist: async (state, n, ui) => {
-    if (n >= 2 && n <= 6) {
+    if (n >= 5 && n <= 6) {
       await gainWound(state, ui)
     } else if (n === 7) {
       for (let i = 0; i < 3; i++) {

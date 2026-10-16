@@ -6,6 +6,7 @@ import { CITY_NAMES } from './constants'
 import { getScheme } from './schemeRegistry'
 import { addRecruit } from './resources'
 import { getMastermindRule } from './mastermindRules'
+import { takeTopCards } from './deckOps'
 import { getStrengthModifier } from './strengthModifiers'
 
 
@@ -265,4 +266,18 @@ export function koFromVictoryPile(state: GameState, instanceId: string): void {
   if (index === -1) return
   const [card] = state.defeated.splice(index, 1)
   state.ko.push(card)
+}
+
+/** Zdejmuje `count` kart z wierzchu talii gracza i pokazuje każdą z osobna. Zwraca odkryte karty. */
+export async function revealTopCards(
+  state: GameState,
+  ui: UiAdapter,
+  count: number,
+  label: string,
+): Promise<CardInstance[]> {
+  const cards = takeTopCards(state, count)
+  for (let i = 0; i < cards.length; i++) {
+    await ui.revealCard(cards[i], `${label}: revealed card ${i + 1}/${cards.length}`)
+  }
+  return cards
 }
