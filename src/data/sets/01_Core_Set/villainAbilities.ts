@@ -13,7 +13,7 @@ import {
   addRecruit,
 } from '../../../engine/game'
 import { getScheme } from '../../../engine/schemeRegistry'
-import { resolveVillainDeckCard, checkEndConditions } from '../../../engine/villainPhase'
+import { resolveVillainDeckCard, checkEndConditions, playTopVillainCard } from '../../../engine/villainPhase'
 import { CITY_NAMES } from '../../../engine/constants'
 import { refillHq } from '../../../engine/recruit'
 import type { CardInstance, GameState } from '../../../engine/types'
@@ -226,9 +226,7 @@ registerVillainAbilities('henchmen-sentinel', {
 registerVillainAbilities('villain-endless-armies-of-hydra', {
   onFight: async (state, ui) => {
     for (let i = 0; i < 2; i++) {
-      const card = state.villainDeck.pop()
-      if (!card) break
-      await resolveVillainDeckCard(state, card, ui)
+      await playTopVillainCard(state, ui)
     }
     checkEndConditions(state)
   },
@@ -350,9 +348,7 @@ registerVillainAbilities('villain-abomination', {
 
 registerVillainAbilities('villain-the-leader', {
   onAmbush: async (state, ui) => {
-    const card = state.villainDeck.pop()
-    if (!card) return
-    await resolveVillainDeckCard(state, card, ui)
+    await playTopVillainCard(state, ui)
     checkEndConditions(state)
   },
 })

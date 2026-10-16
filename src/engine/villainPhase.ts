@@ -33,14 +33,21 @@ export async function resolveVillainDeckCard(
   }
 }
 
-/** Odkrywa wierzchnią kartę talii złoczyńców i rozpatruje ją według jej rodzaju. */
-export async function villainPhase(state: GameState, ui: UiAdapter): Promise<void> {
-  if (state.villainDeck.length === 0) state.status = 'lost' 
+/** Zdejmuje wierzchnią kartę talii złoczyńców. Pusta talia = przegrana (jedyne miejsce w silniku, które to robi). */
+export function drawVillainDeckCard(state: GameState): CardInstance | undefined {
   const card = state.villainDeck.pop()
-  if (!card) return
+  if (!card) state.status = 'lost'
+  return card
+}
 
-  await resolveVillainDeckCard(state, card, ui)
+/** "Play another card from the Villain Deck": zdejmij i rozpatrz wierzchnią kartę. */
+export async function playTopVillainCard(state: GameState, ui: UiAdapter): Promise<void> {
+  const card = drawVillainDeckCard(state)
+  if (card) await resolveVillainDeckCard(state, card, ui)
+}
 
+export async function villainPhase(state: GameState, ui: UiAdapter): Promise<void> {
+  await playTopVillainCard(state, ui)
   checkEndConditions(state)
 }
 

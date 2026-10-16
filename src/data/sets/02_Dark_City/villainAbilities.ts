@@ -12,7 +12,7 @@ import {
   revealTopCards,
 } from '../../../engine/keywords'
 import { gainWound, drawCards } from '../../../engine/game'
-import { resolveVillainDeckCard, resolveMasterStrike } from '../../../engine/villainPhase'
+import { resolveVillainDeckCard, resolveMasterStrike, playTopVillainCard } from '../../../engine/villainPhase'
 import { shuffle } from '../../../engine/random'
 import { CITY_NAMES } from '../../../engine/constants'
 import type { CardInstance, GameState } from '../../../engine/types'
@@ -182,8 +182,7 @@ registerVillainAbilities('villain-egghead', {
     const top = topOfVillainDeck(state)
     if (!top) return
     if (isVillainCard(state.cards[top.cardId])) {
-      state.villainDeck.pop()
-      await resolveVillainDeckCard(state, top, ui)
+      await playTopVillainCard(state, ui)
     } else {
       await ui.showInfo(top, 'Egghead: the top card is not a Villain')
     }
@@ -377,6 +376,11 @@ registerVillainAbilities('villain-lilith', {
 // ---------- Henchmen ----------
 
 registerVillainAbilities('henchmen-maggia-goons', {
+  // Ambush dotyczy Goonów tylko w schemacie Organized Crime Wave
+  onAmbush: async (state, ui) => {
+    if (state.schemeId !== 'darkcity_organized_crime_wave') return
+    await playTopVillainCard(state, ui)
+  },
   onFight: async (state, ui) => {
     await koHeroes(state, ui, 1, 'Maggia Goons (Fight): KO one of your Heroes')
   },

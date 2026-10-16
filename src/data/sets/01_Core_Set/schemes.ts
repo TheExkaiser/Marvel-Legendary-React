@@ -2,7 +2,7 @@ import type { SchemeDef } from '../../../engine/types'
 import { gainWound } from '../../../engine/game'
 import { revealCards } from '../../../engine/keywords'
 import { CITY_NAMES } from '../../../engine/constants'
-import { resolveVillainDeckCard, checkEndConditions, enterCity } from '../../../engine/villainPhase'
+import { playTopVillainCard, checkEndConditions, enterCity } from '../../../engine/villainPhase'
 import { refillHq } from '../../../engine/recruit'
 import { shuffle } from '../../../engine/random'
 
@@ -99,11 +99,8 @@ const MIDTOWN_BANK_ROBBERY: SchemeDef = {
       }
     }
 
-    const card = state.villainDeck.pop()
-    if (card) {
-      await resolveVillainDeckCard(state, card, ui)
-      checkEndConditions(state)
-    }
+    await playTopVillainCard(state, ui)
+    checkEndConditions(state)
   },
 
   onVillainEscaped: (state, villain, lostCaptives) => {
@@ -130,9 +127,8 @@ const NEGATIVE_ZONE_PRISON_BREAKOUT: SchemeDef = {
 
   onTwist: async (state, n, ui) => {
     for (let i = 0; i < 2; i++) {
-      const card = state.villainDeck.pop()
-      if (!card) break
-      await resolveVillainDeckCard(state, card, ui)
+      await playTopVillainCard(state, ui)
+      if (state.status !== 'playing') break
     }
     checkEndConditions(state)
   },
