@@ -10,7 +10,7 @@ export interface CardData {
   recruit?: number
   strength?: number
   vp?: number
-  kind?: 'wound' | 'bystander' | 'twist' | 'masterstrike'
+  kind?: 'wound' | 'bystander' | 'twist' | 'masterstrike' | 'token'
   team?: string[]
   type?: string[]
   text?: string
@@ -76,6 +76,8 @@ export interface GameState {
   escaped: CardInstance[]
   captives: Record<string, CardInstance[]>
   attachedCards: Record<string, CardInstance> // instanceId złoczyńcy -> przypięta karta (Skrull Queen Veranke, Skrull Shapeshifters)
+  demonGoblins?: CardInstance[] // Transform Citizens Into Demons: Bystanderzy ułożeni obok schematu jako Demon Goblin
+  schemeTokens?: CardInstance[] // tokeny leżące na karcie scheme'u (np. dziecko w Capture Baby Hope)
 
   mastermind: CardInstance
   tactics: CardInstance[]
@@ -134,6 +136,7 @@ export interface GameSetup {
   heroCards: DeckEntry[]
   officerCards: DeckEntry
   villainCards: DeckEntry[]
+  villainDeckHeroCards: DeckEntry[] // bohaterowie wrzuceni do talii złoczyńców (Transform Citizens Into Demons, X-Cutioner's Song)
   mastermind: MastermindData
   wounds: DeckEntry
   bystanders: DeckEntry
@@ -154,7 +157,13 @@ export interface SchemeDef {
   text?: string
 
   setup?: (state: GameState) => void
-  onTwist?: (state: GameState, twistNumber: number, ui: UiAdapter) => void | Promise<void>
+  onTwist?: (state: GameState, twistNumber: number, ui: UiAdapter, twist: CardInstance) => void | Promise<void>
+
+  // true: karta Twista NIE trafia automatycznie do KO. Scheme sam decyduje, gdzie ją położyć (dostaje ją jako 4. argument onTwist)
+  keepsTwistCard?: boolean
+
+  // Jeńcy uratowani przez pokonanie Villaina. Zwraca tych, którzy mają trafić do Victory Pile; resztą zajmuje się scheme
+  onCaptivesRescued?: (state: GameState, villain: CardInstance, captives: CardInstance[]) => CardInstance[]
   onVillainEntered?: (state: GameState, villain: CardInstance) => void
   onVillainEscaped?: (state: GameState, villain: CardInstance, lostCaptives: CardInstance[]) => void
   checkLoss?: (state: GameState) => boolean
@@ -226,6 +235,8 @@ export interface SetupRules {
   henchmenGroups: number
   henchmenCopiesPerGroup: number // ile kopii jednej karty henchmana trafia do talii złoczyńców (kanonicznie 10)
   bystandersInVillainDeck: number
+  villainDeckHeroes: number // ile dodatkowych grup bohaterów trafia do talii złoczyńców
+  requiredVillainDeckHeroes: string[]
   requiredHeroes: string[]
   requiredVillainGroups: string[]
   requiredHenchmenGroups: string[]
@@ -237,6 +248,7 @@ export interface SetupChoices {
   schemeId: string
   mastermindId: string
   heroIds: string[]
+  villainDeckHeroIds: string[]
   villainGroupIds: string[]
   henchmenGroupIds: string[]
 }

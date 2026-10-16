@@ -6,6 +6,7 @@ export const EMPTY_CHOICES: SetupChoices = {
   schemeId: '',
   mastermindId: '',
   heroIds: [],
+  villainDeckHeroIds: [],
   villainGroupIds: [],
   henchmenGroupIds: [],
 }
@@ -61,11 +62,26 @@ export function completeChoices(
   const rules = resolveRules(gameMode, scheme, mastermind)
 
   const ids = (groups: { id: string }[]) => groups.map((g) => g.id)
+  const heroPool = ids(sets.flatMap((s) => s.heroes))
+
+  // Najpierw bohaterowie do talii złoczyńców, żeby zwykli bohaterowie ich nie wybrali
+  const villainDeckHeroIds =
+    rules.villainDeckHeroes === 0
+      ? []
+      : fillIds(partial.villainDeckHeroIds ?? [], heroPool, rules.villainDeckHeroes, rules.requiredVillainDeckHeroes, rng)
+
   return {
     gameModeId: gameMode.id,
     schemeId: scheme.id,
     mastermindId: mastermind.card.id,
-    heroIds: fillIds(partial.heroIds ?? [], ids(sets.flatMap((s) => s.heroes)), rules.heroes, rules.requiredHeroes, rng),
+    heroIds: fillIds(
+      partial.heroIds ?? [],
+      heroPool.filter((id) => !villainDeckHeroIds.includes(id)),
+      rules.heroes,
+      rules.requiredHeroes,
+      rng,
+    ),
+    villainDeckHeroIds,
     villainGroupIds: fillIds(partial.villainGroupIds ?? [], ids(sets.flatMap((s) => s.villainGroups)), rules.villainGroups, rules.requiredVillainGroups, rng),
     henchmenGroupIds: fillIds(partial.henchmenGroupIds ?? [], ids(sets.flatMap((s) => s.henchmenGroups)), rules.henchmenGroups, rules.requiredHenchmenGroups, rng),
   }
@@ -82,6 +98,7 @@ export function pruneChoices(choices: SetupChoices, sets: SetData[], gameModes: 
       ? choices.mastermindId
       : '',
     heroIds: keep(sets.flatMap((s) => s.heroes), choices.heroIds),
+        villainDeckHeroIds: keep(sets.flatMap((s) => s.heroes), choices.villainDeckHeroIds ?? []),
     villainGroupIds: keep(sets.flatMap((s) => s.villainGroups), choices.villainGroupIds),
     henchmenGroupIds: keep(sets.flatMap((s) => s.henchmenGroups), choices.henchmenGroupIds),
   }

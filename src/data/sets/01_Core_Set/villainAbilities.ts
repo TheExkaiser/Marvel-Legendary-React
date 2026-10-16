@@ -59,7 +59,7 @@ registerVillainAbilities('villain-mystique', {
   onEscape: async (state, ui, self) => {
     await ui.showInfo(self, 'Mystique zamienia się w Scheme Twist!')
     state.twistsRevealed += 1
-    await getScheme(state).onTwist?.(state, state.twistsRevealed, ui)
+    await getScheme(state).onTwist?.(state, state.twistsRevealed, ui, self)
   },
 })
 

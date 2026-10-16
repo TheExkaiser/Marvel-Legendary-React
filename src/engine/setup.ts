@@ -12,17 +12,17 @@ import { villainPhase } from './villainPhase'
 /** Dokleja BASE_URL do ścieżki obrazka, tak jak już robimy to dla ikon — żeby działało
  * identycznie lokalnie (BASE_URL='/') i po deployu na GitHub Pages (BASE_URL='/nazwa-repo/').
  * Nie mutuje oryginalnej karty (to singleton z cards.ts, używany w kolejnych grach). */
-function withPrefixedImg(card: CardData): CardData {
+export function withPrefixedImg(card: CardData): CardData {
   if (!card.img || /^https?:\/\//.test(card.img)) return card
   return { ...card, img: `${import.meta.env.BASE_URL}${card.img.replace(/^\//, '')}` }
 }
 
 /** Buduje słownik id -> dane karty ze wszystkich kart użytych w grze. */
 function buildCardIndex(setup: GameSetup): Record<string, CardData> {
-  const { startingCards, heroCards, villainCards, mastermind } = setup
+  const { startingCards, heroCards, villainCards, villainDeckHeroCards, mastermind } = setup
 
   const allCards: CardData[] = [
-    ...[...startingCards, ...heroCards, ...villainCards].map((e) => e.card),
+    ...[...startingCards, ...heroCards, ...villainCards, ...villainDeckHeroCards].map((e) => e.card),
     setup.officerCards.card,
     setup.wounds.card,
     setup.bystanders.card,
@@ -48,7 +48,7 @@ function buildCardIndex(setup: GameSetup): Record<string, CardData> {
 
 /** Tworzy pełny, gotowy do gry stan (talie potasowane, HQ zapełnione, setup scheme'u wykonany). */
 export function createGameState(setup: GameSetup): GameState {
-  const { startingCards, heroCards, villainCards, mastermind, scheme, gameMode } = setup
+  const { startingCards, heroCards, villainCards, villainDeckHeroCards, mastermind, scheme, gameMode } = setup
   registerScheme(scheme)
   registerGameMode(gameMode)
 
@@ -80,6 +80,7 @@ export function createGameState(setup: GameSetup): GameState {
     // Złoczyńcy i miasto
     villainDeck: shuffle([
       ...buildDeck(villainCards),
+      ...buildDeck(villainDeckHeroCards),
       ...bystandersForVillainDeck,
       ...twists,
       ...masterStrikes,

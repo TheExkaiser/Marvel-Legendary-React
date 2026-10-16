@@ -39,6 +39,8 @@ import { GameHistoryMenu } from './components/GameHistoryMenu'
 import { NumberPrompt } from './components/NumberPrompt'
 import { StackedMasterStrikes } from './components/StackedMasterStrikes'
 import { hasTeleport } from './engine/turn'
+import { fightDemonGoblin } from './engine/combat'
+import { SchemeToken } from './components/SchemeToken'
 
 
 // ---------- Stałe ----------
@@ -192,7 +194,12 @@ function GameScreen({
         </div>
 
         <div className="city-slot">
-          <div className="zone-title">City (Escaped: {state.escaped.length})</div>
+          <div className="zone-title">
+            City (Escaped: {state.escaped.length})
+            {(state.schemeTokens ?? []).map((t) => (
+              <SchemeToken key={t.instanceId} data={state.cards[t.cardId]} />
+            ))}
+          </div>
           <div className="city-row">
             <div className="row">
               {state.city.map((instance, i) => (
@@ -215,6 +222,14 @@ function GameScreen({
               ))}
             </div>
             <DeckPile count={state.villainDeck.length} />
+            {(state.demonGoblins?.length ?? 0) > 0 && (
+              <DeckPile
+                count={state.demonGoblins!.length}
+                deckId="demon-goblins"
+                label="Demon Goblins (2 Attack)"
+                onClick={() => act(fightDemonGoblin)}
+              />
+            )}
           </div>
         </div>
       </div>

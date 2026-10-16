@@ -44,6 +44,16 @@ export function getSetupProblems(choices: SetupChoices, rules: SetupRules): stri
     rules.requiredHenchmenGroups,
     problems,
   )
+  checkList(
+    'Villain Deck Heroes',
+    choices.villainDeckHeroIds,
+    rules.villainDeckHeroes,
+    rules.requiredVillainDeckHeroes,
+    problems,
+  )
+  for (const id of choices.villainDeckHeroIds) {
+    if (choices.heroIds.includes(id)) problems.push(`Villain Deck Heroes: ${id} is also selected as a Hero`)
+  }
   return problems
 }
 
@@ -80,6 +90,10 @@ export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: Ga
     pick(henchmenPool, (g) => g.id, id, 'henchmen group'),
   )
 
+  const villainDeckHeroes = choices.villainDeckHeroIds.map((id) =>
+    pick(heroPool, (g) => g.id, id, 'villain deck hero'),
+  )
+
   // Na razie bierzemy karty wspólne z pierwszego zestawu, który je ma (Core Set)
   const shared = sets.map((s) => s.shared).find((s) => s !== undefined)
   if (!shared) throw new Error('None of the selected sets contains shared cards (wounds, officers...)')
@@ -87,6 +101,7 @@ export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: Ga
   return {
     startingCards: shared.startingCards,
     heroCards: heroes.flatMap((g) => g.cards),
+    villainDeckHeroCards: villainDeckHeroes.flatMap((g) => g.cards),
     officerCards: shared.officer,
     villainCards: [
       ...villains.flatMap((g) => g.cards),

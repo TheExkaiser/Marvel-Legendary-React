@@ -16,9 +16,9 @@ interface SetupMenuProps {
 }
 
 type SortMode = 'alpha' | 'set' | 'team'
-type TabId = 'mastermind' | 'heroes' | 'villains' | 'henchmen'
+type TabId = 'mastermind' | 'heroes' | 'deckHeroes' | 'villains' | 'henchmen'
 
-const TAB_ORDER: TabId[] = ['mastermind', 'heroes', 'villains', 'henchmen']
+const TAB_ORDER: TabId[] = ['mastermind', 'heroes', 'deckHeroes', 'villains', 'henchmen']
 
 const SORT_LABELS: Record<SortMode, string> = {
   alpha: 'Alphabetical',
@@ -198,7 +198,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
     return { ...base, gameModeId: base.gameModeId || GAME_MODES[0]?.id || '' }
   })
   const [historyOpen, setHistoryOpen] = useState(false)
-  const [tab, setTab] = useState<TabId>('mastermind')
+  const [tabState, setTab] = useState<TabId>('mastermind')
   const [sortMode, setSortMode] = useState<SortMode>('alpha')
   const [query, setQuery] = useState('')
   const [teamFilter, setTeamFilter] = useState<string[]>([])
@@ -206,20 +206,26 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
 
   // Pula do wyboru = suma zaznaczonych zestawów
   const activeSets = useMemo(() => sets.filter((s) => enabledSetIds.includes(s.id)), [sets, enabledSetIds])
-  const items = useMemo<Record<TabId, PickItem[]>>(
-    () => ({
+  const items = useMemo<Record<TabId, PickItem[]>>(() => {
+    const heroes = groupItems(activeSets, (s) => s.heroes, 'icons/heroes', true)
+    return {
       mastermind: mastermindItems(activeSets),
-      heroes: groupItems(activeSets, (s) => s.heroes, 'icons/heroes', true),
+      heroes,
+      deckHeroes: heroes,
       villains: groupItems(activeSets, (s) => s.villainGroups, 'icons/villainGroups', false),
       henchmen: groupItems(activeSets, (s) => s.henchmenGroups, 'icons/henchmen', false),
-    }),
-    [activeSets],
-  )
+    }
+  }, [activeSets])
 
   const gameMode = GAME_MODES.find((m) => m.id === choices.gameModeId)
   const scheme = activeSets.flatMap((s) => s.schemes).find((s) => s.id === choices.schemeId)
   const mastermind = activeSets.flatMap((s) => s.masterminds).find((m) => m.card.id === choices.mastermindId)
   const rules = gameMode && scheme ? resolveRules(gameMode, scheme, mastermind) : DEFAULT_SETUP_RULES
+
+  // Zakładka "Villain Deck Heroes" pokazuje się tylko wtedy, gdy scheme tego wymaga
+  const tabOrder = TAB_ORDER.filter((id) => id !== 'deckHeroes' || rules.villainDeckHeroes > 0)
+  const tab: TabId = tabOrder.includes(tabState) ? tabState : 'mastermind'
+  const isHeroTab = tab === 'heroes' || tab === 'deckHeroes'
 
   const problems: string[] = []
   if (!gameMode) problems.push('Select a game mode')
@@ -238,6 +244,18 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
     if (next.length === 0) return // musi zostać przynajmniej jeden zestaw
     setEnabledSetIds(next)
     setChoices(pruneChoices(choices, sets.filter((s) => next.includes(s.id)), GAME_MODES))
+  }
+
+  /** Zmiana schematu od razu wstawia wymaganych bohaterów talii złoczyńców (i zdejmuje ich ze zwykłych bohaterów). */
+  function changeScheme(schemeId: string) {
+    const next = activeSets.flatMap((s) => s.schemes).find((s) => s.id === schemeId)
+    const nextRules = gameMode && next ? resolveRules(gameMode, next, mastermind) : DEFAULT_SETUP_RULES
+    const forced = nextRules.requiredVillainDeckHeroes
+    update({
+      schemeId,
+      villainDeckHeroIds: forced,
+      heroIds: choices.heroIds.filter((id) => !forced.includes(id)),
+    })
   }
 
   const categories: Record<TabId, Category> = {
@@ -265,6 +283,14 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
       required: rules.requiredHeroes,
       onChange: (heroIds) => update({ heroIds }),
     },
+    deckHeroes: {
+      title: 'Villain Deck Heroes',
+      items: items.deckHeroes,
+      selected: choices.villainDeckHeroIds,
+      max: rules.villainDeckHeroes,
+      required: rules.requiredVillainDeckHeroes,
+      onChange: (villainDeckHeroIds) => update({ villainDeckHeroIds }),
+    },
     villains: {
       title: 'Villain Groups',
       items: items.villains,
@@ -283,6 +309,10 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
     },
   }
   const cat = categories[tab]
+
+  // Bohater wybrany w jednej zakładce jest zablokowany w drugiej
+  const blockedIds =
+    tab === 'heroes' ? choices.villainDeckHeroIds : tab === 'deckHeroes' ? choices.heroIds : []
 
   function toggleItem(id: string) {
     if (cat.single) {
@@ -315,21 +345,21 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   const q = query.trim().toLowerCase()
   const visible = cat.items.filter((i) => {
     if (selectedOnly && !cat.selected.includes(i.id)) return false
-    if (tab === 'heroes' && activeTeamFilter.length > 0 && !(i.team && activeTeamFilter.includes(i.team))) {
+    if (isHeroTab && activeTeamFilter.length > 0 && !(i.team && activeTeamFilter.includes(i.team))) {
       return false
     }
     if (q && !`${i.name} ${i.team ? teamName(i.team) : ''}`.toLowerCase().includes(q)) return false
     return true
   })
-  const sections = buildSections(visible, activeSets, sortMode, tab === 'heroes')
+  const sections = buildSections(visible, activeSets, sortMode, isHeroTab)
 
     // Losowanie tylko dla bieżącej zakładki (reszta wyborów zostaje), według limitów z tej zakładki
   function rerollCurrent() {
-    cat.onChange(randomPick(cat.items, cat.required, cat.max))
+    cat.onChange(randomPick(cat.items.filter((i) => !blockedIds.includes(i.id)), cat.required, cat.max))
   }
 
   // Podsumowanie wyborów (chipsy w stopce, z możliwością usunięcia)
-  const chips = TAB_ORDER.flatMap((id) =>
+  const chips = tabOrder.flatMap((id) =>
     categories[id].selected.map((selectedId) => ({
       tab: id,
       id: selectedId,
@@ -401,7 +431,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
             </select>
 
             <div className="setup-label setup-label-spaced">Scheme</div>
-            <select value={choices.schemeId} onChange={(e) => update({ schemeId: e.target.value })}>
+            <select value={choices.schemeId} onChange={(e) => changeScheme(e.target.value)}>
               <option value="">— select —</option>
               {activeSets.map(
                 (s) =>
@@ -423,7 +453,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
         <div className="setup-main setup-panel">
           <div className="setup-main-head">
             <div className="setup-tabs" role="tablist">
-              {TAB_ORDER.map((id) => {
+              {tabOrder.map((id) => {
                 const c = categories[id]
                 const done = c.selected.length === c.max
                 return (
@@ -482,7 +512,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
               </span>
             </div>
 
-            {tab === 'heroes' && teams.length > 0 && (
+            {isHeroTab && teams.length > 0 && (
               <div className="team-filters">
                 {teams.map(([id, count]) => (
                   <button
@@ -521,7 +551,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
                         team={item.team}
                         checked={checked}
                         locked={locked}
-                        disabled={locked || (!checked && full)}
+                        disabled={locked || blockedIds.includes(item.id) || (!checked && full)}
                         onToggle={() => toggleItem(item.id)}
                       />
                     )

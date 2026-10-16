@@ -46,6 +46,7 @@ export async function playTopVillainCard(state: GameState, ui: UiAdapter): Promi
   if (card) await resolveVillainDeckCard(state, card, ui)
 }
 
+/** Odkrywa wierzchnią kartę talii złoczyńców i rozpatruje ją według jej rodzaju. */
 export async function villainPhase(state: GameState, ui: UiAdapter): Promise<void> {
   await playTopVillainCard(state, ui)
   checkEndConditions(state)
@@ -72,6 +73,23 @@ export async function resolveMasterStrike(
   await getGameMode(state).onMasterStrikeResolved?.(state, ui)
 }
 
+/** Ucieczka złoczyńcy: karta idzie do "escaped", jeńcy tracą (KO), odpalają się efekt scheme'u i zdolność onEscape. */
+export async function escapeVillain(state: GameState, villain: CardInstance, ui: UiAdapter): Promise<void> {
+  state.escaped.push(villain)
+  logEvent(state, `Ucieka: ${state.cards[villain.cardId].name}`)
+
+  const lost = state.captives[villain.instanceId] ?? []
+  state.ko.push(...lost)
+  delete state.captives[villain.instanceId]
+
+  getScheme(state).onVillainEscaped?.(state, villain, lost)
+
+  const escapeAbilities = getVillainAbilities(villain.cardId)
+  if (escapeAbilities?.onEscape) {
+    await asEnemyEffect(state, () => escapeAbilities.onEscape!(state, ui, villain))
+  }
+}
+
 /** Wprowadza złoczyńcę (albo pseudo-villaina: Bystandera/Bohatera ze scheme'owej reguły)
  * do miasta (przez Sewers); przesuwa pozostałych, najdalszy może uciec. */
 export async function enterCity(state: GameState, villain: CardInstance, ui: UiAdapter): Promise<void> {
@@ -86,23 +104,8 @@ export async function enterCity(state: GameState, villain: CardInstance, ui: UiA
     moving = occupant
   }
 
-  // Ucieczka: karta zostaje w "escaped", jeńcy tracą (KO), odpalają się efekty
-  if (moving) {
-    state.escaped.push(moving)
-    logEvent(state, `Ucieka: ${state.cards[moving.cardId].name}`)
-
-    const lost = state.captives[moving.instanceId] ?? []
-    state.ko.push(...lost)
-    delete state.captives[moving.instanceId]
-
-    getScheme(state).onVillainEscaped?.(state, moving, lost)
-
-    const escapeAbilities = getVillainAbilities(moving.cardId)
-    const escapee = moving
-    if (escapeAbilities?.onEscape) {
-      await asEnemyEffect(state, () => escapeAbilities.onEscape!(state, ui, escapee))
-    }
-  }
+  // Ucieczka: najdalszy złoczyńca opuszcza miasto
+  if (moving) await escapeVillain(state, moving, ui)
 
   // Wejście nowego złoczyńcy: hook scheme'u + Ambush
   getScheme(state).onVillainEntered?.(state, villain)
@@ -122,9 +125,9 @@ async function resolveTwist(
   state.twistsRevealed += 1
   logEvent(state, `Scheme Twist #${state.twistsRevealed}`)
   await ui.revealCard(twist, `Odkryto: Scheme Twist #${state.twistsRevealed}`)
-  await getScheme(state).onTwist?.(state, state.twistsRevealed, ui)
+  await getScheme(state).onTwist?.(state, state.twistsRevealed, ui, twist)
   await getGameMode(state).onSchemeTwistResolved?.(state, ui)
-  state.ko.push(twist) // TODO: karta ma leżeć obok scheme'u (schemeTwists), nie w KO
+  if (!getScheme(state).keepsTwistCard) state.ko.push(twist) // TODO: karta ma leżeć obok scheme'u (schemeTwists), nie w KO
 }
 
 /** Sprawdza przegraną: limit uciekinierów (TYLKO jeśli scheme go definiuje) albo warunek scheme'u. */

@@ -6,7 +6,7 @@ import { canDefeatVillain } from './villainRequirements'
 import { getEffectiveStrength } from './keywords'
 import { getScheme } from './schemeRegistry'
 import { assertPlaying } from './common'
-import { rescueBystander, applyRescueBonuses } from './wounds'
+import { rescueBystander, rescueCard, applyRescueBonuses } from './wounds'
 import { addRecruit } from './resources'
 import { CITY_NAMES } from './constants'
 import { drawCards } from './deckOps'
@@ -17,6 +17,8 @@ import { gainVillainAsHero } from './cardData'
 function recruitPays(state: GameState, cardId: string): boolean {
   return state.recruitCountsAsAttackThisTurn || (state.cards[cardId].keywords ?? []).includes('bribe')
 }
+
+const DEMON_GOBLIN_ATTACK = 2
 
 function availableAttack(state: GameState, cardId: string): number {
   return state.attack + (recruitPays(state, cardId) ? state.recruit : 0)
@@ -49,11 +51,12 @@ function removeVillainFromCity(state: GameState, index: number): void {
   addRecruit(state, state.defeatRecruitBonus ?? 0)
   for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) rescueBystander(state)
 
-  const rescued = state.captives[villain.instanceId] ?? []
+  const scheme = getScheme(state)
+  const captives = state.captives[villain.instanceId] ?? []
+  const rescued = scheme.onCaptivesRescued?.(state, villain, captives) ?? captives
   delete state.captives[villain.instanceId]
   delete state.attachedCards[villain.instanceId]
 
-  const scheme = getScheme(state)
   if (scheme.onVillainDefeated) {
     scheme.onVillainDefeated(state, villain)
   } else {
@@ -208,4 +211,26 @@ export async function fightMastermind(state: GameState, ui: UiAdapter): Promise<
 
 export async function claimTacticFree(state: GameState, ui: UiAdapter): Promise<void> {
   await claimTactic(state, ui)
+}
+
+/** Transform Citizens Into Demons: za 2 Attack ratujesz wierzchniego Demon Goblina ze stosu obok schematu. */
+export async function fightDemonGoblin(state: GameState, ui: UiAdapter): Promise<void> {
+  assertPlaying(state)
+  const stack = state.demonGoblins ?? []
+  const goblin = stack[stack.length - 1]
+  if (!goblin) throw new Error('Nie ma Demon Goblinów do pokonania')
+
+  if (availableAttack(state, goblin.cardId) < DEMON_GOBLIN_ATTACK) {
+    throw new Error(`Za mało attack: masz ${availableAttack(state, goblin.cardId)}, siła ${DEMON_GOBLIN_ATTACK}`)
+  }
+
+  await spendAttack(state, DEMON_GOBLIN_ATTACK, ui, goblin.cardId)
+  stack.pop()
+
+  // Demon Goblin jest Villainem, więc działają bonusy "za pokonanie Villaina" (bez lokacji, bo stoi poza miastem)
+  addRecruit(state, state.defeatRecruitBonus ?? 0)
+  for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) rescueBystander(state)
+
+  // Uratowany jako Bystander: trafia do Victory Pool i liczy się jako "rescue" (Jean Grey itp.)
+  rescueCard(state, goblin)
 }
