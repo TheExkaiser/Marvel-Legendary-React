@@ -7,11 +7,12 @@ export const DEFAULT_SETUP_RULES: SetupRules = {
   henchmenGroups: 1,
   henchmenCopiesPerGroup: 10,
   bystandersInVillainDeck: 1,
+  bystandersInHeroDeck: 0,
+  villainDeckHeroes: 0,
+  requiredVillainDeckHeroes: [],
   requiredHeroes: [],
   requiredVillainGroups: [],
   requiredHenchmenGroups: [],
-  villainDeckHeroes: 0,
-  requiredVillainDeckHeroes: [],
 }
 
 // Always Leads jest obsługiwane, ale wyłączone: jedyny tryb (Dark City - Advanced Solo) go nie używa.

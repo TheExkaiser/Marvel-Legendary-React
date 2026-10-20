@@ -55,6 +55,7 @@ export function createGameState(setup: GameSetup): GameState {
   // Bystanderzy: część trafia do talii złoczyńców, reszta zostaje w stosie
   const bystanders = shuffle(buildDeck([setup.bystanders]))
   const bystandersForVillainDeck = bystanders.splice(0, setup.bystandersInVillainDeck)
+  const bystandersForHeroDeck = bystanders.splice(0, setup.bystandersInHeroDeck)
 
   const twists = buildDeck([{ card: setup.twist, count: scheme.twistCount }])
   const masterStrikes = buildDeck([
@@ -72,7 +73,7 @@ export function createGameState(setup: GameSetup): GameState {
     cardsPlayedThisTurn: [],
 
     // Rekrutacja
-    heroDeck: shuffle(buildDeck(heroCards)),
+    heroDeck: shuffle([...buildDeck(heroCards), ...bystandersForHeroDeck]),
     hq: [null, null, null, null, null],
     officerDeck: shuffle(buildDeck([setup.officerCards])),
     officerCardId: setup.officerCards.card.id,

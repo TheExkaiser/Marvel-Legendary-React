@@ -247,19 +247,27 @@ function GameScreen({
           )}
           <div>Remaining: {state.officerDeck.length}</div>
         </div>
-        {state.hq.map((instance, i) =>
-          instance ? (
-            <CardView
-              key={instance.instanceId}
-              data={state.cards[instance.cardId]}
-              flipId={instance.instanceId}
-              flipFrom="hero-deck"
-              onClick={() => act((s) => recruitHero(s, instance.instanceId))}
-            />
-          ) : (
-            <div key={i} className="slot-empty" />
-          ),
-        )}
+        {state.hq.map((instance, i) => {
+          const explosions = state.hqExplosions?.[i] ?? 0
+          const destroyed = state.hqDestroyed?.[i] ?? false
+          return (
+            <div key={instance?.instanceId ?? `hq-${i}`}>
+              {instance ? (
+                <CardView
+                  data={state.cards[instance.cardId]}
+                  flipId={instance.instanceId}
+                  flipFrom="hero-deck"
+                  onClick={() => act((s) => recruitHero(s, instance.instanceId))}
+                />
+              ) : (
+                <div className={destroyed ? 'slot-empty slot-destroyed' : 'slot-empty'}>
+                  {destroyed ? 'Destroyed' : ''}
+                </div>
+              )}
+              {explosions > 0 && <div className="markers">💥 {explosions}</div>}
+            </div>
+          )
+        })}
         <div className="deck-end">
           <DeckPile count={state.heroDeck.length} deckId="hero-deck" />
         </div>

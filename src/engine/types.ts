@@ -78,6 +78,8 @@ export interface GameState {
   attachedCards: Record<string, CardInstance> // instanceId złoczyńcy -> przypięta karta (Skrull Queen Veranke, Skrull Shapeshifters)
   demonGoblins?: CardInstance[] // Transform Citizens Into Demons: Bystanderzy ułożeni obok schematu jako Demon Goblin
   schemeTokens?: CardInstance[] // tokeny leżące na karcie scheme'u (np. dziecko w Capture Baby Hope)
+  hqExplosions?: number[] // Detonate the Helicarrier: liczba Eksplozji na każdym miejscu HQ
+  hqDestroyed?: boolean[] // Detonate the Helicarrier: zniszczone miejsca HQ (nie przyjmują Bohaterów)
 
   mastermind: CardInstance
   tactics: CardInstance[]
@@ -141,6 +143,7 @@ export interface GameSetup {
   wounds: DeckEntry
   bystanders: DeckEntry
   bystandersInVillainDeck: number
+  bystandersInHeroDeck: number
   masterStrikeCard: CardData   // NOWE: generyczna karta "Master Strike" (jak Scheme Twist)
   masterStrikeCount: number    // NOWE: standardowo 5
   scheme: SchemeDef
@@ -162,8 +165,17 @@ export interface SchemeDef {
   // true: karta Twista NIE trafia automatycznie do KO. Scheme sam decyduje, gdzie ją położyć (dostaje ją jako 4. argument onTwist)
   keepsTwistCard?: boolean
 
-  // Jeńcy uratowani przez pokonanie Villaina. Zwraca tych, którzy mają trafić do Victory Pile; resztą zajmuje się scheme
+  // Jeńcy uratowani przez pokonanie Villaina. Zwraca tych, którzy mają trafić do Victory Pile; resztą zajmuje się scheme.
+  // Przy walce z Mastermindem zwraca jeńców, którzy mają przy nim zostać (domyślnie wszyscy).
   onCaptivesRescued?: (state: GameState, villain: CardInstance, captives: CardInstance[]) => CardInstance[]
+  // Karta z talii złoczyńców, zanim silnik rozpatrzy ją domyślnie (wejście do miasta, jeniec itp.).
+  // Zwraca true, jeśli scheme rozpatrzył ją sam (X-Cutioner's Song: Bohater z talii złoczyńców zostaje jeńcem).
+  onVillainDeckCard?: (state: GameState, card: CardInstance, ui: UiAdapter) => boolean | Promise<boolean>
+
+  // Bohater skasowany z HQ (przez koFromHq). Gdy zdefiniowane, zastępuje domyślne trafienie karty do KO
+  // (Detonate the Helicarrier: karta zostaje zakryta na miejscu HQ jako Eksplozja).
+  onHeroKoedFromHq?: (state: GameState, hero: CardInstance, hqIndex: number) => void
+
   onVillainEntered?: (state: GameState, villain: CardInstance) => void
   onVillainEscaped?: (state: GameState, villain: CardInstance, lostCaptives: CardInstance[]) => void
   checkLoss?: (state: GameState) => boolean
@@ -235,6 +247,7 @@ export interface SetupRules {
   henchmenGroups: number
   henchmenCopiesPerGroup: number // ile kopii jednej karty henchmana trafia do talii złoczyńców (kanonicznie 10)
   bystandersInVillainDeck: number
+  bystandersInHeroDeck: number // Save Humanity: ile Bystanderów dokłada się do talii Bohaterów
   villainDeckHeroes: number // ile dodatkowych grup bohaterów trafia do talii złoczyńców
   requiredVillainDeckHeroes: string[]
   requiredHeroes: string[]

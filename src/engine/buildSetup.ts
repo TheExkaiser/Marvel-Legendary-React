@@ -89,7 +89,6 @@ export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: Ga
   const henchmen = choices.henchmenGroupIds.map((id) =>
     pick(henchmenPool, (g) => g.id, id, 'henchmen group'),
   )
-
   const villainDeckHeroes = choices.villainDeckHeroIds.map((id) =>
     pick(heroPool, (g) => g.id, id, 'villain deck hero'),
   )
@@ -111,6 +110,7 @@ export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: Ga
     wounds: shared.wounds,
     bystanders: shared.bystanders,
     bystandersInVillainDeck: rules.bystandersInVillainDeck,
+    bystandersInHeroDeck: rules.bystandersInHeroDeck,
     masterStrikeCard: shared.masterStrikeCard,
     masterStrikeCount: shared.masterStrikeCount,
     scheme,

@@ -75,7 +75,7 @@ registerCardAbility('hero-black-widow-silent-sniper', async (state, { ui }) => {
   if (chosen.instanceId === state.mastermind.instanceId) {
     await claimTacticFree(state, ui)
   } else {
-    defeatVillainFree(state, chosen.instanceId)
+    defeatVillainFree(state, chosen.instanceId, ui)
   }
 })
 
@@ -386,8 +386,10 @@ registerCardAbility('hero-iron-man-quantum-breakthrough', async (state) => {
 // ---------- Nick Fury ----------
 
 registerCardAbility('hero-nick-fury-battlefield-promotion', async (state, { ui, self }) => {
-  const targets = haveZone(state).filter((c) => isShieldHero(state.cards[c.cardId]))
-  if (targets.length === 0) return
+  const targets = [...state.hand, ...state.discard].filter((c) =>
+    isShieldHero(state.cards[c.cardId]),
+  )
+
   const chosen = await ui.choose(targets, {
     prompt: 'Battlefield Promotion: możesz KO S.H.I.E.L.D. Hero z ręki lub stosu odrzuconych',
     optional: true,
@@ -444,7 +446,7 @@ registerCardAbility('hero-nick-fury-pure-fury', async (state, { ui, self }) => {
   if (chosen.instanceId === state.mastermind.instanceId) {
     await claimTacticFree(state, ui)
   } else {
-    defeatVillainFree(state, chosen.instanceId)
+    defeatVillainFree(state, chosen.instanceId, ui)
   }
 })
 

@@ -1,0 +1,33 @@
+.dev-notice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.75);
+  cursor: pointer;
+}
+
+.dev-notice-box {
+  max-width: 520px;
+  margin: 0 20px;
+  padding: 28px 32px;
+  background: #1c1c24;
+  color: #f0f0f0;
+  border: 2px solid #c9a227;
+  border-radius: 10px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.dev-notice-box h2 {
+  margin-top: 0;
+  color: #c9a227;
+}
+
+.dev-notice-hint {
+  margin-bottom: 0;
+  font-size: 0.85em;
+  opacity: 0.6;
+}

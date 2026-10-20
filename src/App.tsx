@@ -4,6 +4,7 @@ import type { GameLogMeta } from './gameLog'
 import { ALL_SETS } from './data/sets'
 import { SetupMenu } from './components/SetupMenu'
 import GameScreen from './GameScreen'
+import DevNoticePopup from './components/DevNoticePopup'
 
 interface ActiveGame {
   setup: GameSetup
@@ -16,22 +17,24 @@ function App() {
   // Zmiana klucza wymusza remount GameScreen (czyli świeży useGame(setup)) bez zmiany setupu.
   const [gameKey, setGameKey] = useState(0)
 
-  if (!game) {
-    return (
-      <SetupMenu
-        sets={ALL_SETS}
-        onStart={(setup, logMeta) => setGame({ setup, logMeta })}
-      />
-    )
-  }
   return (
-    <GameScreen
-      key={gameKey}
-      setup={game.setup}
-      logMeta={game.logMeta}
-      onExit={() => setGame(null)}
-      onRestart={() => setGameKey((k) => k + 1)}
-    />
+    <>
+      <DevNoticePopup />
+      {game ? (
+        <GameScreen
+          key={gameKey}
+          setup={game.setup}
+          logMeta={game.logMeta}
+          onExit={() => setGame(null)}
+          onRestart={() => setGameKey((k) => k + 1)}
+        />
+      ) : (
+        <SetupMenu
+          sets={ALL_SETS}
+          onStart={(setup, logMeta) => setGame({ setup, logMeta })}
+        />
+      )}
+    </>
   )
 }
 

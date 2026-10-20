@@ -1,0 +1,26 @@
+import { useState } from "react";
+import "./DevNoticePopup.css";
+
+export default function DevNoticePopup() {
+  const [open, setOpen] = useState(true);
+
+  if (!open) return null;
+
+  return (
+    <div className="dev-notice-overlay" onClick={() => setOpen(false)}>
+      <div className="dev-notice-box">
+        <h2>Work in progress</h2>
+        <p>
+          This game is currently under development. It has been tested and works
+          correctly on PC at Full HD resolution. Other devices and resolutions
+          may not work properly.
+        </p>
+        <p>
+          Currently implemented and tested: the Core Set and most of the Dark City
+          expansion. Minor undiscovered bugs may still occur.
+        </p>
+        <p className="dev-notice-hint">Click anywhere to close</p>
+      </div>
+    </div>
+  );
+}

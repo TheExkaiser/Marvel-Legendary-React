@@ -51,7 +51,7 @@ export function isShieldHero(data: CardData): boolean {
   return (
     data.hero === 'S.H.I.E.L.D. Agent' ||
     data.hero === 'S.H.I.E.L.D. Trooper' ||
-    ((data.team ?? []).includes('S.H.I.E.L.D.') && !!data.type)
+    (data.team ?? []).includes('S.H.I.E.L.D.')
   )
 }
 
