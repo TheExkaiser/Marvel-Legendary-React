@@ -79,7 +79,10 @@ export async function escapeVillain(state: GameState, villain: CardInstance, ui:
   logEvent(state, `Ucieka: ${state.cards[villain.cardId].name}`)
 
   const lost = state.captives[villain.instanceId] ?? []
-  state.ko.push(...lost)
+  for (const c of lost) {
+    if (state.cards[c.cardId].kind === 'bystander') state.escapedBystanders.push(c)
+    else state.ko.push(c)
+  }
   delete state.captives[villain.instanceId]
 
   getScheme(state).onVillainEscaped?.(state, villain, lost)

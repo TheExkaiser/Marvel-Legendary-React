@@ -74,6 +74,7 @@ export interface GameState {
   city: (CardInstance | null)[]
   cityMarkers: string[][]
   escaped: CardInstance[]
+  escapedBystanders: CardInstance[] // Bystanderzy porwani przez uciekających Villainów (kara -4 każdy w wyniku końcowym)
   captives: Record<string, CardInstance[]>
   attachedCards: Record<string, CardInstance> // instanceId złoczyńcy -> przypięta karta (Skrull Queen Veranke, Skrull Shapeshifters)
   demonGoblins?: CardInstance[] // Transform Citizens Into Demons: Bystanderzy ułożeni obok schematu jako Demon Goblin

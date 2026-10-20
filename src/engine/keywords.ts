@@ -80,6 +80,19 @@ export function sumVictoryPoints(state: GameState, pile: CardInstance[]): number
   }, 0)
 }
 
+// Wynik końcowy: punkty VP minus kary (-4 za bystandera porwanego przez uciekiniera,
+// -3 za każdy Scheme Twist, -1 za każdego uciekiniera).
+// Wynik końcowy: punkty VP minus kary (-4 za bystandera porwanego przez uciekiniera,
+// -3 za każdy Scheme Twist, -1 za każdego uciekiniera).
+export function finalScore(state: GameState, pile: CardInstance[]): number {
+  return (
+    sumVictoryPoints(state, pile) -
+    4 * state.escapedBystanders.length -
+    3 * state.twistsRevealed -
+    state.escaped.length
+  )
+}
+
 // DECK + HAND + PLAYED + DISCARD = wszystkie karty, które gracz aktualnie posiada
 export function allOwnedCards(state: GameState): CardInstance[] {
   return [...state.deck, ...state.hand, ...state.played, ...state.discard, ...(state.teleported ?? [])]

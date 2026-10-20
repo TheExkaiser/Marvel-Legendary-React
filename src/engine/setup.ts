@@ -89,6 +89,7 @@ export function createGameState(setup: GameSetup): GameState {
     city: [null, null, null, null, null],
     cityMarkers: [[], [], [], [], []],
     escaped: [],
+    escapedBystanders: [],
     defeated: [],
 
     // Ranki, bystanderzy, jeńcy, KO

@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react'
 import { useGame } from './useGame'
 import type { GameSetup } from './engine/types'
 import { getScheme } from './engine/schemeRegistry'
-import { sumVictoryPoints } from './engine/keywords'
+import { sumVictoryPoints, finalScore } from './engine/keywords'
 import {
   playCard,
   teleportCard,
@@ -41,6 +41,7 @@ import { StackedMasterStrikes } from './components/StackedMasterStrikes'
 import { hasTeleport } from './engine/turn'
 import { fightDemonGoblin } from './engine/combat'
 import { SchemeToken } from './components/SchemeToken'
+
 
 
 // ---------- Stałe ----------
@@ -91,8 +92,8 @@ function GameScreen({
 
   const now = new Date()
   const result: 'Lose' | number =
-    state.status === 'lost' ? 'Lose' : sumVictoryPoints(state, victoryPile(state))
-
+    state.status === 'lost' ? 'Lose' : finalScore(state, victoryPile(state))
+    
   appendGameLogEntry({
     id: `${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
     date: formatDate(now),
