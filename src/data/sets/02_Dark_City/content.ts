@@ -1,6 +1,7 @@
 import type { CardGroup } from '../../../engine/types'
 import { ANGEL_CARDS, BISHOP_CARDS, BLADE_CARDS, CABLE_CARDS, COLOSSUS_CARDS, DAREDEVIL_CARDS, DOMINO_CARDS, ELEKTRA_CARDS, FORGE_CARDS, GHOST_RIDER_CARDS, ICEMAN_CARDS, IRON_FIST_CARDS, JEAN_GREY_CARDS, NIGHTCRAWLER_CARDS, PROFESSOR_X_CARDS, PUNISHER_CARDS, WOLVERINE_CARDS,  MAGGIA_GOONS_CARDS, PHALANX_CARDS} from './cards'
 import type { MastermindData } from '../../../engine/types'
+import { NEWS_REPORTER_CARDS, PARAMEDIC_CARDS, RADIATION_SCIENTIST_CARDS } from './cards'
 import { APOCALYPSE, KINGPIN, MEPHISTO, MR_SINISTER, STRYFE, FOUR_HORSEMEN_CARDS, MLF_CARDS, MARAUDERS_CARDS, EMISSARIES_OF_EVIL_CARDS, UNDERWORLD_CARDS, STREETS_OF_NEW_YORK_CARDS} from './cards'
 
 
@@ -38,4 +39,10 @@ export const DARK_CITY_VILLAIN_GROUPS: CardGroup[] = [
 export const DARK_CITY_HENCHMEN_GROUPS: CardGroup[] = [
   { id: 'darkcity_maggia_goons', name: 'Maggia Goons', cards: MAGGIA_GOONS_CARDS },
   { id: 'darkcity_phalanx', name: 'Phalanx', cards: PHALANX_CARDS },
+]
+
+export const DARK_CITY_BYSTANDER_GROUPS: CardGroup[] = [
+  { id: 'darkcity_news_reporter', name: 'News Reporter', cards: NEWS_REPORTER_CARDS },
+  { id: 'darkcity_paramedic', name: 'Paramedic', cards: PARAMEDIC_CARDS },
+  { id: 'darkcity_radiation_scientist', name: 'Radiation Scientist', cards: RADIATION_SCIENTIST_CARDS },
 ]

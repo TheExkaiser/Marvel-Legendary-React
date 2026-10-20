@@ -73,13 +73,16 @@ export const CORE_HENCHMEN_GROUPS: CardGroup[] = [
   { id: 'coreset_sentinel', name: 'Sentinel', cards: SENTINEL_CARDS },
 ]
 
+export const CORE_BYSTANDER_GROUPS: CardGroup[] = [
+  { id: 'coreset_bystanders', name: 'Bystanders', cards: [{ card: BYSTANDER, count: 30 }] },
+]
+
 export const CORE_MASTERMINDS: MastermindData[] = [DRDOOM, LOKI, MAGNETO, RED_SKULL]
 
 export const CORE_SHARED: SharedCards = {
   startingCards: STARTING_CARDS,
   officer: { card: SHIELD_OFFICER, count: 30 },
   wounds: { card: WOUND, count: 30 },
-  bystanders: { card: BYSTANDER, count: 30 },
   twist: SCHEME_TWIST,
   masterStrikeCard: MASTER_STRIKE_CARD,
   masterStrikeCount: 5,

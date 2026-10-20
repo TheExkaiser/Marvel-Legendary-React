@@ -483,6 +483,25 @@
   color: var(--muted);
 }
 
+/* ===== Zakładka Extras: bloki z nagłówkami (Bystanders, w przyszłości Wounds, Sidekicks...) ===== */
+
+.extra-block {
+  margin-bottom: 18px;
+}
+
+.extra-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 8px;
+  padding: 0 4px 6px;
+  border-bottom: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+}
+
 /* ===== Stopka ===== */
 
 .setup-footer {

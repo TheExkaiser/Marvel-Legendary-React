@@ -25,7 +25,7 @@ function buildCardIndex(setup: GameSetup): Record<string, CardData> {
     ...[...startingCards, ...heroCards, ...villainCards, ...villainDeckHeroCards].map((e) => e.card),
     setup.officerCards.card,
     setup.wounds.card,
-    setup.bystanders.card,
+    ...setup.bystanders.map((e) => e.card),
     setup.twist,
     setup.masterStrikeCard,
     mastermind.card,
@@ -53,7 +53,7 @@ export function createGameState(setup: GameSetup): GameState {
   registerGameMode(gameMode)
 
   // Bystanderzy: część trafia do talii złoczyńców, reszta zostaje w stosie
-  const bystanders = shuffle(buildDeck([setup.bystanders]))
+  const bystanders = shuffle(buildDeck(setup.bystanders))
   const bystandersForVillainDeck = bystanders.splice(0, setup.bystandersInVillainDeck)
   const bystandersForHeroDeck = bystanders.splice(0, setup.bystandersInHeroDeck)
 

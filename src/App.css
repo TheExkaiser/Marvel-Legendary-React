@@ -742,6 +742,19 @@ button:disabled {
   display: block;
 }
 
+.rescue-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.rescue-effect {
+  max-width: 260px;
+  margin: 0;
+  text-align: center;
+}
+
 /* =========================================================
    9. WĄSKIE EKRANY I PREFERENCJE
    ========================================================= */

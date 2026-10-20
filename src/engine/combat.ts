@@ -6,7 +6,7 @@ import { canDefeatVillain } from './villainRequirements'
 import { getEffectiveStrength } from './keywords'
 import { getScheme } from './schemeRegistry'
 import { assertPlaying } from './common'
-import { rescueBystander, rescueCard, applyRescueBonuses } from './wounds'
+import { rescueBystander, rescueCard } from './wounds'
 import { addRecruit } from './resources'
 import { CITY_NAMES } from './constants'
 import { drawCards } from './deckOps'
@@ -44,12 +44,12 @@ async function spendAttack(state: GameState, amount: number, ui: UiAdapter, card
   state.recruit -= fromRecruit
 }
 
-function removeVillainFromCity(state: GameState, index: number): void {
+async function removeVillainFromCity(state: GameState, index: number, ui: UiAdapter): Promise<void> {
   const villain = state.city[index]!
   const location = CITY_NAMES[index]
   state.city[index] = null
   addRecruit(state, state.defeatRecruitBonus ?? 0)
-  for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) rescueBystander(state)
+  for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) await rescueBystander(state, ui)
 
   const scheme = getScheme(state)
   const captives = state.captives[villain.instanceId] ?? []
@@ -62,8 +62,8 @@ function removeVillainFromCity(state: GameState, index: number): void {
   } else {
     state.defeated.push(villain)
   }
-  state.defeated.push(...rescued)
-  applyRescueBonuses(state, rescued.length) // jeńcy uratowani przez pokonanie Villaina też liczą się jako "rescue"
+  // Jeńcy uratowani przez pokonanie Villaina: każdy osobno (popup, bonusy "rescue", zdolność Bystandera)
+  for (const card of rescued) await rescueCard(state, card, ui)
 
   // Bonusy za pokonanie Villaina w konkretnych lokacjach (Night Hunter, Nowhere to Hide)
   for (const bonus of state.locationDefeatBonuses ?? []) {
@@ -120,7 +120,7 @@ export async function defeatVillainFromDeck(
   }
 
   addRecruit(state, state.defeatRecruitBonus ?? 0)
-  for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) rescueBystander(state)
+  for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) await rescueBystander(state, ui)
 
   const scheme = getScheme(state)
   if (scheme.onVillainDefeated) {
@@ -159,7 +159,7 @@ export async function fightVillain(
     await asEnemyEffect(state, () => abilities.onFight!(state, ui, villain))
   }
 
-  removeVillainFromCity(state, index)
+  await removeVillainFromCity(state, index, ui)
   await offerMindControl(state, villain, ui)
 }
 
@@ -172,7 +172,7 @@ export async function defeatVillainFree(state: GameState, instanceId: string, ui
     throw new Error('Nie możesz teraz pokonać tego złoczyńcy (niespełniony warunek)')
   }
 
-  removeVillainFromCity(state, index)
+  await removeVillainFromCity(state, index, ui)
   await offerMindControl(state, villain, ui)
 }
 
@@ -191,7 +191,7 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
   if (!returned) state.defeated.push(tactic)
 
   addRecruit(state, state.defeatRecruitBonus ?? 0)
-  for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) rescueBystander(state)
+  for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) await rescueBystander(state, ui)
   if (state.tactics.length === 0) {
     state.status = 'won'
   }
@@ -229,8 +229,8 @@ export async function fightDemonGoblin(state: GameState, ui: UiAdapter): Promise
 
   // Demon Goblin jest Villainem, więc działają bonusy "za pokonanie Villaina" (bez lokacji, bo stoi poza miastem)
   addRecruit(state, state.defeatRecruitBonus ?? 0)
-  for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) rescueBystander(state)
+  for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) await rescueBystander(state, ui)
 
   // Uratowany jako Bystander: trafia do Victory Pool i liczy się jako "rescue" (Jean Grey itp.)
-  rescueCard(state, goblin)
+  await rescueCard(state, goblin, ui)
 }

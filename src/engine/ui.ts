@@ -27,6 +27,7 @@ export interface UiAdapter {
   showInfo(card: CardInstance, message: string): Promise<void>
   revealCard(card: CardInstance, message: string): Promise<void>
   showCapture(capturer: CardInstance, bystander: CardInstance, message: string): Promise<void>
+  showRescue(bystander: CardInstance, message: string): Promise<void>
   // God of Thunder: gracz ustawia proporcję, w jakiej płaci koszt ataku z Attack vs Recruit.
   chooseAttackSplit(cost: number, maxFromAttack: number, maxFromRecruit: number): Promise<AttackSplit>
   chooseNumber(

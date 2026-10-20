@@ -5,6 +5,7 @@ import {
   CORE_VILLAIN_GROUPS,
   CORE_HENCHMEN_GROUPS,
   CORE_MASTERMINDS,
+  CORE_BYSTANDER_GROUPS,
   CORE_SHARED,
 } from './content'
 import './heroAbilities'
@@ -21,5 +22,6 @@ export const CORE_SET: SetData = {
   villainGroups: CORE_VILLAIN_GROUPS,
   henchmenGroups: CORE_HENCHMEN_GROUPS,
   masterminds: CORE_MASTERMINDS,
+  bystanderGroups: CORE_BYSTANDER_GROUPS,
   shared: CORE_SHARED,
 }

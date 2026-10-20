@@ -25,6 +25,11 @@ interface CapturePromptState {
   message: string
 }
 
+interface RescuePromptState {
+  bystander: CardInstance
+  message: string
+}
+
 interface AttackSplitPromptState {
   cost: number
   maxFromAttack: number
@@ -47,6 +52,7 @@ export function useGame(setup: GameSetup, settings: Settings) {
   const [optionPrompt, setOptionPrompt] = useState<OptionPromptState | null>(null)
   const [infoPrompt, setInfoPrompt] = useState<InfoPromptState | null>(null)
   const [capturePrompt, setCapturePrompt] = useState<CapturePromptState | null>(null)
+  const [rescuePrompt, setRescuePrompt] = useState<RescuePromptState | null>(null)
   const [attackSplitPrompt, setAttackSplitPrompt] = useState<AttackSplitPromptState | null>(null)
   const [numberPrompt, setNumberPrompt] = useState<NumberPromptState | null>(null)
 
@@ -54,6 +60,7 @@ export function useGame(setup: GameSetup, settings: Settings) {
   const resolveOptionRef = useRef<((choice: string | null) => void) | null>(null)
   const resolveInfoRef = useRef<(() => void) | null>(null)
   const resolveCaptureRef = useRef<(() => void) | null>(null)
+  const resolveRescueRef = useRef<(() => void) | null>(null)
   const resolveAttackSplitRef = useRef<((split: AttackSplit) => void) | null>(null)
   const resolveNumberRef = useRef<((value: number) => void) | null>(null)
   const lastNumberRef = useRef(3) // ostatnio wybrana liczba, podpowiadana w kolejnym oknie
@@ -95,6 +102,13 @@ export function useGame(setup: GameSetup, settings: Settings) {
       return new Promise((resolve) => {
         resolveCaptureRef.current = resolve
         setCapturePrompt({ capturer, bystander, message })
+      })
+    },
+    showRescue(bystander, message) {
+      if (!settings.showRevealPopups) return Promise.resolve()
+      return new Promise((resolve) => {
+        resolveRescueRef.current = resolve
+        setRescuePrompt({ bystander, message })
       })
     },
     chooseAttackSplit(cost, maxFromAttack, maxFromRecruit) {
@@ -150,6 +164,12 @@ export function useGame(setup: GameSetup, settings: Settings) {
     setCapturePrompt(null)
   }
 
+  function closeRescuePrompt() {
+    resolveRescueRef.current?.()
+    resolveRescueRef.current = null
+    setRescuePrompt(null)
+  }
+
   function answerAttackSplitPrompt(fromAttack: number, fromRecruit: number) {
     resolveAttackSplitRef.current?.({ fromAttack, fromRecruit })
     resolveAttackSplitRef.current = null
@@ -190,6 +210,8 @@ function debugAct(action: (state: GameState, ui: UiAdapter) => void | Promise<vo
     closeInfoPrompt,
     capturePrompt,
     closeCapturePrompt,
+    rescuePrompt,
+    closeRescuePrompt,
     attackSplitPrompt,
     answerAttackSplitPrompt,
     debugAct,

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { CardGroup, GameSetup, SetData, SetupChoices } from '../engine/types'
 import { buildSetup, getSetupProblems } from '../engine/buildSetup'
-import { DEFAULT_SETUP_RULES, resolveRules, withLedGroup } from '../engine/setupRules'
+import { DEFAULT_SETUP_RULES, resolveRules, withLedGroup, withRequiredBystanderGroups } from '../engine/setupRules'
 import { EMPTY_CHOICES, completeChoices, pruneChoices } from '../engine/setupChoices'
 import { GAME_MODES } from '../data/gameModes'
 import { DEBUG_PRESET } from '../data/sets/setup'
@@ -16,9 +16,22 @@ interface SetupMenuProps {
 }
 
 type SortMode = 'alpha' | 'set' | 'team'
-type TabId = 'mastermind' | 'heroes' | 'deckHeroes' | 'villains' | 'henchmen'
+// Kategoria = jedna lista kafelków z własnym wyborem. Zakładka = jedna albo kilka kategorii.
+type CategoryId = 'mastermind' | 'heroes' | 'deckHeroes' | 'villains' | 'henchmen' | 'bystanders'
+type TabId = 'mastermind' | 'heroes' | 'deckHeroes' | 'villains' | 'henchmen' | 'extras'
 
-const TAB_ORDER: TabId[] = ['mastermind', 'heroes', 'deckHeroes', 'villains', 'henchmen']
+const TAB_ORDER: TabId[] = ['mastermind', 'heroes', 'deckHeroes', 'villains', 'henchmen', 'extras']
+
+// Extras zbiera opcjonalne dodatki z zestawów (na razie Bystanders; później np. specjalne Wounds, Sidekicks).
+// Nowy rodzaj dodatku = nowa kategoria dopisana tutaj i w `categories` poniżej.
+const TAB_CATEGORIES: Record<TabId, CategoryId[]> = {
+  mastermind: ['mastermind'],
+  heroes: ['heroes'],
+  deckHeroes: ['deckHeroes'],
+  villains: ['villains'],
+  henchmen: ['henchmen'],
+  extras: ['bystanders'],
+}
 
 const SORT_LABELS: Record<SortMode, string> = {
   alpha: 'Alphabetical',
@@ -206,7 +219,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
 
   // Pula do wyboru = suma zaznaczonych zestawów
   const activeSets = useMemo(() => sets.filter((s) => enabledSetIds.includes(s.id)), [sets, enabledSetIds])
-  const items = useMemo<Record<TabId, PickItem[]>>(() => {
+  const items = useMemo<Record<CategoryId, PickItem[]>>(() => {
     const heroes = groupItems(activeSets, (s) => s.heroes, 'icons/heroes', true)
     return {
       mastermind: mastermindItems(activeSets),
@@ -214,6 +227,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
       deckHeroes: heroes,
       villains: groupItems(activeSets, (s) => s.villainGroups, 'icons/villainGroups', false),
       henchmen: groupItems(activeSets, (s) => s.henchmenGroups, 'icons/henchmen', false),
+      bystanders: groupItems(activeSets, (s) => s.bystanderGroups, 'icons/bystanders', false),
     }
   }, [activeSets])
 
@@ -222,8 +236,12 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   const mastermind = activeSets.flatMap((s) => s.masterminds).find((m) => m.card.id === choices.mastermindId)
   const rules = gameMode && scheme ? resolveRules(gameMode, scheme, mastermind) : DEFAULT_SETUP_RULES
 
-  // Zakładka "Villain Deck Heroes" pokazuje się tylko wtedy, gdy scheme tego wymaga
-  const tabOrder = TAB_ORDER.filter((id) => id !== 'deckHeroes' || rules.villainDeckHeroes > 0)
+  // Zakładka "Villain Deck Heroes" pokazuje się tylko wtedy, gdy scheme tego wymaga,
+  // a "Extras" tylko wtedy, gdy któryś aktywny zestaw dostarcza opcjonalne dodatki
+  const hasExtras = items.bystanders.some((i) => !rules.requiredBystanderGroups.includes(i.id))
+  const tabOrder = TAB_ORDER.filter(
+    (id) => (id !== 'deckHeroes' || rules.villainDeckHeroes > 0) && (id !== 'extras' || hasExtras),
+  )
   const tab: TabId = tabOrder.includes(tabState) ? tabState : 'mastermind'
   const isHeroTab = tab === 'heroes' || tab === 'deckHeroes'
 
@@ -234,7 +252,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   problems.push(...getSetupProblems(choices, rules))
 
   function update(patch: Partial<SetupChoices>) {
-    setChoices({ ...choices, ...patch })
+    setChoices((current) => ({ ...current, ...patch }))
   }
 
   function toggleSet(id: string) {
@@ -258,7 +276,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
     })
   }
 
-  const categories: Record<TabId, Category> = {
+  const categories: Record<CategoryId, Category> = {
     mastermind: {
       title: 'Mastermind',
       items: items.mastermind,
@@ -307,18 +325,25 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
       required: rules.requiredHenchmenGroups,
       onChange: (henchmenGroupIds) => update({ henchmenGroupIds }),
     },
+    bystanders: {
+      title: 'Bystanders',
+      items: items.bystanders,
+      // Wymagani (zwykli Bystanderzy z Core Setu) są zawsze zaznaczeni i zablokowani
+      selected: withRequiredBystanderGroups(choices.bystanderGroupIds, rules).filter((id) =>
+        items.bystanders.some((i) => i.id === id),
+      ),
+      max: items.bystanders.length, // bez limitu: można dobrać wszystkie dostępne
+      required: rules.requiredBystanderGroups,
+      onChange: (bystanderGroupIds) => update({ bystanderGroupIds }),
+    },
   }
-  const cat = categories[tab]
+  const tabTitle = (id: TabId) => (id === 'extras' ? 'Extras' : categories[id].title)
 
-  // Bohater wybrany w jednej zakładce jest zablokowany w drugiej
-  const blockedIds =
-    tab === 'heroes' ? choices.villainDeckHeroIds : tab === 'deckHeroes' ? choices.heroIds : []
-
-  function toggleItem(id: string) {
-    if (cat.single) {
-      cat.onChange(cat.selected.includes(id) ? [] : [id])
+  function toggleItem(c: Category, id: string) {
+    if (c.single) {
+      c.onChange(c.selected.includes(id) ? [] : [id])
     } else {
-      cat.onChange(toggleId(cat.selected, id))
+      c.onChange(toggleId(c.selected, id))
     }
   }
 
@@ -343,32 +368,53 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   const activeTeamFilter = teamFilter.filter((t) => teams.some(([id]) => id === t))
 
   const q = query.trim().toLowerCase()
-  const visible = cat.items.filter((i) => {
-    if (selectedOnly && !cat.selected.includes(i.id)) return false
-    if (isHeroTab && activeTeamFilter.length > 0 && !(i.team && activeTeamFilter.includes(i.team))) {
-      return false
-    }
-    if (q && !`${i.name} ${i.team ? teamName(i.team) : ''}`.toLowerCase().includes(q)) return false
-    return true
+  // Kategorie bieżącej zakładki: każda z własnymi widocznymi kafelkami i sekcjami
+  const panels = TAB_CATEGORIES[tab].map((id) => {
+    const c = categories[id]
+    // Bohater wybrany w jednej zakładce jest zablokowany w drugiej
+    const blocked = id === 'heroes' ? choices.villainDeckHeroIds : id === 'deckHeroes' ? choices.heroIds : []
+    const visible = c.items.filter((i) => {
+      if (selectedOnly && !c.selected.includes(i.id)) return false
+      if (isHeroTab && activeTeamFilter.length > 0 && !(i.team && activeTeamFilter.includes(i.team))) {
+        return false
+      }
+      if (q && !`${i.name} ${i.team ? teamName(i.team) : ''}`.toLowerCase().includes(q)) return false
+      return true
+    })
+    return { id, cat: c, blocked, visible, sections: buildSections(visible, activeSets, sortMode, isHeroTab) }
   })
-  const sections = buildSections(visible, activeSets, sortMode, isHeroTab)
+  const visibleCount = panels.reduce((n, p) => n + p.visible.length, 0)
+  const totalCount = panels.reduce((n, p) => n + p.cat.items.length, 0)
 
-    // Losowanie tylko dla bieżącej zakładki (reszta wyborów zostaje), według limitów z tej zakładki
+  // Losowanie tylko dla bieżącej zakładki (reszta wyborów zostaje), według limitów z tej zakładki.
+  // Extras są opcjonalne, więc losuje się z nich losową liczbę (wymagane zawsze zostają).
   function rerollCurrent() {
-    cat.onChange(randomPick(cat.items.filter((i) => !blockedIds.includes(i.id)), cat.required, cat.max))
+    for (const p of panels) {
+      const pool = p.cat.items.filter((i) => !p.blocked.includes(i.id))
+      const lockedCount = p.cat.required.filter((id) => pool.some((i) => i.id === id)).length
+      const count =
+        tab === 'extras'
+          ? lockedCount + Math.floor(Math.random() * (pool.length - lockedCount + 1))
+          : p.cat.max
+      p.cat.onChange(randomPick(pool, p.cat.required, count))
+    }
   }
 
   // Podsumowanie wyborów (chipsy w stopce, z możliwością usunięcia)
-  const chips = tabOrder.flatMap((id) =>
-    categories[id].selected.map((selectedId) => ({
-      tab: id,
-      id: selectedId,
-      name: categories[id].items.find((i) => i.id === selectedId)?.name ?? selectedId,
-      locked: categories[id].required.includes(selectedId),
-    })),
-  )
+  const chips = tabOrder
+    .flatMap((t) => TAB_CATEGORIES[t])
+    .flatMap((id) =>
+      categories[id].selected.map((selectedId) => ({
+        category: id,
+        id: selectedId,
+        name: categories[id].items.find((i) => i.id === selectedId)?.name ?? selectedId,
+        locked: categories[id].required.includes(selectedId),
+      })),
+    )
+    // Wymagane dodatki (zwykli Bystanderzy) to baza każdej gry, więc bez chipa
+    .filter((c) => !(c.locked && TAB_CATEGORIES.extras.includes(c.category)))
 
-  const namesOf = (id: TabId, ids: string[]) =>
+  const namesOf = (id: CategoryId, ids: string[]) =>
     ids.map((x) => items[id].find((i) => i.id === x)?.name ?? x)
 
   function start() {
@@ -454,8 +500,14 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
           <div className="setup-main-head">
             <div className="setup-tabs" role="tablist">
               {tabOrder.map((id) => {
-                const c = categories[id]
-                const done = c.selected.length === c.max
+                const tabCats = TAB_CATEGORIES[id].map((cid) => categories[cid])
+                const isExtras = id === 'extras'
+                const done = !isExtras && tabCats.every((c) => c.selected.length === c.max)
+                // Extras są opcjonalne: zamiast x/y pokazują tylko, ile dodatków wybrano ponad wymagane
+                const extraCount = tabCats.reduce(
+                  (n, c) => n + c.selected.filter((x) => !c.required.includes(x)).length,
+                  0,
+                )
                 return (
                   <button
                     key={id}
@@ -464,10 +516,14 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
                     className={['setup-tab', tab === id ? 'active' : '', done ? 'done' : ''].filter(Boolean).join(' ')}
                     onClick={() => selectTab(id)}
                   >
-                    {c.title}
-                    <span className="tab-count">
-                      {c.selected.length}/{c.max}
-                    </span>
+                    {tabTitle(id)}
+                    {isExtras ? (
+                      extraCount > 0 && <span className="tab-count">+{extraCount}</span>
+                    ) : (
+                      <span className="tab-count">
+                        {tabCats[0].selected.length}/{tabCats[0].max}
+                      </span>
+                    )}
                   </button>
                 )
               })}
@@ -478,7 +534,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
                 <input
                   type="text"
                   value={query}
-                  placeholder={`Search ${cat.title.toLowerCase()}…`}
+                  placeholder={`Search ${tabTitle(tab).toLowerCase()}…`}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Escape' && setQuery('')}
                 />
@@ -503,12 +559,12 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
               >
                 Selected only
               </button>
-                            <button className="setup-pill" onClick={rerollCurrent} title={`Randomize ${cat.title}`}>
+                            <button className="setup-pill" onClick={rerollCurrent} title={`Randomize ${tabTitle(tab)}`}>
                 🎲 Random
               </button>
 
               <span className="setup-count">
-                {visible.length} of {cat.items.length}
+                {visibleCount} of {totalCount}
               </span>
             </div>
 
@@ -529,51 +585,64 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
           </div>
 
           <div className="tile-scroll">
-            {sections.map((sec) => (
-              <div className="tile-section" key={sec.key}>
-                {sec.title && (
-                  <div className="tile-section-title">
-                    <SmallIcon src={sec.icon} className="tile-section-icon" />
-                    <span>{sec.title}</span>
-                    <span className="tile-section-count">{sec.items.length}</span>
+            {panels.map((p) => (
+              <div key={p.id} className={tab === 'extras' ? 'extra-block' : undefined}>
+                {tab === 'extras' && (
+                  <h3 className="extra-title">
+                    {p.cat.title}
+                    <span className="tile-section-count">
+                      {p.cat.selected.length}/{p.cat.items.length}
+                    </span>
+                  </h3>
+                )}
+
+                {p.sections.map((sec) => (
+                  <div className="tile-section" key={sec.key}>
+                    {sec.title && (
+                      <div className="tile-section-title">
+                        <SmallIcon src={sec.icon} className="tile-section-icon" />
+                        <span>{sec.title}</span>
+                        <span className="tile-section-count">{sec.items.length}</span>
+                      </div>
+                    )}
+                    <div className="tile-grid">
+                      {sec.items.map((item) => {
+                        const checked = p.cat.selected.includes(item.id)
+                        const locked = checked && p.cat.required.includes(item.id)
+                        const full = !p.cat.single && p.cat.selected.length >= p.cat.max
+                        return (
+                          <Tile
+                            key={item.id}
+                            name={item.name}
+                            icon={item.icon}
+                            team={item.team}
+                            checked={checked}
+                            locked={locked}
+                            disabled={locked || p.blocked.includes(item.id) || (!checked && full)}
+                            onToggle={() => toggleItem(p.cat, item.id)}
+                          />
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
+
+                {p.visible.length === 0 && (
+                  <div className="setup-empty">
+                    {p.cat.items.length === 0 ? (
+                      'Nothing available in the enabled sets.'
+                    ) : (
+                      <>
+                        No matches.{' '}
+                        <button className="setup-link" onClick={clearFilters}>
+                          Clear filters
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
-                <div className="tile-grid">
-                  {sec.items.map((item) => {
-                    const checked = cat.selected.includes(item.id)
-                    const locked = checked && cat.required.includes(item.id)
-                    const full = !cat.single && cat.selected.length >= cat.max
-                    return (
-                      <Tile
-                        key={item.id}
-                        name={item.name}
-                        icon={item.icon}
-                        team={item.team}
-                        checked={checked}
-                        locked={locked}
-                        disabled={locked || blockedIds.includes(item.id) || (!checked && full)}
-                        onToggle={() => toggleItem(item.id)}
-                      />
-                    )
-                  })}
-                </div>
               </div>
             ))}
-
-            {visible.length === 0 && (
-              <div className="setup-empty">
-                {cat.items.length === 0 ? (
-                  'Nothing available in the enabled sets.'
-                ) : (
-                  <>
-                    No matches.{' '}
-                    <button className="setup-link" onClick={clearFilters}>
-                      Clear filters
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -584,12 +653,12 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
           {chips.length === 0 && <span className="setup-hint">Nothing selected yet</span>}
           {chips.map((c) => (
             <button
-              key={`${c.tab}:${c.id}`}
-              className={`setup-chip chip-${c.tab}`}
+              key={`${c.category}:${c.id}`}
+              className={`setup-chip chip-${c.category}`}
               disabled={c.locked}
               title={c.locked ? `${c.name} (required)` : `Remove ${c.name}`}
               onClick={() =>
-                categories[c.tab].onChange(categories[c.tab].selected.filter((x) => x !== c.id))
+                categories[c.category].onChange(categories[c.category].selected.filter((x) => x !== c.id))
               }
             >
               {c.name}

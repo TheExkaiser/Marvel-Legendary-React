@@ -13,6 +13,7 @@ export const DEFAULT_SETUP_RULES: SetupRules = {
   requiredHeroes: [],
   requiredVillainGroups: [],
   requiredHenchmenGroups: [],
+  requiredBystanderGroups: ['coreset_bystanders'],
 }
 
 // Always Leads jest obsługiwane, ale wyłączone: jedyny tryb (Dark City - Advanced Solo) go nie używa.
@@ -37,4 +38,9 @@ export function withLedGroup(ids: string[], mastermind: MastermindData | undefin
   const led = ALWAYS_LEADS_ENABLED ? mastermind?.alwaysLeads?.villainGroupId : undefined
   if (!led || ids.includes(led)) return ids
   return [...ids.slice(0, Math.max(0, max - 1)), led]
+}
+
+/** Dokleja wymagane grupy Bystanderów (zwykli z Core Setu) do wybranych. Wymagane są zawsze, więc wystarczy to robić przy użyciu wyboru. */
+export function withRequiredBystanderGroups(ids: string[], rules: SetupRules): string[] {
+  return [...new Set([...rules.requiredBystanderGroups, ...ids])]
 }

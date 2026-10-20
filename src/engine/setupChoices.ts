@@ -1,5 +1,5 @@
 import type { GameModeDef, SetData, SetupChoices } from './types'
-import { resolveRules } from './setupRules'
+import { resolveRules, withRequiredBystanderGroups } from './setupRules'
 
 export const EMPTY_CHOICES: SetupChoices = {
   gameModeId: '',
@@ -9,6 +9,7 @@ export const EMPTY_CHOICES: SetupChoices = {
   villainDeckHeroIds: [],
   villainGroupIds: [],
   henchmenGroupIds: [],
+  bystanderGroupIds: [],
 }
 
 // rng można podmienić (np. na generator z ziarnem w trybie debug)
@@ -63,6 +64,7 @@ export function completeChoices(
 
   const ids = (groups: { id: string }[]) => groups.map((g) => g.id)
   const heroPool = ids(sets.flatMap((s) => s.heroes))
+  const bystanderPool = ids(sets.flatMap((s) => s.bystanderGroups))
 
   // Najpierw bohaterowie do talii złoczyńców, żeby zwykli bohaterowie ich nie wybrali
   const villainDeckHeroIds =
@@ -84,6 +86,10 @@ export function completeChoices(
     villainDeckHeroIds,
     villainGroupIds: fillIds(partial.villainGroupIds ?? [], ids(sets.flatMap((s) => s.villainGroups)), rules.villainGroups, rules.requiredVillainGroups, rng),
     henchmenGroupIds: fillIds(partial.henchmenGroupIds ?? [], ids(sets.flatMap((s) => s.henchmenGroups)), rules.henchmenGroups, rules.requiredHenchmenGroups, rng),
+    bystanderGroupIds: withRequiredBystanderGroups(
+      (partial.bystanderGroupIds ?? []).filter((id) => bystanderPool.includes(id)),
+      rules,
+    ).filter((id) => bystanderPool.includes(id)),
   }
 }
 
@@ -101,5 +107,6 @@ export function pruneChoices(choices: SetupChoices, sets: SetData[], gameModes: 
         villainDeckHeroIds: keep(sets.flatMap((s) => s.heroes), choices.villainDeckHeroIds ?? []),
     villainGroupIds: keep(sets.flatMap((s) => s.villainGroups), choices.villainGroupIds),
     henchmenGroupIds: keep(sets.flatMap((s) => s.henchmenGroups), choices.henchmenGroupIds),
+    bystanderGroupIds: keep(sets.flatMap((s) => s.bystanderGroups), choices.bystanderGroupIds ?? []),
   }
 }

@@ -29,6 +29,7 @@ import type { UiAdapter } from '../../../engine/ui'
 import { registerDiscardReplacement } from '../../../engine/replacements'
 import { villainPhase } from '../../../engine/villainPhase'
 import { CITY_NAMES } from '../../../engine/constants'
+import { rescueCard } from '../../../engine/wounds'
 
 // ---------- Black Widow ----------
 
@@ -45,13 +46,13 @@ registerCardAbility('hero-black-widow-dangerous-rescue', async (state, { ui }) =
   if (!chosen) return
 
   koCard(state, chosen.instanceId)
-  rescueBystander(state)
+  await rescueBystander(state, ui)
 })
 
-registerCardAbility('hero-black-widow-mission-accomplished', async (state) => {
+registerCardAbility('hero-black-widow-mission-accomplished', async (state, { ui }) => {
   drawCards(state, 1)
   if (countPlayedThisTurn(state, { type: 'tech' }) > 0) {
-    rescueBystander(state)
+    await rescueBystander(state, ui)
   }
 })
 
@@ -75,7 +76,7 @@ registerCardAbility('hero-black-widow-silent-sniper', async (state, { ui }) => {
   if (chosen.instanceId === state.mastermind.instanceId) {
     await claimTacticFree(state, ui)
   } else {
-    defeatVillainFree(state, chosen.instanceId, ui)
+    await defeatVillainFree(state, chosen.instanceId, ui)
   }
 })
 
@@ -389,7 +390,7 @@ registerCardAbility('hero-nick-fury-battlefield-promotion', async (state, { ui, 
   const targets = [...state.hand, ...state.discard].filter((c) =>
     isShieldHero(state.cards[c.cardId]),
   )
-
+  if (targets.length === 0) return
   const chosen = await ui.choose(targets, {
     prompt: 'Battlefield Promotion: możesz KO S.H.I.E.L.D. Hero z ręki lub stosu odrzuconych',
     optional: true,
@@ -446,7 +447,7 @@ registerCardAbility('hero-nick-fury-pure-fury', async (state, { ui, self }) => {
   if (chosen.instanceId === state.mastermind.instanceId) {
     await claimTacticFree(state, ui)
   } else {
-    defeatVillainFree(state, chosen.instanceId, ui)
+    await defeatVillainFree(state, chosen.instanceId, ui)
   }
 })
 
@@ -534,7 +535,7 @@ registerCardAbility('hero-spider-man-great-responsibility', async (state, { ui }
 })
 
 registerCardAbility('hero-spider-man-web-shooters', async (state, { ui }) => {
-  rescueBystander(state)
+  await rescueBystander(state, ui)
   await revealAndDrawIfCheap(state, ui, 'Web-Shooters')
 })
 
@@ -599,8 +600,8 @@ registerCardAbility('hero-storm-spinning-cyclone', async (state, { ui }) => {
   state.city[fromIndex] = occupant ?? null
 
   const captured = state.captives[villain.instanceId] ?? []
-  state.defeated.push(...captured)
   delete state.captives[villain.instanceId]
+  for (const card of captured) await rescueCard(state, card, ui)
 })
 
 registerCardAbility('hero-storm-tidal-wave', async (state) => {

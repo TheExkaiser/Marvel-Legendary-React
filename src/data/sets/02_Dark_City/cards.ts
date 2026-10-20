@@ -1484,3 +1484,48 @@ export const PHALANX_CARDS: DeckEntry[] = [
     count: 10,
   },
 ]
+
+// DOPISEK NA KOŃCU src/data/sets/02_Dark_City/cards.ts (nie wklejaj tej linii importu, jeśli DeckEntry już tam jest)
+
+
+export const NEWS_REPORTER_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'bystander-news-reporter',
+      name: 'News Reporter',
+      img: '/cards/dark-city/bystander-news-reporter.webp',
+      kind: 'bystander',
+      vp: 1,
+      text: 'When you rescue this Bystander, draw a card.',
+    },
+    count: 4,
+  },
+]
+
+export const PARAMEDIC_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'bystander-paramedic',
+      name: 'Paramedic',
+      img: '/cards/dark-city/bystander-paramedic.webp',
+      kind: 'bystander',
+      vp: 1,
+      text: "When you rescue this Bystander, you may KO a Wound from your hand or from any player's discard pile.",
+    },
+    count: 3,
+  },
+]
+
+export const RADIATION_SCIENTIST_CARDS: DeckEntry[] = [
+  {
+    card: {
+      id: 'bystander-radiation-scientist',
+      name: 'Radiation Scientist',
+      img: '/cards/dark-city/bystander-radiation-scientist.webp',
+      kind: 'bystander',
+      vp: 1,
+      text: 'When you rescue this Bystander, you may KO one of your Heroes or a Hero from your discard pile.',
+    },
+    count: 4,
+  },
+]

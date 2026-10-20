@@ -142,7 +142,7 @@ export interface GameSetup {
   villainDeckHeroCards: DeckEntry[] // bohaterowie wrzuceni do talii złoczyńców (Transform Citizens Into Demons, X-Cutioner's Song)
   mastermind: MastermindData
   wounds: DeckEntry
-  bystanders: DeckEntry
+  bystanders: DeckEntry[] // wszystkie wybrane grupy Bystanderów (zwykli + specjalni)
   bystandersInVillainDeck: number
   bystandersInHeroDeck: number
   masterStrikeCard: CardData   // NOWE: generyczna karta "Master Strike" (jak Scheme Twist)
@@ -223,7 +223,6 @@ export interface SharedCards {
   startingCards: DeckEntry[]
   officer: DeckEntry
   wounds: DeckEntry
-  bystanders: DeckEntry
   twist: CardData
   masterStrikeCard: CardData
   masterStrikeCount: number
@@ -236,6 +235,7 @@ export interface SetData {
   heroes: CardGroup[]
   villainGroups: CardGroup[]
   henchmenGroups: CardGroup[]
+  bystanderGroups: CardGroup[] // grupy Bystanderów do wyboru w setupie (zwykli w Core Set, specjalni w dodatkach)
   masterminds: MastermindData[]
   shared?: SharedCards   // tylko zestawy, które je dostarczają (Core Set)
   icon?: string // np. 'icons/heroes/spider-man.png' (plik w folderze public/)
@@ -254,6 +254,7 @@ export interface SetupRules {
   requiredHeroes: string[]
   requiredVillainGroups: string[]
   requiredHenchmenGroups: string[]
+  requiredBystanderGroups: string[] // zawsze wybrane grupy Bystanderów (zwykli Bystanderzy z Core Setu)
 }
 
 /** Wybory gracza z menu (albo preset debug). Same id, żadnych kart. */
@@ -265,4 +266,5 @@ export interface SetupChoices {
   villainDeckHeroIds: string[]
   villainGroupIds: string[]
   henchmenGroupIds: string[]
+  bystanderGroupIds: string[]
 }

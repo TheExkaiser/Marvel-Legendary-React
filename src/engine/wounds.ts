@@ -4,6 +4,7 @@ import { getWoundReplacement } from './replacements'
 import { addRecruit, addAttack } from './resources'
 import { drawCards } from './deckOps'
 import { getMastermindRule } from './mastermindRules'
+import { getCardAbility } from './cardAbilities'
 
 /** Gracz zyskuje ranę, chyba że zamiennik (np. Diving Block) ją zastąpi. */
 export async function gainWound(state: GameState, ui: UiAdapter): Promise<void> {
@@ -33,16 +34,23 @@ export function applyRescueBonuses(state: GameState, count: number): void {
   if (state.rescueDrawBonus) drawCards(state, state.rescueDrawBonus * count)
 }
 
-/** Uratowana konkretna karta Bystandera (np. z wierzchu talii złoczyńców) idzie do Victory Pool. */
-export function rescueCard(state: GameState, bystander: CardInstance): void {
-  state.defeated.push(bystander)
+/** Uratowana konkretna karta (Bystander z wierzchu talii złoczyńców, jeniec itp.) idzie do Victory Pool.
+ * Popup z kartą, bonusy "whenever you rescue" i (tylko dla Bystandera) zdolność "When you rescue this Bystander". */
+export async function rescueCard(state: GameState, card: CardInstance, ui: UiAdapter): Promise<void> {
+  const data = state.cards[card.cardId]
+  await ui.showRescue(card, `Rescued: ${data.name}`)
+  state.defeated.push(card)
   applyRescueBonuses(state, 1)
+  // Jeńcem bywa też Bohater (X-Cutioner's Song): jego zdolność zagrania nie może się tu odpalić
+  if (data.kind !== 'bystander') return
+  const ability = getCardAbility(card.cardId)
+  if (ability) await ability(state, { self: card, ui })
 }
 
-/** Uratowany bystander ze stosu idzie prosto do Victory Pool. */
-export function rescueBystander(state: GameState): void {
+/** Uratowany bystander ze stosu idzie do Victory Pool (tak samo jak rescueCard). */
+export async function rescueBystander(state: GameState, ui: UiAdapter): Promise<void> {
   const bystander = state.bystanders.pop()
-  if (bystander) rescueCard(state, bystander)
+  if (bystander) await rescueCard(state, bystander, ui)
 }
 
 /** Odkryty bystander zostaje jeńcem najdalszego złoczyńcy; przy pustym mieście jeńcem zostaje mastermind. */

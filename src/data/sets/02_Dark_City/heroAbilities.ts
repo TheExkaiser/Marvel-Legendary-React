@@ -22,8 +22,8 @@ import { applyVersatile } from '../../../engine/versatile'
 // Diving Catch: to nie jest efekt przy zagraniu, tylko reakcja na odrzucenie przez efekt karty.
 // Używamy tego samego mechanizmu co Cyclops (Unending Energy), ale zwracamy false,
 // czyli karta i tak normalnie trafia do odrzuconych.
-registerDiscardReplacement('hero-angel-diving-catch', async (state) => {
-  rescueBystander(state)
+registerDiscardReplacement('hero-angel-diving-catch', async (state,  ui ) => {
+  await rescueBystander(state, ui)
   drawCards(state, 2)
   return false
 })
@@ -552,8 +552,8 @@ registerCardAbility('hero-iron-fist-living-weapon', async (state, { ui }) => {
 
 // ---------- Jean Grey ----------
 
-registerCardAbility('hero-jean-grey-psychic-search', async (state) => {
-  if (countPlayedThisTurn(state, { team: 'x-men' }) > 0) rescueBystander(state)
+registerCardAbility('hero-jean-grey-psychic-search', async (state, { ui }) => {
+  if (countPlayedThisTurn(state, { team: 'x-men' }) > 0) await rescueBystander(state, ui)
 })
 
 registerCardAbility('hero-jean-grey-read-your-thoughts', async (state) => {
@@ -565,10 +565,10 @@ registerCardAbility('hero-jean-grey-mind-over-matter', async (state) => {
 })
 
 // Najpierw bonus, potem ratunek, żeby uratowani Bystanderzy też go uruchomili
-registerCardAbility('hero-jean-grey-telekinetic-mastery', async (state) => {
+registerCardAbility('hero-jean-grey-telekinetic-mastery', async (state, { ui }) => {
   state.rescueAttackBonus = (state.rescueAttackBonus ?? 0) + 1
   const xmen = countPlayedThisTurn(state, { team: 'x-men' })
-  for (let i = 0; i < xmen; i++) rescueBystander(state)
+  for (let i = 0; i < xmen; i++) await rescueBystander(state, ui)
 })
 
 // ---------- Nightcrawler ----------
@@ -638,7 +638,7 @@ registerCardAbility('hero-professor-x-telepathic-probe', async (state, { ui }) =
     const chosen = await ui.choose([top], { prompt: 'Telepathic Probe: uratować tego Bystandera?', optional: true })
     if (chosen) {
       state.villainDeck.pop()
-      rescueCard(state, top)
+      await rescueCard(state, top, ui)
     }
     return
   }

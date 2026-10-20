@@ -32,6 +32,7 @@ import { getEffectiveStrength, getCapturedCards } from './engine/keywords'
 import { useSettings } from './useSettings'
 import { SettingsMenu } from './components/SettingsMenu'
 import { CapturePrompt } from './components/CapturePrompt'
+import { RescuePrompt } from './components/RescuePrompt'
 import { AttackSplitPrompt } from './components/AttackSplitPrompt'
 import { useEffect, useRef } from 'react'
 import { appendGameLogEntry, formatDate, formatTime, type GameLogMeta } from './gameLog'
@@ -41,7 +42,6 @@ import { StackedMasterStrikes } from './components/StackedMasterStrikes'
 import { hasTeleport } from './engine/turn'
 import { fightDemonGoblin } from './engine/combat'
 import { SchemeToken } from './components/SchemeToken'
-
 
 
 // ---------- Stałe ----------
@@ -76,6 +76,8 @@ function GameScreen({
     closeInfoPrompt,
     capturePrompt,
     closeCapturePrompt,
+    rescuePrompt,
+    closeRescuePrompt,
     attackSplitPrompt,
     answerAttackSplitPrompt,
     numberPrompt,
@@ -93,7 +95,7 @@ function GameScreen({
   const now = new Date()
   const result: 'Lose' | number =
     state.status === 'lost' ? 'Lose' : finalScore(state, victoryPile(state))
-    
+
   appendGameLogEntry({
     id: `${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
     date: formatDate(now),
@@ -395,6 +397,14 @@ function GameScreen({
           capturerData={state.cards[capturePrompt.capturer.cardId]}
           bystanderData={state.cards[capturePrompt.bystander.cardId]}
           onClose={closeCapturePrompt}
+        />
+      )}
+
+      {rescuePrompt && (
+        <RescuePrompt
+          message={rescuePrompt.message}
+          bystanderData={state.cards[rescuePrompt.bystander.cardId]}
+          onClose={closeRescuePrompt}
         />
       )}
 
