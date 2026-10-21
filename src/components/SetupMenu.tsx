@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { CardGroup, GameSetup, SetData, SetupChoices } from '../engine/types'
 import { buildSetup, getSetupProblems } from '../engine/buildSetup'
-import { DEFAULT_SETUP_RULES, resolveRules, withLedGroup, withRequiredBystanderGroups } from '../engine/setupRules'
+import { DEFAULT_SETUP_RULES, resolveRules, withLedGroup } from '../engine/setupRules'
 import { EMPTY_CHOICES, completeChoices, pruneChoices } from '../engine/setupChoices'
 import { GAME_MODES } from '../data/gameModes'
 import { DEBUG_PRESET } from '../data/sets/setup'
@@ -328,13 +328,21 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
     bystanders: {
       title: 'Bystanders',
       items: items.bystanders,
-      // Wymagani (zwykli Bystanderzy z Core Setu) są zawsze zaznaczeni i zablokowani
-      selected: withRequiredBystanderGroups(choices.bystanderGroupIds, rules).filter((id) =>
-        items.bystanders.some((i) => i.id === id),
-      ),
-      max: items.bystanders.length, // bez limitu: można dobrać wszystkie dostępne
+      // Domyślnie zaznaczone są wszystkie grupy z aktywnych zestawów; zapamiętujemy tylko te, które gracz wyłączył.
+      // Wymagani (zwykli Bystanderzy z Core Setu) są zawsze zaznaczeni i zablokowani.
+      selected: items.bystanders
+        .filter(
+          (i) =>
+            rules.requiredBystanderGroups.includes(i.id) ||
+            !choices.excludedBystanderGroupIds.includes(i.id),
+        )
+        .map((i) => i.id),
+      max: items.bystanders.length, // bez limitu: można zostawić wszystkie dostępne
       required: rules.requiredBystanderGroups,
-      onChange: (bystanderGroupIds) => update({ bystanderGroupIds }),
+      onChange: (ids) =>
+        update({
+          excludedBystanderGroupIds: items.bystanders.filter((i) => !ids.includes(i.id)).map((i) => i.id),
+        }),
     },
   }
   const tabTitle = (id: TabId) => (id === 'extras' ? 'Extras' : categories[id].title)

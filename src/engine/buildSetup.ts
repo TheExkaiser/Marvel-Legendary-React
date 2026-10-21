@@ -1,5 +1,5 @@
 import type { GameModeDef, GameSetup, SetData, SetupChoices, SetupRules, DeckEntry } from './types'
-import { resolveRules, withRequiredBystanderGroups } from './setupRules'
+import { resolveRules } from './setupRules'
 
 /** Szuka elementu po id; getId mówi, skąd wziąć id (masterminda mają je w card.id). */
 function pick<T>(items: T[], getId: (item: T) => string, id: string, what: string): T {
@@ -54,9 +54,6 @@ export function getSetupProblems(choices: SetupChoices, rules: SetupRules): stri
   for (const id of choices.villainDeckHeroIds) {
     if (choices.heroIds.includes(id)) problems.push(`Villain Deck Heroes: ${id} is also selected as a Hero`)
   }
-  if (new Set(choices.bystanderGroupIds).size !== choices.bystanderGroupIds.length) {
-    problems.push('Bystanders: the same item is selected twice')
-  }
   return problems
 }
 
@@ -95,10 +92,14 @@ export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: Ga
   const villainDeckHeroes = choices.villainDeckHeroIds.map((id) =>
     pick(heroPool, (g) => g.id, id, 'villain deck hero'),
   )
-  const bystanderPool = sets.flatMap((s) => s.bystanderGroups)
-  const bystanderGroups = withRequiredBystanderGroups(choices.bystanderGroupIds, rules).map((id) =>
-    pick(bystanderPool, (g) => g.id, id, 'bystander group'),
-  )
+  // Domyślnie wszystkie grupy Bystanderów z wybranych zestawów; wyłączone tylko te z listy wykluczeń (poza wymaganymi)
+  const bystanderGroups = sets
+    .flatMap((s) => s.bystanderGroups)
+    .filter(
+      (g) =>
+        rules.requiredBystanderGroups.includes(g.id) ||
+        !choices.excludedBystanderGroupIds.includes(g.id),
+    )
 
   // Na razie bierzemy karty wspólne z pierwszego zestawu, który je ma (Core Set)
   const shared = sets.map((s) => s.shared).find((s) => s !== undefined)

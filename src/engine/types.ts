@@ -266,5 +266,5 @@ export interface SetupChoices {
   villainDeckHeroIds: string[]
   villainGroupIds: string[]
   henchmenGroupIds: string[]
-  bystanderGroupIds: string[]
+  excludedBystanderGroupIds: string[] // wyłączone grupy Bystanderów; domyślnie (pusta lista) wybrane są wszystkie z aktywnych zestawów
 }

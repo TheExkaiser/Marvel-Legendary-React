@@ -42,7 +42,9 @@ export const DARK_CITY_HENCHMEN_GROUPS: CardGroup[] = [
 ]
 
 export const DARK_CITY_BYSTANDER_GROUPS: CardGroup[] = [
-  { id: 'darkcity_news_reporter', name: 'News Reporter', cards: NEWS_REPORTER_CARDS },
-  { id: 'darkcity_paramedic', name: 'Paramedic', cards: PARAMEDIC_CARDS },
-  { id: 'darkcity_radiation_scientist', name: 'Radiation Scientist', cards: RADIATION_SCIENTIST_CARDS },
+  {
+    id: 'darkcity_bystanders',
+    name: 'Dark City Bystanders',
+    cards: [...NEWS_REPORTER_CARDS, ...PARAMEDIC_CARDS, ...RADIATION_SCIENTIST_CARDS],
+  },
 ]

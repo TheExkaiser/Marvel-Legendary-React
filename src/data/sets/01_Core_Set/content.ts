@@ -74,7 +74,7 @@ export const CORE_HENCHMEN_GROUPS: CardGroup[] = [
 ]
 
 export const CORE_BYSTANDER_GROUPS: CardGroup[] = [
-  { id: 'coreset_bystanders', name: 'Bystanders', cards: [{ card: BYSTANDER, count: 30 }] },
+  { id: 'coreset_bystanders', name: 'Core Set Bystanders', cards: [{ card: BYSTANDER, count: 30 }] },
 ]
 
 export const CORE_MASTERMINDS: MastermindData[] = [DRDOOM, LOKI, MAGNETO, RED_SKULL]
