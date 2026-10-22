@@ -19,6 +19,8 @@ export interface CardData {
   conditionText?: string      // efekt, który zachodzi przy spełnionym warunku
   keywords?: string[] // słowa kluczowe karty, np. ['teleport']
   versatile?: number // Versatile N: przy zagraniu wybierasz +N Attack albo +N Recruit
+  focus?: number // Focus N Recruit: przycisk na zagranej karcie, zabiera N Recruit i odpala efekt z focus.ts
+  focusLimit?: number // maks. liczba użyć Focusa tej karty w jednej turze (brak = bez limitu)
   henchman?: boolean   // podtyp villaina: grupa identycznych kart
   villainGroup?: string
 }
@@ -121,6 +123,7 @@ export interface GameState {
   enemyEffectDepth?: number // >0 w trakcie efektu Villaina / Master Strike'a / Taktyki (Impenetrable Ice Wall)
   mindControlThisTurn?: boolean // Professor X (Mind Control): po pokonaniu Villaina możesz go zdobyć
   instanceOverrides?: Record<string, InstanceOverride> // instanceId -> nadpisane dane karty
+  focusUsesThisTurn?: Record<string, number> // instanceId -> ile razy użyto Focusa tej karty w tej turze (reset w endTurn)
   versatileBothThisTurn?: boolean // Against All Odds: do końca tury Versatile daje i Attack, i Recruit
   status: GameStatus
   locationAttackModifiers: Record<string, number>

@@ -5,6 +5,7 @@ export const TEAM_NAMES: Record<string, string> = {
   'S.H.I.E.L.D.': 'S.H.I.E.L.D.',
   'marvel-knights': 'Marvel Knights',
   'x-force': 'X-Force',
+  'fantastic-four': 'Fantastic Four',
 }
 
 // Brak wpisu = pokazujemy samo id, więc nowy team nigdy nie psuje wyświetlania
@@ -20,6 +21,7 @@ export const TEAM_ICONS: Record<string, string> = {
   'S.H.I.E.L.D.': 'icons/shield.png',
   'marvel-knights': 'icons/marvel-knights.png',
   'x-force': 'icons/x-force.png',
+  'fantastic-four': 'icons/fantastic-four.png',
 }
 
 export function teamIcon(id?: string): string | undefined {

@@ -42,6 +42,7 @@ import { StackedMasterStrikes } from './components/StackedMasterStrikes'
 import { hasTeleport } from './engine/turn'
 import { fightDemonGoblin } from './engine/combat'
 import { SchemeToken } from './components/SchemeToken'
+import { canFocus, activateFocus } from './engine/focus'
 
 
 // ---------- Stałe ----------
@@ -280,10 +281,22 @@ function GameScreen({
       <h2>Played ({state.played.length})</h2>
       <div className="row-with-deck">
         <div className="row">
-          {state.played.map((c) => (
-            <CardView key={c.instanceId} data={getCardData(state, c)} flipId={c.instanceId} />
-
-          ))}
+          {state.played.map((c) => {
+            const data = getCardData(state, c)
+            return (
+              <div key={c.instanceId}>
+                <CardView data={data} flipId={c.instanceId} />
+                {canFocus(state, c) && (
+                  <button
+                    className="focus-button"
+                    onClick={() => act((s, ui) => activateFocus(s, c.instanceId, ui))}
+                  >
+                    Focus ({data.focus})
+                  </button>
+                )}
+              </div>
+            )
+          })}
         </div>
         <div className="deck-group">
           <DeckPile count={state.deck.length} deckId="deck" />
