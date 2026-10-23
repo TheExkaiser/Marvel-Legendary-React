@@ -10,6 +10,7 @@ import './heroAbilities'
 import './masterStrikeAbilities'
 import './tacticAbilities'
 import './villainAbilities'
+import './mastermindRules'
 import { FANTASTIC_FOUR_SCHEMES } from './schemes'
 
 export const FANTASTIC_FOUR_SET: SetData = {

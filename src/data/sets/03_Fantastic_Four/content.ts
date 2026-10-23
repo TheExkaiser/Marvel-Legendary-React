@@ -5,6 +5,8 @@ import {
   MR_FANTASTIC_CARDS,
   SILVER_SURFER_CARDS,
   THING_CARDS,
+  GALACTUS,
+  MOLE_MAN,
 } from './cards'
 
 export const FANTASTIC_FOUR_HEROES: CardGroup[] = [
@@ -21,4 +23,4 @@ export const FANTASTIC_FOUR_HENCHMEN_GROUPS: CardGroup[] = []
 
 export const FANTASTIC_FOUR_BYSTANDER_GROUPS: CardGroup[] = []
 
-export const FANTASTIC_FOUR_MASTERMINDS: MastermindData[] = []
+export const FANTASTIC_FOUR_MASTERMINDS: MastermindData[] = [GALACTUS, MOLE_MAN]

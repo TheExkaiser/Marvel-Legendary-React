@@ -15,6 +15,7 @@ import type { CardInstance, GameState } from '../../../engine/types'
 import { registerMasterStrikeReaction } from '../../../engine/masterStrikeReactions'
 import type { UiAdapter } from '../../../engine/ui'
 import { applyVersatile } from '../../../engine/versatile'
+import { adjacentCityIndexes } from '../../../engine/cityLayout'
 
 
 // ---------- Angel ----------
@@ -151,7 +152,7 @@ registerCardAbility('hero-blade-stalk-the-prey', async (state, { ui }) => {
   if (!villain) return
 
   const fromIndex = state.city.findIndex((c) => c?.instanceId === villain.instanceId)
-  const neighbours = [fromIndex - 1, fromIndex + 1].filter((i) => i >= 0 && i < CITY_NAMES.length)
+  const neighbours = adjacentCityIndexes(state, fromIndex)
   if (neighbours.length === 0) return
 
   let toIndex = neighbours[0]

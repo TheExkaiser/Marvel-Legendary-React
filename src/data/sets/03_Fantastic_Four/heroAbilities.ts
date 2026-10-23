@@ -7,6 +7,7 @@ import { getCardData } from '../../../engine/cardData'
 import { CITY_NAMES } from '../../../engine/constants'
 import { registerFocusEffect } from '../../../engine/focus'
 import { registerAmbushShield } from '../../../engine/replacements'
+import { adjacentCityIndexes } from '../../../engine/cityLayout'
 import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
 
@@ -167,7 +168,7 @@ async function moveVillainToAdjacent(state: GameState, ui: UiAdapter, title: str
   if (!villain) return
 
   const fromIndex = state.city.findIndex((c) => c?.instanceId === villain.instanceId)
-  const neighbours = [fromIndex - 1, fromIndex + 1].filter((i) => i >= 0 && i < CITY_NAMES.length)
+  const neighbours = adjacentCityIndexes(state, fromIndex)
   if (neighbours.length === 0) return
 
   let toIndex = neighbours[0]

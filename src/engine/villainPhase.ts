@@ -10,6 +10,7 @@ import { captureBystander } from './wounds'
 import { runMasterStrikeReactions } from './masterStrikeReactions'
 import { asEnemyEffect, getAmbushShields } from './replacements'
 import { getMastermindRule } from './mastermindRules'
+import { isCityDestroyed } from './cityLayout'
 
 /** Rozpatruje pojedynczą kartę z talii złoczyńców, według jej rodzaju (bez pop'owania z talii). */
 export async function resolveVillainDeckCard(
@@ -67,7 +68,9 @@ export async function resolveMasterStrike(
     await asEnemyEffect(state, () => ability(state, { self: card, ui }))
   }
 
-  const stacked = state.stackedMasterStrikes?.some((c) => c.instanceId === card.instanceId)
+  const stacked =
+    state.stackedMasterStrikes?.some((c) => c.instanceId === card.instanceId) ||
+    state.cityDestroyed?.some((c) => c?.instanceId === card.instanceId) // Galactus: Master Strike leży na zniszczonym polu
   if (!stacked) state.ko.push(card)
 
   await getGameMode(state).onMasterStrikeResolved?.(state, ui)
@@ -111,6 +114,7 @@ export async function enterCity(state: GameState, villain: CardInstance, ui: UiA
 
   // Przesuwanie w stronę wyjścia: każda karta wypycha poprzednią
   for (let i = state.city.length - 1; i >= 0 && moving; i--) {
+    if (isCityDestroyed(state, i)) continue // zniszczone pole nie istnieje: Villainowie je omijają
     const occupant: CardInstance | null = state.city[i]
     state.city[i] = moving
     moving = occupant

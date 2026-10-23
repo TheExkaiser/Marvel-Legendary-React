@@ -12,6 +12,7 @@ import { CITY_NAMES } from './constants'
 import { drawCards } from './deckOps'
 import { asEnemyEffect } from './replacements'
 import { gainVillainAsHero } from './cardData'
+import { getMastermindRule } from './mastermindRules'
 
 /** Czy Recruit płaci za tę kartę jak Attack: God of Thunder (cała tura) albo Bribe (tylko ta karta). */
 function recruitPays(state: GameState, cardId: string): boolean {
@@ -214,14 +215,23 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
 
 export async function fightMastermind(state: GameState, ui: UiAdapter): Promise<void> {
   assertPlaying(state)
-  const strength = getEffectiveStrength(state, state.mastermind) ?? 0
-  const mmId = state.mastermind.cardId
-  if (availableAttack(state, mmId) < strength) {
-    throw new Error(`Za mało attack: masz ${availableAttack(state, mmId)}, siła ${strength}`)
-  }
 
-  await spendAttack(state, strength, ui, mmId)
-  await claimTactic(state, ui)
+  // Cosmic Threat (Galactus): wybór klasy i obniżenie siły na czas tej jednej walki
+  const rule = getMastermindRule(state)
+  if (rule?.beforeFight && !(await rule.beforeFight(state, ui))) return
+
+  try {
+    const strength = getEffectiveStrength(state, state.mastermind) ?? 0
+    const mmId = state.mastermind.cardId
+    if (availableAttack(state, mmId) < strength) {
+      throw new Error(`Za mało attack: masz ${availableAttack(state, mmId)}, siła ${strength}`)
+    }
+
+    await spendAttack(state, strength, ui, mmId)
+    await claimTactic(state, ui)
+  } finally {
+    state.cosmicThreatReduction = 0
+  }
 }
 
 export async function claimTacticFree(state: GameState, ui: UiAdapter): Promise<void> {

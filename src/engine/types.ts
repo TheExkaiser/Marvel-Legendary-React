@@ -83,6 +83,7 @@ export interface GameState {
   demonGoblins?: CardInstance[] // Transform Citizens Into Demons: Bystanderzy ułożeni obok schematu jako Demon Goblin
   schemeTokens?: CardInstance[] // tokeny leżące na karcie scheme'u (np. dziecko w Capture Baby Hope)
   hqExplosions?: number[] // Detonate the Helicarrier: liczba Eksplozji na każdym miejscu HQ
+  cityDestroyed?: (CardInstance | null)[] // Galactus: zniszczone pola miasta; wpis = karta Master Strike leżąca na polu (patrz cityLayout.ts)
   hqDestroyed?: boolean[] // Detonate the Helicarrier: zniszczone miejsca HQ (nie przyjmują Bohaterów)
 
   mastermind: CardInstance
@@ -125,6 +126,10 @@ export interface GameState {
   mindControlThisTurn?: boolean // Professor X (Mind Control): po pokonaniu Villaina możesz go zdobyć
   instanceOverrides?: Record<string, InstanceOverride> // instanceId -> nadpisane dane karty
   focusUsesThisTurn?: Record<string, number> // cardId -> ile razy użyto Focusa tej karty w tej turze, łącznie ze wszystkich kopii (reset w endTurn)
+  cosmicThreatUsedThisTurn?: boolean // Cosmic Threat Galactusa: użyty w tej turze (reset w endTurn)
+  cosmicThreatReduction?: number // Cosmic Threat Galactusa: obniżenie jego siły na czas jednej walki (czyszczone po walce)
+  newHandDiscardCount?: number // Force of Eternity: ile kart odrzucić po dobraniu nowej ręki na koniec tury
+  hqSlotRecruit?: Record<string, number> // Underground Riches: Recruit tylko na Bohaterów z pola HQ stojącego pod daną lokacją miasta (klucz: nazwa z CITY_NAMES, reset w endTurn)
   cancelFightEffectsThisTurn?: boolean // Ultimate Nullifier: do końca tury możesz anulować efekt Fight Villaina / taktyki (combat.ts)
   versatileBothThisTurn?: boolean // Against All Odds: do końca tury Versatile daje i Attack, i Recruit
   status: GameStatus

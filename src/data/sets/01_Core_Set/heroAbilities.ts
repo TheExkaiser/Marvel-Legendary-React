@@ -30,6 +30,7 @@ import { registerDiscardReplacement } from '../../../engine/replacements'
 import { villainPhase } from '../../../engine/villainPhase'
 import { CITY_NAMES } from '../../../engine/constants'
 import { rescueCard } from '../../../engine/wounds'
+import { isCityDestroyed } from '../../../engine/cityLayout'
 
 // ---------- Black Widow ----------
 
@@ -590,8 +591,9 @@ registerCardAbility('hero-storm-spinning-cyclone', async (state, { ui }) => {
   const fromIndex = state.city.findIndex((c) => c?.instanceId === villain.instanceId)
 
   const slotOptions = CITY_NAMES.map((name, i) => ({ id: String(i), label: name })).filter(
-    (opt) => Number(opt.id) !== fromIndex,
+    (opt) => Number(opt.id) !== fromIndex && !isCityDestroyed(state, Number(opt.id)),
   )
+
   const chosenSlotId = await ui.chooseOption(slotOptions, 'Spinning Cyclone: choose a new city space')
   const toIndex = Number(chosenSlotId)
 

@@ -1,4 +1,4 @@
-import type { DeckEntry } from '../../../engine/types'
+import type { DeckEntry, MastermindData } from '../../../engine/types'
 
 export const HUMAN_TORCH_CARDS: DeckEntry[] = [
   {
@@ -320,3 +320,99 @@ export const THING_CARDS: DeckEntry[] = [
     count: 1,
   },
 ]
+
+export const GALACTUS: MastermindData = {
+  card: {
+    id: 'mastermind-galactus',
+    name: 'Galactus',
+    img: '/cards/fantastic-four/mastermind-galactus.webp',
+    strength: 20,
+    vp: 7,
+    keywords: ['cosmic-threat'],
+    text: 'Cosmic Threat: Strength, Instinct, Covert, Tech, Ranged. Always Leads: Heralds of Galactus. Galactus Wins: When the city is destroyed.',
+  },
+  tactics: [
+    {
+      id: 'galactus-cosmic-entity',
+      name: 'Cosmic Entity',
+      img: '/cards/fantastic-four/galactus-cosmic-entity.webp',
+      vp: 7,
+      text: 'Fight: Choose Strength, Instinct, Covert, Tech or Ranged. Each player reveals any number of cards of that class, then draws that many cards.',
+      flavor: '"You cannot comprehend the grandeur of the Power Cosmic."',
+    },
+    {
+      id: 'galactus-force-of-eternity',
+      name: 'Force of Eternity',
+      img: '/cards/fantastic-four/galactus-force-of-eternity.webp',
+      vp: 7,
+      text: 'Fight: When you draw a new hand of cards at the end of this turn, draw six extra cards, then discard six cards.',
+      flavor: '"I hunger..."',
+    },
+    {
+      id: 'galactus-panicked-mobs',
+      name: 'Panicked Mobs',
+      img: '/cards/fantastic-four/galactus-panicked-mobs.webp',
+      vp: 7,
+      text: 'Fight: Choose Strength, Instinct, Covert, Tech or Ranged. Each player reveals any number of cards of that class, then rescues that many Bystanders.',
+      flavor: '"You would not mourn the microbes you crush under your feet..."',
+    },
+    {
+      id: 'galactus-sunder-the-earth',
+      name: 'Sunder the Earth',
+      img: '/cards/fantastic-four/galactus-sunder-the-earth.webp',
+      vp: 7,
+      text: 'Fight: Each other player KOs all Heroes from their discard pile with the same card name as a Hero in the HQ.',
+      flavor: '"For important life to be preserved, unimportant life must be sacrificed."',
+    },
+  ],
+  masterStrikeId: 'mastermind-galactus-master-strike',
+  masterStrikeText: 'Destroy the city space closest to Galactus. Any Villain there escapes. Put this Master Strike there.',
+  alwaysLeads: { villainGroupId: 'fantasticfour_heralds_of_galactus' },
+}
+
+export const MOLE_MAN: MastermindData = {
+  card: {
+    id: 'mastermind-mole-man',
+    name: 'Mole Man',
+    img: '/cards/fantastic-four/mastermind-mole-man.webp',
+    strength: 7,
+    vp: 6,
+    text: 'Mole Man gets +1 Attack for each Subterranea Villain that has escaped. Always Leads: Subterranea.',
+  },
+  tactics: [
+    {
+      id: 'mole-man-dig-to-freedom',
+      name: 'Dig to Freedom',
+      img: '/cards/fantastic-four/mole-man-dig-to-freedom.webp',
+      vp: 6,
+      text: 'Fight: Each other player chooses a Subterranea Villain in their Victory Pile and puts it into the Escaped Villains pile.',
+      flavor: 'How do you lock up monsters that can dig through anything?',
+    },
+    {
+      id: 'mole-man-master-of-monsters',
+      name: 'Master of Monsters',
+      img: '/cards/fantastic-four/mole-man-master-of-monsters.webp',
+      vp: 6,
+      text: 'Fight: If this is not the final Tactic, reveal the top six cards of the Villain Deck. Play all the Subterranea Villains you revealed. Put the rest on the bottom of the Villain Deck in random order.',
+      flavor: 'Dreams of revenge can last a lifetime.',
+    },
+    {
+      id: 'mole-man-secret-tunnel',
+      name: 'Secret Tunnel',
+      img: '/cards/fantastic-four/mole-man-secret-tunnel.webp',
+      vp: 6,
+      text: 'Fight: You get +6 Attack usable only against Villains in the Streets.',
+      flavor: 'The tunnels used by burrowing monsters can just as easily be turned against them.',
+    },
+    {
+      id: 'mole-man-underground-riches',
+      name: 'Underground Riches',
+      img: '/cards/fantastic-four/mole-man-underground-riches.webp',
+      vp: 6,
+      text: 'Fight: You get +6 Recruit usable only to recruit Heroes in the HQ space under the Streets.',
+    },
+  ],
+  masterStrikeId: 'mastermind-mole-man-master-strike',
+  masterStrikeText: 'All Subterranea Villains in the city escape. If any Villains escaped this way, each player gains a Wound.',
+  alwaysLeads: { villainGroupId: 'fantasticfour_subterranea' },
+}

@@ -211,7 +211,9 @@ function GameScreen({
             <div className="row">
               {state.city.map((instance, i) => (
                 <div key={i}>
-                  {instance ? (
+                  {state.cityDestroyed?.[i] ? (
+                    <CardView data={state.cards[state.cityDestroyed![i]!.cardId]} />
+                  ) : instance ? (
                     <CardView
                       data={state.cards[instance.cardId]}
                       flipId={instance.instanceId}
@@ -222,6 +224,7 @@ function GameScreen({
                   ) : (
                     <div className="slot-empty">{CITY_NAMES[i]}</div>
                   )}
+                  {state.cityDestroyed?.[i] && <div className="markers">Destroyed</div>}
                   {state.cityMarkers[i].length > 0 && (
                     <div className="markers">{state.cityMarkers[i].join(', ')}</div>
                   )}
@@ -272,6 +275,9 @@ function GameScreen({
                 </div>
               )}
               {explosions > 0 && <div className="markers">💥 {explosions}</div>}
+              {(state.hqSlotRecruit?.[CITY_NAMES[i]] ?? 0) > 0 && (
+                <div className="markers">💰 {state.hqSlotRecruit![CITY_NAMES[i]]} Recruit ({CITY_NAMES[i]})</div>
+              )}
             </div>
           )
         })}

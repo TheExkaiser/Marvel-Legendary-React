@@ -5,6 +5,7 @@ import { CITY_NAMES } from '../../../engine/constants'
 import { playTopVillainCard, checkEndConditions, enterCity } from '../../../engine/villainPhase'
 import { refillHq } from '../../../engine/recruit'
 import { shuffle } from '../../../engine/random'
+import { isCityDestroyed } from '../../../engine/cityLayout'
 
 const COSMIC_CUBE: SchemeDef = {
   id: 'coreset_cosmic_cube',
@@ -154,7 +155,7 @@ const PORTALS_TO_THE_DARK_DIMENSION: SchemeDef = {
     }
 
     if (n >= 2 && n <= 6) {
-      const index = CITY_NAMES.findIndex((_, i) => !state.cityMarkers[i].includes('Dark Portal'))
+      const index = CITY_NAMES.findIndex((_, i) => !isCityDestroyed(state, i) && !state.cityMarkers[i].includes('Dark Portal'))
       if (index !== -1) {
         state.cityMarkers[index].push('Dark Portal')
       }

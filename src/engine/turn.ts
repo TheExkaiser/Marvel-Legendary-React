@@ -9,6 +9,7 @@ import { villainPhase } from './villainPhase'
 import { addRecruit, addAttack } from './resources'
 import { applyVersatile } from './versatile'
 import { getCardData } from './cardData'
+import { discardCard } from './keywords'
 
 /** Zagrywa kartę z ręki: dolicza attack/recruit i odpala jej zdolność. */
 export async function playCard(
@@ -106,6 +107,20 @@ function addTeleportedCardsToHand(state: GameState): void {
   state.teleported = []
 }
 
+/** Force of Eternity: po dobraniu nowej ręki gracz odrzuca N kart (wybiera które). */
+async function discardAfterNewHand(state: GameState, ui: UiAdapter): Promise<void> {
+  const count = state.newHandDiscardCount ?? 0
+  state.newHandDiscardCount = 0
+  for (let i = 0; i < count && state.hand.length > 0; i++) {
+    const chosen = await ui.choose(state.hand, {
+      prompt: `Force of Eternity: odrzuć kartę (${i + 1}/${count})`,
+      optional: false,
+    })
+    if (!chosen) break
+    await discardCard(state, chosen.instanceId, ui)
+  }
+}
+
 /** Koniec tury: sprzątanie, nowa ręka, a potem faza złoczyńcy (chyba że jest dodatkowa tura). */
 export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   assertPlaying(state)
@@ -139,6 +154,8 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.teleportGrantedThisTurn = []
   state.focusUsesThisTurn = {}
   state.cancelFightEffectsThisTurn = false
+  state.cosmicThreatUsedThisTurn = false
+  state.hqSlotRecruit = {}
 
   const drawAmount = HAND_SIZE + state.bonusDrawNextTurn
   state.bonusDrawNextTurn = 0
@@ -148,11 +165,13 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
     drawCards(state, drawAmount)
     addReservedCardToHand(state)
     addTeleportedCardsToHand(state)
+    await discardAfterNewHand(state, ui)
   } else {
     state.turn += 1
     drawCards(state, drawAmount)
     addReservedCardToHand(state)
     addTeleportedCardsToHand(state)
+    await discardAfterNewHand(state, ui)
     await villainPhase(state, ui)
   }
 

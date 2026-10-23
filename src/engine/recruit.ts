@@ -2,6 +2,7 @@ import type { GameState, CardInstance } from './types'
 import { assertPlaying } from './common'
 import { getScheme } from './schemeRegistry'
 import { rescueCard } from './wounds'
+import { CITY_NAMES } from './constants'
 
 /** Save Humanity: za tyle Recruit ratujesz Bystandera z HQ. */
 const BYSTANDER_RESCUE_COST = 2
@@ -52,11 +53,17 @@ export function recruitHero(state: GameState, instanceId: string): void {
   const data = state.cards[instance.cardId]
   const isBystander = data.kind === 'bystander'
   const cost = isBystander ? BYSTANDER_RESCUE_COST : (data.cost ?? 0)
-  if (state.recruit < cost) {
-    throw new Error(`Za mało recruit: masz ${state.recruit}, koszt ${cost}`)
+
+  // Underground Riches: Recruit tylko dla Bohaterów z jednego pola HQ (pole i leży pod CITY_NAMES[i]). Wydajemy go najpierw
+  const location = CITY_NAMES[index]
+  const slotPool = isBystander ? 0 : (state.hqSlotRecruit?.[location] ?? 0)
+  const fromSlotPool = Math.min(slotPool, cost)
+  if (state.recruit + fromSlotPool < cost) {
+    throw new Error(`Za mało recruit: masz ${state.recruit + fromSlotPool}, koszt ${cost}`)
   }
 
-  state.recruit -= cost
+  if (fromSlotPool > 0) state.hqSlotRecruit![location] = slotPool - fromSlotPool
+  state.recruit -= cost - fromSlotPool
   state.hq[index] = null
   if (isBystander) rescueCard(state, instance)
   else placeRecruitedCard(state, instance)
