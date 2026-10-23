@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import type { CardData } from '../engine/types'
 import { CardImage } from './CardImage'
 import { teamName } from '../data/teams'
+import './FocusButton.css'
 
 interface CardViewProps {
   data: CardData
@@ -11,6 +12,7 @@ interface CardViewProps {
   flipFrom?: string // id talii (data-deck-id), z której nowa karta ma przyjechać
   effectiveStrength?: number // aktualna siła (po ewentualnym modyfikatorze), liczona przez getEffectiveStrength
   capturedCards?: CardData[] // złapani bystanderzy + ewentualna przypięta karta bohatera
+  focusButton?: { cost: number; onClick: () => void } // złoty przycisk Focus na karcie (tylko zagrane karty)
 }
 
 function ConditionLine({ data }: { data: CardData }) {
@@ -159,7 +161,7 @@ function CapturedCardThumbnail({ data }: { data: CardData }) {
   )
 }
 
-export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, capturedCards }: CardViewProps) {
+export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, capturedCards, focusButton }: CardViewProps) {
   const [zoomed, setZoomed] = useState(false)
   const capturedCount = capturedCards?.length ?? 0
 
@@ -184,6 +186,18 @@ export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, c
 
         <CapturedBadge count={capturedCount} />
         <AttackModifierBadge data={data} effectiveStrength={effectiveStrength} />
+
+        {focusButton && (
+          <button
+            className="focus-button"
+            onClick={(e) => {
+              e.stopPropagation() // żeby kliknięcie Focusa nie odpaliło też onClick karty
+              focusButton.onClick()
+            }}
+          >
+            Focus ({focusButton.cost})
+          </button>
+        )}
 
         {data.img ? (
           <CardImage src={data.img} alt={data.name} />

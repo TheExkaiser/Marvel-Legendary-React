@@ -137,6 +137,8 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.pendingSurgeOfPower = 0
   state.masterStrikeAutoDrawUsedThisTurn = false
   state.teleportGrantedThisTurn = []
+  state.focusUsesThisTurn = {}
+  state.cancelFightEffectsThisTurn = false
 
   const drawAmount = HAND_SIZE + state.bonusDrawNextTurn
   state.bonusDrawNextTurn = 0

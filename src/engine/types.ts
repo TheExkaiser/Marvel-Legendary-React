@@ -49,6 +49,7 @@ export interface LocationDefeatBonus {
   locations: string[] // nazwy lokacji z CITY_NAMES
   recruit?: number
   draw?: number
+  rescue?: number // Crime Stopper: ile Bystanderów uratować za każdego Villaina pokonanego w tych lokacjach
 }
 
 /** Nadpisanie danych jednej konkretnej karty (np. zdobyty Villain, który działa jak Bohater). */
@@ -123,7 +124,8 @@ export interface GameState {
   enemyEffectDepth?: number // >0 w trakcie efektu Villaina / Master Strike'a / Taktyki (Impenetrable Ice Wall)
   mindControlThisTurn?: boolean // Professor X (Mind Control): po pokonaniu Villaina możesz go zdobyć
   instanceOverrides?: Record<string, InstanceOverride> // instanceId -> nadpisane dane karty
-  focusUsesThisTurn?: Record<string, number> // instanceId -> ile razy użyto Focusa tej karty w tej turze (reset w endTurn)
+  focusUsesThisTurn?: Record<string, number> // cardId -> ile razy użyto Focusa tej karty w tej turze, łącznie ze wszystkich kopii (reset w endTurn)
+  cancelFightEffectsThisTurn?: boolean // Ultimate Nullifier: do końca tury możesz anulować efekt Fight Villaina / taktyki (combat.ts)
   versatileBothThisTurn?: boolean // Against All Odds: do końca tury Versatile daje i Attack, i Recruit
   status: GameStatus
   locationAttackModifiers: Record<string, number>

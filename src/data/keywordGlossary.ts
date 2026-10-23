@@ -1,0 +1,150 @@
+// Słownik słów kluczowych pokazywany w menu "Keywords". To TYLKO opis zasad dla gracza.
+// Logika słów kluczowych siedzi w silniku (np. engine/keywords.ts, focus.ts, versatile.ts).
+// Bez podziału na sety: nowe słowo kluczowe = nowy wpis w KEYWORD_GLOSSARY.
+//
+// Znaczniki w tekście:
+//   {strength} {instinct} {covert} {tech} {ranged}  -> ikona z public/icons/<nazwa>.png
+//   **tekst**                                       -> pogrubienie
+
+import type { CardData } from '../engine/types'
+
+export type KeywordBlock =
+  | { type: 'text'; text: string }
+  | { type: 'quote'; text: string }
+  | { type: 'list'; items: string[] }
+
+export interface KeywordEntry {
+  id: string
+  name: string
+  // Czy dana karta używa tego słowa kluczowego. Menu pokazuje wpis, jeśli którakolwiek karta w grze spełnia warunek.
+  appearsOn: (card: CardData) => boolean
+  blocks: KeywordBlock[]
+}
+
+const hasKeyword = (card: CardData, keyword: string) => (card.keywords ?? []).includes(keyword)
+
+export const KEYWORD_GLOSSARY: KeywordEntry[] = [
+  {
+    id: 'teleport',
+    name: 'Teleport',
+    // Azazel nadaje Teleport karcie z ręki, więc jego obecność też oznacza, że Teleport jest w grze
+    appearsOn: (c) => hasKeyword(c, 'teleport') || c.id === 'villain-azazel',
+    blocks: [
+      {
+        type: 'text',
+        text: `Instead of playing, you may set aside a card with the keyword "Teleport". If you do, add it to your new hand at the end of your turn as an extra card.`,
+      },
+    ],
+  },
+  {
+    id: 'bribe',
+    name: 'Bribe',
+    appearsOn: (c) => hasKeyword(c, 'bribe'),
+    blocks: [
+      {
+        type: 'text',
+        text: `You can fight villains with the keyword "Bribe" by spending any combination of Attack and/or Recruit points. For example, you may play two S.H.I.E.L.D. Agents and two S.H.I.E.L.D. Troopers to fight the +4 Attack Maggia Goons.`,
+      },
+    ],
+  },
+  {
+    id: 'versatile',
+    name: 'Versatile',
+    appearsOn: (c) => c.versatile !== undefined,
+    blocks: [
+      {
+        type: 'text',
+        text: `When you play a card with the keyword "Versatile" you must first choose between Recruit and Fight. Once you have chosen, the card provides recruit or fight equal to the Versatile value. For example, Versatile 3 gives you +3 Recruit or +3 Attack.`,
+      },
+    ],
+  },
+  {
+    id: 'focus',
+    name: 'Focus',
+    appearsOn: (c) => c.focus !== undefined,
+    blocks: [
+      {
+        type: 'text',
+        text: `The new "Focus" keyword lets you transform your Recruit Points into powerful, flexible effects. It looks like this:`,
+      },
+      { type: 'quote', text: `"Focus Recruit -> [EFFECT]"` },
+      {
+        type: 'text',
+        text: `When you play a card with a Focus ability, you can pay the cost on the left side of the arrow to get the effect on right side of the arrow. You can use that Focus ability as many times as you want for the rest of the turn. For example, say you play a card that says:`,
+      },
+      { type: 'quote', text: `"Focus 2 Recruit -> Draw a card."` },
+      {
+        type: 'text',
+        text: `For the rest of your turn, you can use 2 Recruit Points to draw a card, as many times as you want, as long as you have the Recruit points available. You can even play more Heroes, recruit, fight, then use the Focus ability more.`,
+      },
+      {
+        type: 'text',
+        text: `**Note:** You can use Focus abilities and still use the "Healing" ability on Wounds.`,
+      },
+    ],
+  },
+  {
+    id: 'burrow',
+    name: 'Burrow',
+    appearsOn: (c) => hasKeyword(c, 'burrow'), // kiedy dojdą karty: keywords: ['burrow']
+    blocks: [
+      {
+        type: 'text',
+        text: `Subterranea Villains use the new Burrow keyword. This allows them to retreat by digging to safety when they are attacked. "Burrow" means:`,
+      },
+      { type: 'quote', text: `"Fight: If the Streets were empty, put this Villain back into the Streets."` },
+      {
+        type: 'text',
+        text: `When you fight a Villain with Burrow, do all of that Villain's Fight effects. You rescue any Bystanders the Villain may have captured as normal. Then, if the "Streets" city space was empty, put that Villain back into the Streets space. This means that to stop a Villain with Burrow permanently, you have to:`,
+      },
+      {
+        type: 'list',
+        items: [
+          `Fight it while it's in the Streets, or`,
+          `Fight it while another Villain occupies the Streets, or`,
+          `Fight it once to drive it back to the Streets then fight it again in the Streets to finish it.`,
+        ],
+      },
+      {
+        type: 'text',
+        text: `If you fight a Villain with Burrow twice in a turn, you'll do that Villain's "Fight" effects twice. Cards that do something "when you defeat" a Villain still work if the Villain burrows to the Streets. When a Villain burrows to the Streets, it does not do any Ambush effects.`,
+      },
+    ],
+  },
+  {
+    id: 'cosmic-threat',
+    name: 'Cosmic Threat',
+    appearsOn: (c) => hasKeyword(c, 'cosmic-threat'), // kiedy dojdą karty: keywords: ['cosmic-threat']
+    blocks: [
+      {
+        type: 'text',
+        text: `Galactus and his Heralds use the new Cosmic Threat keyword. This gives them incredibly high Attack values with a special vulnerability. If an enemy has **Cosmic Threat:** {ranged} that means:`,
+      },
+      { type: 'quote', text: `"Once per turn, for each {ranged} card you reveal, this Enemy gets -3 Attack this turn."` },
+      { type: 'text', text: `For example, Morg has **Cosmic Threat:** {instinct} and 12* Attack.` },
+      {
+        type: 'list',
+        items: [
+          `If you reveal two {instinct} cards, Morg gets -6 Attack this turn, so he has 6 Attack left.`,
+          `If you reveal four or more {instinct} cards, Morg gets -12 Attack this turn, so he has 0 Attack, and you can fight him without spending any Attack.`,
+        ],
+      },
+      {
+        type: 'text',
+        text: `(An asterisk next to an Enemy's Attack number is to remind you that their Attack can change. The asterisk doesn't mean anything else.)`,
+      },
+      {
+        type: 'text',
+        text: `**Galactus' Cosmic Threat:** Galactus has the "Cosmic Threat: {strength} {instinct} {covert} {tech} {ranged}" ability. This means:`,
+      },
+      {
+        type: 'quote',
+        text: `"Once per turn, choose {strength}, {instinct}, {covert}, {tech} or {ranged}. For each card of that color you reveal, this Enemy gets -3 Attack for one fight this turn."`,
+      },
+      {
+        type: 'text',
+        text: `If you try to fight Galactus a second time in the same turn, he will return to his full Attack and you cannot use his Cosmic Threat ability a second time that turn.`,
+      },
+    ],
+  },
+]

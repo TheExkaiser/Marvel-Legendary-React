@@ -44,6 +44,20 @@ async function spendAttack(state: GameState, amount: number, ui: UiAdapter, card
   state.recruit -= fromRecruit
 }
 
+/** Ultimate Nullifier: gracz może anulować efekt Fight. Pytamy tylko, gdy efekt faktycznie istnieje. */
+async function fightEffectCancelled(state: GameState, ui: UiAdapter, enemy: CardInstance): Promise<boolean> {
+  if (!state.cancelFightEffectsThisTurn) return false
+  const choice = await ui.chooseOptionWithCard(
+    enemy,
+    [
+      { id: 'cancel', label: 'Anuluj efekt Fight (Ultimate Nullifier)' },
+      { id: 'resolve', label: 'Rozpatrz efekt Fight' },
+    ],
+    'Ultimate Nullifier',
+  )
+  return choice === 'cancel'
+}
+
 async function removeVillainFromCity(state: GameState, index: number, ui: UiAdapter): Promise<void> {
   const villain = state.city[index]!
   const location = CITY_NAMES[index]
@@ -70,6 +84,7 @@ async function removeVillainFromCity(state: GameState, index: number, ui: UiAdap
     if (!bonus.locations.includes(location)) continue
     if (bonus.recruit) addRecruit(state, bonus.recruit)
     if (bonus.draw) drawCards(state, bonus.draw)
+    for (let i = 0; i < (bonus.rescue ?? 0); i++) await rescueBystander(state, ui)
   }
 }
 
@@ -115,7 +130,7 @@ export async function defeatVillainFromDeck(
   state.villainDeck.pop()
 
   const abilities = getVillainAbilities(villain.cardId)
-  if (abilities?.onFight) {
+  if (abilities?.onFight && !(await fightEffectCancelled(state, ui, villain))) {
     await asEnemyEffect(state, () => abilities.onFight!(state, ui, villain))
   }
 
@@ -155,7 +170,7 @@ export async function fightVillain(
   await spendAttack(state, strength, ui, villain.cardId)
 
   const abilities = getVillainAbilities(villain.cardId)
-  if (abilities?.onFight) {
+  if (abilities?.onFight && !(await fightEffectCancelled(state, ui, villain))) {
     await asEnemyEffect(state, () => abilities.onFight!(state, ui, villain))
   }
 
@@ -183,7 +198,7 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
   await ui.showInfo(tactic, `Odkryto taktykę: ${state.cards[tactic.cardId].name}`)
 
   const ability = getCardAbility(tactic.cardId)
-  if (ability) {
+  if (ability && !(await fightEffectCancelled(state, ui, tactic))) {
     await asEnemyEffect(state, () => ability(state, { self: tactic, ui }))
   }
 

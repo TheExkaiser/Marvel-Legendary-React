@@ -5,9 +5,10 @@ interface HamburgerMenuProps {
   onRestart: () => void
   onSettings: () => void
   onHistory: () => void
+  onKeywords?: () => void
 }
 
-export function HamburgerMenu({ onMainMenu, onRestart, onSettings, onHistory }: HamburgerMenuProps) {
+export function HamburgerMenu({ onMainMenu, onRestart, onSettings, onHistory, onKeywords }: HamburgerMenuProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -33,6 +34,16 @@ export function HamburgerMenu({ onMainMenu, onRestart, onSettings, onHistory }: 
           >
             Settings
           </button>
+          {onKeywords && (
+            <button
+              onClick={() => {
+                setOpen(false)
+                onKeywords()
+              }}
+            >
+              Keywords
+            </button>
+          )}
           <button
             onClick={() => {
               setOpen(false)

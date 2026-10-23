@@ -37,6 +37,7 @@ import { AttackSplitPrompt } from './components/AttackSplitPrompt'
 import { useEffect, useRef } from 'react'
 import { appendGameLogEntry, formatDate, formatTime, type GameLogMeta } from './gameLog'
 import { GameHistoryMenu } from './components/GameHistoryMenu'
+import { KeywordsMenu } from './components/KeywordsMenu'
 import { NumberPrompt } from './components/NumberPrompt'
 import { StackedMasterStrikes } from './components/StackedMasterStrikes'
 import { hasTeleport } from './engine/turn'
@@ -112,6 +113,7 @@ function GameScreen({
   const [viewingPile, setViewingPile] = useState<'victory' | 'ko' | 'discard' | 'teleport' | null>(null)
 
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [keywordsOpen, setKeywordsOpen] = useState(false)
   const loggedRef = useRef(false)
   
   const mastermindCaptives = state.captives[state.mastermind.instanceId]?.length ?? 0
@@ -141,6 +143,7 @@ function GameScreen({
         onRestart={onRestart}
         onSettings={() => setSettingsOpen(true)}
         onHistory={() => setHistoryOpen(true)}
+        onKeywords={() => setKeywordsOpen(true)}
       />
       {(state.status === 'won' || state.status === 'lost') && (
         <div className="modal-overlay">
@@ -284,17 +287,19 @@ function GameScreen({
           {state.played.map((c) => {
             const data = getCardData(state, c)
             return (
-              <div key={c.instanceId}>
-                <CardView data={data} flipId={c.instanceId} />
-                {canFocus(state, c) && (
-                  <button
-                    className="focus-button"
-                    onClick={() => act((s, ui) => activateFocus(s, c.instanceId, ui))}
-                  >
-                    Focus ({data.focus})
-                  </button>
-                )}
-              </div>
+              <CardView
+                key={c.instanceId}
+                data={data}
+                flipId={c.instanceId}
+                focusButton={
+                  canFocus(state, c)
+                    ? {
+                        cost: data.focus!,
+                        onClick: () => act((s, ui) => activateFocus(s, c.instanceId, ui)),
+                      }
+                    : undefined
+                }
+              />
             )
           })}
         </div>
@@ -441,6 +446,7 @@ function GameScreen({
       )}
 
       {historyOpen && <GameHistoryMenu onClose={() => setHistoryOpen(false)} />}
+      {keywordsOpen && <KeywordsMenu cards={Object.values(state.cards)} onClose={() => setKeywordsOpen(false)} />}
     </div>
   )
 }

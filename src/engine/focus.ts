@@ -4,24 +4,30 @@ import { assertPlaying } from './common'
 import { getCardData } from './cardData'
 
 export type FocusEffect = (state: GameState, ui: UiAdapter, self: CardInstance) => Promise<void>
+export type FocusUsable = (state: GameState, self: CardInstance) => boolean
 
-const focusEffects = new Map<string, FocusEffect>()
+const focusEffects = new Map<string, { effect: FocusEffect; isUsable?: FocusUsable }>()
 
-/** Efekt po "Focus N Recruit ->" danej karty. Koszt N jest w danych karty (pole focus). */
-export function registerFocusEffect(cardId: string, effect: FocusEffect): void {
-  focusEffects.set(cardId, effect)
+/** Efekt po "Focus N Recruit ->" danej karty. Koszt N jest w danych karty (pole focus).
+ * isUsable (opcjonalne): dodatkowy warunek widoczności przycisku, np. "istnieje cel dla efektu". */
+export function registerFocusEffect(cardId: string, effect: FocusEffect, isUsable?: FocusUsable): void {
+  focusEffects.set(cardId, { effect, isUsable })
 }
 
+// Limit użyć liczy się per efekt (cardId), wspólnie dla wszystkich kopii karty zagranych w tej turze
 function focusUses(state: GameState, instance: CardInstance): number {
-  return state.focusUsesThisTurn?.[instance.instanceId] ?? 0
+  return state.focusUsesThisTurn?.[instance.cardId] ?? 0
 }
 
-/** Czy przycisk Focus ma być widoczny: karta ma Focus, gracza stać na koszt i nie wyczerpano limitu użyć (focusLimit). */
+/** Czy przycisk Focus ma być widoczny: karta ma Focus z zarejestrowanym efektem, gracza stać na koszt,
+ * nie wyczerpano limitu użyć (focusLimit) i efekt ma sens (isUsable). */
 export function canFocus(state: GameState, instance: CardInstance): boolean {
   if (state.status !== 'playing') return false
   const data = getCardData(state, instance)
-  if (data.focus === undefined || state.recruit < data.focus) return false
+  const entry = focusEffects.get(instance.cardId)
+  if (!entry || data.focus === undefined || state.recruit < data.focus) return false
   if (data.focusLimit !== undefined && focusUses(state, instance) >= data.focusLimit) return false
+  if (entry.isUsable && !entry.isUsable(state, instance)) return false
   return true
 }
 
@@ -34,15 +40,13 @@ export async function activateFocus(
   assertPlaying(state)
   const instance = state.played.find((c) => c.instanceId === instanceId)
   if (!instance) throw new Error(`Karty ${instanceId} nie ma w zagranych`)
-  if (!canFocus(state, instance)) throw new Error('Za mało Recruit na Focus')
+  if (!canFocus(state, instance)) throw new Error('Nie można teraz użyć Focusa tej karty')
 
-  const effect = focusEffects.get(instance.cardId)
-  if (!effect) throw new Error(`Brak efektu Focus dla karty ${instance.cardId}`)
-
+  const entry = focusEffects.get(instance.cardId)!
   state.recruit -= getCardData(state, instance).focus!
   state.focusUsesThisTurn = {
     ...state.focusUsesThisTurn,
-    [instance.instanceId]: focusUses(state, instance) + 1,
+    [instance.cardId]: focusUses(state, instance) + 1,
   }
-  await effect(state, ui, instance)
+  await entry.effect(state, ui, instance)
 }

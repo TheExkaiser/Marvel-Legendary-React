@@ -8,7 +8,7 @@ import { ESCAPE_LIMIT } from './constants'
 import { logEvent } from './common'
 import { captureBystander } from './wounds'
 import { runMasterStrikeReactions } from './masterStrikeReactions'
-import { asEnemyEffect } from './replacements'
+import { asEnemyEffect, getAmbushShields } from './replacements'
 import { getMastermindRule } from './mastermindRules'
 
 /** Rozpatruje pojedynczą kartę z talii złoczyńców, według jej rodzaju (bez pop'owania z talii). */
@@ -93,6 +93,15 @@ export async function escapeVillain(state: GameState, villain: CardInstance, ui:
   }
 }
 
+/** Tarcze przed Ambush (Invisible Barrier): true = gracz anulował efekt Ambush. */
+async function ambushCancelledByShield(state: GameState, ui: UiAdapter): Promise<boolean> {
+  for (const [shieldId, shield] of getAmbushShields()) {
+    const holder = state.hand.find((c) => c.cardId === shieldId)
+    if (holder && (await shield(state, ui, holder))) return true
+  }
+  return false
+}
+
 /** Wprowadza złoczyńcę (albo pseudo-villaina: Bystandera/Bohatera ze scheme'owej reguły)
  * do miasta (przez Sewers); przesuwa pozostałych, najdalszy może uciec. */
 export async function enterCity(state: GameState, villain: CardInstance, ui: UiAdapter): Promise<void> {
@@ -115,6 +124,7 @@ export async function enterCity(state: GameState, villain: CardInstance, ui: UiA
 
   const ambushAbilities = getVillainAbilities(villain.cardId)
   if (ambushAbilities?.onAmbush) {
+    if (await ambushCancelledByShield(state, ui)) return
     await asEnemyEffect(state, () => ambushAbilities.onAmbush!(state, ui, villain))
   }
 }

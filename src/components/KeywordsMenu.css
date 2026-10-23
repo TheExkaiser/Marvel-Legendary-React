@@ -1,0 +1,42 @@
+/* Menu Keywords: przewijana lista, ikony typów kart wtopione w tekst */
+.keywords-content {
+  width: min(720px, 92vw);
+  max-height: 85vh;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.keyword-entry {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.keyword-entry h3 {
+  margin: 0 0 8px;
+  color: #f0b429;
+}
+
+.keyword-entry p {
+  margin: 6px 0;
+  line-height: 1.45;
+}
+
+.keyword-quote {
+  padding-left: 12px;
+  border-left: 3px solid #f0b429;
+  font-style: italic;
+}
+
+.keyword-list {
+  margin: 6px 0;
+  padding-left: 22px;
+  line-height: 1.45;
+}
+
+.keyword-icon {
+  height: 1.2em;
+  width: auto;
+  vertical-align: -0.2em;
+  margin: 0 1px;
+}

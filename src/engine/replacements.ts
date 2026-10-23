@@ -57,3 +57,16 @@ export function registerDiscardShield(cardId: string, fn: DiscardReplacement): v
 export function getDiscardShields(): [string, DiscardReplacement][] {
   return [...discardShields.entries()]
 }
+
+// Tarcza przed efektem Ambush (Invisible Barrier): true = efekt Ambush anulowany
+export type AmbushShield = (state: GameState, ui: UiAdapter, self: CardInstance) => Promise<boolean>
+
+const ambushShields = new Map<string, AmbushShield>()
+
+export function registerAmbushShield(cardId: string, fn: AmbushShield): void {
+  ambushShields.set(cardId, fn)
+}
+
+export function getAmbushShields(): [string, AmbushShield][] {
+  return [...ambushShields.entries()]
+}
