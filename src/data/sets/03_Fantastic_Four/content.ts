@@ -7,6 +7,8 @@ import {
   THING_CARDS,
   GALACTUS,
   MOLE_MAN,
+  HERALDS_OF_GALACTUS_CARDS,
+  SUBTERRANEA_CARDS,
 } from './cards'
 
 export const FANTASTIC_FOUR_HEROES: CardGroup[] = [
@@ -17,7 +19,10 @@ export const FANTASTIC_FOUR_HEROES: CardGroup[] = [
   { id: 'fantasticfour_thing', name: 'Thing', cards: THING_CARDS },
 ]
 
-export const FANTASTIC_FOUR_VILLAIN_GROUPS: CardGroup[] = []
+export const FANTASTIC_FOUR_VILLAIN_GROUPS: CardGroup[] = [
+  { id: 'fantasticfour_heralds_of_galactus', name: 'Heralds of Galactus', cards: HERALDS_OF_GALACTUS_CARDS },
+  { id: 'fantasticfour_subterranea', name: 'Subterranea', cards: SUBTERRANEA_CARDS },
+]
 
 export const FANTASTIC_FOUR_HENCHMEN_GROUPS: CardGroup[] = []
 

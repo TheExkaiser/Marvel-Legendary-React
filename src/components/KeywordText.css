@@ -1,0 +1,28 @@
+/* Słowa kluczowe w opisie karty (po przybliżeniu) i okienko z opisem */
+.keyword-term {
+  cursor: help;
+  border-bottom: 1px dotted currentColor;
+}
+
+.keyword-tooltip {
+  position: fixed;
+  z-index: 10000;
+  padding: 8px 12px;
+  border: 1px solid #f0b429;
+  border-radius: 8px;
+  background: #1c1c24;
+  color: #eee;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: left;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+.keyword-tooltip strong {
+  color: #f0b429;
+}
+
+.keyword-tooltip p {
+  margin: 4px 0 0;
+}

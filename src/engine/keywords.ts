@@ -201,6 +201,14 @@ export function hasPlayedCard(state: GameState, filter: CardFilter): boolean {
   return playedCards(state, filter).length > 0
 }
 
+/** Cosmic Threat (jedna klasa, np. Heraldowie): -3 Attack za każdą kartę tej klasy w ręce i zagranych.
+ * Karty z kilkoma klasami (Galactus) wymagają wyboru gracza, więc obsługuje je jego reguła Mastermina. */
+export function cosmicThreatReduction(state: GameState, instance: { cardId: string }): number {
+  const classes = state.cards[instance.cardId].cosmicThreat
+  if (!classes || classes.length !== 1) return 0
+  return 3 * revealCards(state, { type: classes[0] }).length
+}
+
 // Efektywna siła złoczyńcy/mastermina/henchmana: bazowe `strength` (albo koszt przypiętej karty),
 // plus modyfikatory lokacji/mastermina na tę turę, plus ewentualny bonus zdefiniowany przez Scheme.
 export function getEffectiveStrength(
@@ -232,6 +240,7 @@ export function getEffectiveStrength(
   total += getScheme(state).villainStrengthModifier?.(state, instance) ?? 0
   total += getMastermindRule(state)?.villainStrengthModifier?.(state, instance) ?? 0
   total += getStrengthModifier(instance.cardId)?.(state, instance) ?? 0
+  total -= cosmicThreatReduction(state, instance)
 
   return Math.max(0, total) // siła nie może zejść poniżej 0 (inaczej spendAttack by ją "zwracał")
 }

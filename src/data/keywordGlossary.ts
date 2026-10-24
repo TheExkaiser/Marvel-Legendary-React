@@ -16,6 +16,7 @@ export type KeywordBlock =
 export interface KeywordEntry {
   id: string
   name: string
+  tooltip: string // krótki opis w okienku po najechaniu na słowo w tekście karty (KeywordText)
   // Czy dana karta używa tego słowa kluczowego. Menu pokazuje wpis, jeśli którakolwiek karta w grze spełnia warunek.
   appearsOn: (card: CardData) => boolean
   blocks: KeywordBlock[]
@@ -27,6 +28,7 @@ export const KEYWORD_GLOSSARY: KeywordEntry[] = [
   {
     id: 'teleport',
     name: 'Teleport',
+    tooltip: 'Instead of playing a card with Teleport, you may set it aside. Add it to your new hand at the end of your turn as an extra card.',
     // Azazel nadaje Teleport karcie z ręki, więc jego obecność też oznacza, że Teleport jest w grze
     appearsOn: (c) => hasKeyword(c, 'teleport') || c.id === 'villain-azazel',
     blocks: [
@@ -39,6 +41,7 @@ export const KEYWORD_GLOSSARY: KeywordEntry[] = [
   {
     id: 'bribe',
     name: 'Bribe',
+    tooltip: 'You can fight Villains with Bribe by spending any combination of Attack and/or Recruit points.',
     appearsOn: (c) => hasKeyword(c, 'bribe'),
     blocks: [
       {
@@ -50,6 +53,7 @@ export const KEYWORD_GLOSSARY: KeywordEntry[] = [
   {
     id: 'versatile',
     name: 'Versatile',
+    tooltip: 'When you play a card with Versatile, you must first choose between Recruit and Attack. The card then provides the chosen one equal to the Versatile value.',
     appearsOn: (c) => c.versatile !== undefined,
     blocks: [
       {
@@ -61,6 +65,7 @@ export const KEYWORD_GLOSSARY: KeywordEntry[] = [
   {
     id: 'focus',
     name: 'Focus',
+    tooltip: 'Pay the Recruit cost on the left of the arrow to get the effect on the right. You can use it as many times as you want this turn, as long as you have the Recruit.',
     appearsOn: (c) => c.focus !== undefined,
     blocks: [
       {
@@ -86,6 +91,7 @@ export const KEYWORD_GLOSSARY: KeywordEntry[] = [
   {
     id: 'burrow',
     name: 'Burrow',
+    tooltip: 'Fight: If the Streets were empty, put this Villain back into the Streets. It does not do any Ambush effects.',
     appearsOn: (c) => hasKeyword(c, 'burrow'), // kiedy dojdą karty: keywords: ['burrow']
     blocks: [
       {
@@ -114,6 +120,7 @@ export const KEYWORD_GLOSSARY: KeywordEntry[] = [
   {
     id: 'cosmic-threat',
     name: 'Cosmic Threat',
+    tooltip: 'Once per turn, for each card of the listed class you reveal, this Enemy gets -3 Attack this turn.',
     appearsOn: (c) => hasKeyword(c, 'cosmic-threat'), // kiedy dojdą karty: keywords: ['cosmic-threat']
     blocks: [
       {

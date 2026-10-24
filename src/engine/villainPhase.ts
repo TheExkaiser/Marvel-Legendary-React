@@ -23,6 +23,9 @@ export async function resolveVillainDeckCard(
   const data = state.cards[card.cardId]
   logEvent(state, `Tura ${state.turn}: odkryto ${data.name}`)
 
+  // Scheme może rozpatrzyć kartę sam (X-Cutioner's Song: Bohater z talii złoczyńców zostaje jeńcem, nie wchodzi do miasta)
+  if (await getScheme(state).onVillainDeckCard?.(state, card, ui)) return
+
   if (data.kind === 'bystander' && !getScheme(state).treatBystandersAsVillains) {
     await captureBystander(state, card, ui)
   } else if (data.kind === 'twist') {

@@ -1,11 +1,13 @@
 import { registerCardAbility } from '../../../engine/cardAbilities'
-import { drawCards, rescueBystander, addRecruit } from '../../../engine/game'
+import { drawCards, rescueBystander } from '../../../engine/game'
 import { revealCards, koCard } from '../../../engine/keywords'
 import { getCardData } from '../../../engine/cardData'
 import { chooseHeroClass } from '../../../engine/heroClasses'
 import { resolveVillainDeckCard, checkEndConditions } from '../../../engine/villainPhase'
 import { shuffle } from '../../../engine/random'
 import { isLedGroupVillain } from '../../../engine/ledGroup'
+import { isCityDestroyed } from '../../../engine/cityLayout'
+import { CITY_NAMES } from '../../../engine/constants'
 import type { CardInstance } from '../../../engine/types'
 
 // ---------- Galactus ----------
@@ -92,13 +94,9 @@ registerCardAbility('mole-man-secret-tunnel', async (state) => {
   state.locationAttackModifiers['Streets'] = (state.locationAttackModifiers['Streets'] ?? 0) - 6
 })
 
-// "+6 Recruit tylko na Bohaterów z pola HQ pod Streets". Pole HQ o indeksie i leży pod CITY_NAMES[i].
-// addRecruit liczy Recruit jako zdobyty (Surge of Power), po czym przenosimy go z ogólnej puli do puli tego pola
+// "+6 Recruit tylko na Bohaterów z pola HQ pod Streets" = Bohaterowie w tym polu kosztują 6 mniej w tej turze (nie mniej niż 0).
+// Pole HQ o indeksie i leży pod CITY_NAMES[i]. Gdy Streets są zniszczone, efekt nic nie robi.
 registerCardAbility('mole-man-underground-riches', async (state) => {
-  addRecruit(state, 6)
-  state.recruit -= 6
-  state.hqSlotRecruit = {
-    ...state.hqSlotRecruit,
-    Streets: (state.hqSlotRecruit?.Streets ?? 0) + 6,
-  }
+  if (isCityDestroyed(state, CITY_NAMES.indexOf('Streets'))) return
+  state.hqCostModifiers = { ...state.hqCostModifiers, Streets: (state.hqCostModifiers?.Streets ?? 0) - 6 }
 })

@@ -4,6 +4,7 @@ import type { CardData } from '../engine/types'
 import { CardImage } from './CardImage'
 import { teamName } from '../data/teams'
 import './FocusButton.css'
+import { KeywordText } from './KeywordText'
 
 interface CardViewProps {
   data: CardData
@@ -12,6 +13,7 @@ interface CardViewProps {
   flipFrom?: string // id talii (data-deck-id), z której nowa karta ma przyjechać
   effectiveStrength?: number // aktualna siła (po ewentualnym modyfikatorze), liczona przez getEffectiveStrength
   capturedCards?: CardData[] // złapani bystanderzy + ewentualna przypięta karta bohatera
+  effectiveCost?: number // aktualny koszt karty w HQ (po modyfikatorze, np. Underground Riches)
   focusButton?: { cost: number; onClick: () => void } // złoty przycisk Focus na karcie (tylko zagrane karty)
 }
 
@@ -27,7 +29,7 @@ function ConditionLine({ data }: { data: CardData }) {
           alt={icon}
         />
       ))}
-      <span>: {data.conditionText}</span>
+      <span>: <KeywordText text={data.conditionText} /></span>
     </div>
   )
 }
@@ -56,6 +58,22 @@ function AttackModifierBadge({ data, effectiveStrength }: { data: CardData; effe
         alt="Attack"
       />
       <span className="attack-modifier-value" style={{ color }}>{text}</span>
+    </div>
+  )
+}
+
+// Odznaka z AKTUALNYM kosztem karty w HQ (recruit.png + wartość), gdy odbiega od bazowego: zielony = taniej, czerwony = drożej.
+function CostModifierBadge({ data, effectiveCost }: { data: CardData; effectiveCost?: number }) {
+  if (data.cost === undefined || effectiveCost === undefined || effectiveCost === data.cost) return null
+  const color = effectiveCost < data.cost ? '#4ade80' : '#ff6b6b'
+  return (
+    <div className="attack-modifier-badge">
+      <img
+        className="attack-modifier-icon"
+        src={`${import.meta.env.BASE_URL}icons/recruit.png`}
+        alt="Cost"
+      />
+      <span className="attack-modifier-value" style={{ color }}>{effectiveCost}</span>
     </div>
   )
 }
@@ -92,7 +110,7 @@ function CardZoomContent({ data, capturedCards }: { data: CardData; capturedCard
         {data.text && (
           <div className="card-text-block">
             <strong>Text:</strong>
-            <p>{data.text}</p>
+            <p><KeywordText text={data.text} /></p>
           </div>
         )}
         <ConditionLine data={data} />
@@ -161,7 +179,7 @@ function CapturedCardThumbnail({ data }: { data: CardData }) {
   )
 }
 
-export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, capturedCards, focusButton }: CardViewProps) {
+export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, capturedCards, focusButton, effectiveCost }: CardViewProps) {
   const [zoomed, setZoomed] = useState(false)
   const capturedCount = capturedCards?.length ?? 0
 
@@ -186,6 +204,7 @@ export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, c
 
         <CapturedBadge count={capturedCount} />
         <AttackModifierBadge data={data} effectiveStrength={effectiveStrength} />
+        <CostModifierBadge data={data} effectiveCost={effectiveCost} />
 
         {focusButton && (
           <button

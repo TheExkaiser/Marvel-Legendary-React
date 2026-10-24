@@ -13,6 +13,7 @@ import { drawCards } from './deckOps'
 import { asEnemyEffect } from './replacements'
 import { gainVillainAsHero } from './cardData'
 import { getMastermindRule } from './mastermindRules'
+import { isCityDestroyed } from './cityLayout'
 
 /** Czy Recruit płaci za tę kartę jak Attack: God of Thunder (cała tura) albo Bribe (tylko ta karta). */
 function recruitPays(state: GameState, cardId: string): boolean {
@@ -72,7 +73,14 @@ async function removeVillainFromCity(state: GameState, index: number, ui: UiAdap
   delete state.captives[villain.instanceId]
   delete state.attachedCards[villain.instanceId]
 
-  if (scheme.onVillainDefeated) {
+  // Burrow: bonusy za pokonanie działają, ale Villain wraca do Streets zamiast do Victory Pile (bez Ambush)
+  const burrows = state.burrowingVillainId === villain.instanceId
+  state.burrowingVillainId = undefined
+  const streetsIndex = CITY_NAMES.indexOf('Streets')
+
+  if (burrows && !isCityDestroyed(state, streetsIndex) && state.city[streetsIndex] === null) {
+    state.city[streetsIndex] = villain
+  } else if (scheme.onVillainDefeated) {
     scheme.onVillainDefeated(state, villain)
   } else {
     state.defeated.push(villain)
@@ -134,6 +142,7 @@ export async function defeatVillainFromDeck(
   if (abilities?.onFight && !(await fightEffectCancelled(state, ui, villain))) {
     await asEnemyEffect(state, () => abilities.onFight!(state, ui, villain))
   }
+  state.burrowingVillainId = undefined // Villain z talii nie stoi w mieście, więc nie ma gdzie się zakopać
 
   addRecruit(state, state.defeatRecruitBonus ?? 0)
   for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) await rescueBystander(state, ui)

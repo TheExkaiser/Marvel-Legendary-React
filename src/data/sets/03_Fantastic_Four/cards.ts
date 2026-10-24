@@ -1,4 +1,4 @@
-import type { DeckEntry, MastermindData } from '../../../engine/types'
+import type { CardData, DeckEntry, MastermindData } from '../../../engine/types'
 
 export const HUMAN_TORCH_CARDS: DeckEntry[] = [
   {
@@ -329,6 +329,7 @@ export const GALACTUS: MastermindData = {
     strength: 20,
     vp: 7,
     keywords: ['cosmic-threat'],
+    cosmicThreat: ['strength', 'instinct', 'covert', 'tech', 'ranged'],
     text: 'Cosmic Threat: Strength, Instinct, Covert, Tech, Ranged. Always Leads: Heralds of Galactus. Galactus Wins: When the city is destroyed.',
   },
   tactics: [
@@ -416,3 +417,78 @@ export const MOLE_MAN: MastermindData = {
   masterStrikeText: 'All Subterranea Villains in the city escape. If any Villains escaped this way, each player gains a Wound.',
   alwaysLeads: { villainGroupId: 'fantasticfour_subterranea' },
 }
+
+function villainCard(
+  slug: string,
+  name: string,
+  villainGroup: string,
+  strength: number,
+  vp: number,
+  text: string,
+  extra: Partial<CardData> = {},
+): CardData {
+  return {
+    id: `villain-${slug}`,
+    name,
+    img: `/cards/fantastic-four/villain-${slug}.webp`,
+    villainGroup,
+    strength,
+    vp,
+    text,
+    ...extra,
+  }
+}
+
+export const HERALDS_OF_GALACTUS_CARDS: DeckEntry[] = [
+  {
+    card: villainCard('firelord', 'Firelord', 'Heralds of Galactus', 9, 4,
+      'Cosmic Threat: Ranged. Fight: Each player reveals a Ranged Hero or gains a Wound. Escape: Same effect.',
+      { keywords: ['cosmic-threat'], cosmicThreat: ['ranged'], flavor: '"Make peace with your oblivion. Galactus is nigh."' }),
+    count: 2,
+  },
+  {
+    card: villainCard('morg', 'Morg', 'Heralds of Galactus', 12, 6,
+      'Cosmic Threat: Instinct. Ambush: Put each non-Instinct Hero from the HQ on the bottom of the Hero Deck.',
+      { keywords: ['cosmic-threat'], cosmicThreat: ['instinct'], flavor: '"When you are converted to pure energy, you will know no pain."' }),
+    count: 2,
+  },
+  {
+    card: villainCard('stardust', 'Stardust', 'Heralds of Galactus', 10, 5,
+      'Cosmic Threat: Covert. Fight: Choose one of your Covert Heroes. When you draw a new hand of cards at the end of this turn, add that Hero to your hand as a seventh card.',
+      { keywords: ['cosmic-threat'], cosmicThreat: ['covert'], flavor: 'When Morg went renegade, it took Silver Surfer and all the other Heralds to end his rampage.' }),
+    count: 2,
+  },
+  {
+    card: villainCard('terrax-the-tamer', 'Terrax the Tamer', 'Heralds of Galactus', 11, 5,
+      'Cosmic Threat: Strength. Ambush: For each Strength Hero in the HQ, Terrax captures a Bystander.',
+      { keywords: ['cosmic-threat'], cosmicThreat: ['strength'], flavor: '"You will be tamed."' }),
+    count: 2,
+  },
+]
+
+export const SUBTERRANEA_CARDS: DeckEntry[] = [
+  {
+    card: villainCard('giganto', 'Giganto', 'Subterranea', 7, 4,
+      'Fight: When you draw a new hand of cards at the end of this turn, draw two extra cards. Burrow.',
+      { keywords: ['burrow'], flavor: "The Fantastic Four's first foe is also their second-most gigantic." }),
+    count: 2,
+  },
+  {
+    card: villainCard('megataur', 'Megataur', 'Subterranea', 6, 4,
+      'Ambush: Megataur captures two Bystanders. Burrow.',
+      { keywords: ['burrow'], flavor: 'Ever wonder where earthquakes come from?' }),
+    count: 2,
+  },
+  {
+    card: villainCard('moloids', 'Moloids', 'Subterranea', 3, 2,
+      'Fight: KO one of your Heroes. Burrow.',
+      { keywords: ['burrow'], flavor: 'The claws of a tiger, the foresight of a mole.' }),
+    count: 2,
+  },
+  {
+    card: villainCard('raktar-the-molan-king', "Ra'ktar the Molan King", 'Subterranea', 4, 2,
+      'Ambush: Any Villain in the Streets moves to the Bridge, pushing any Villain already there to escape. Burrow.',
+      { keywords: ['burrow'], flavor: "Ra'ktar always leaves his troops an escape route." }),
+    count: 2,
+  },
+]

@@ -42,6 +42,17 @@ function placeRecruitedCard(state: GameState, instance: CardInstance): void {
   }
 }
 
+/** Aktualny koszt karty w polu HQ: koszt bazowy plus modyfikator pola (Underground Riches), nie mniej niż 0.
+ * Pole HQ o indeksie i leży pod polem miasta CITY_NAMES[i]. */
+export function hqCardCost(state: GameState, index: number): number {
+  const instance = state.hq[index]
+  if (!instance) return 0
+  const data = state.cards[instance.cardId]
+  if (data.kind === 'bystander') return BYSTANDER_RESCUE_COST
+  const modifier = state.hqCostModifiers?.[CITY_NAMES[index]] ?? 0
+  return Math.max(0, (data.cost ?? 0) + modifier)
+}
+
 /** Kupuje bohatera z HQ (płaci recruit), karta trafia do stosu odrzuconych.
  * Bystander w HQ (Save Humanity) kosztuje 2 Recruit i jest ratowany do Victory Pool. */
 export function recruitHero(state: GameState, instanceId: string): void {
@@ -52,18 +63,12 @@ export function recruitHero(state: GameState, instanceId: string): void {
   const instance = state.hq[index]!
   const data = state.cards[instance.cardId]
   const isBystander = data.kind === 'bystander'
-  const cost = isBystander ? BYSTANDER_RESCUE_COST : (data.cost ?? 0)
-
-  // Underground Riches: Recruit tylko dla Bohaterów z jednego pola HQ (pole i leży pod CITY_NAMES[i]). Wydajemy go najpierw
-  const location = CITY_NAMES[index]
-  const slotPool = isBystander ? 0 : (state.hqSlotRecruit?.[location] ?? 0)
-  const fromSlotPool = Math.min(slotPool, cost)
-  if (state.recruit + fromSlotPool < cost) {
-    throw new Error(`Za mało recruit: masz ${state.recruit + fromSlotPool}, koszt ${cost}`)
+  const cost = hqCardCost(state, index)
+  if (state.recruit < cost) {
+    throw new Error(`Za mało recruit: masz ${state.recruit}, koszt ${cost}`)
   }
 
-  if (fromSlotPool > 0) state.hqSlotRecruit![location] = slotPool - fromSlotPool
-  state.recruit -= cost - fromSlotPool
+  state.recruit -= cost
   state.hq[index] = null
   if (isBystander) rescueCard(state, instance)
   else placeRecruitedCard(state, instance)

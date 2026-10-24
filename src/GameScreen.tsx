@@ -44,6 +44,7 @@ import { hasTeleport } from './engine/turn'
 import { fightDemonGoblin } from './engine/combat'
 import { SchemeToken } from './components/SchemeToken'
 import { canFocus, activateFocus } from './engine/focus'
+import { hqCardCost } from './engine/recruit'
 
 
 // ---------- Stałe ----------
@@ -267,6 +268,7 @@ function GameScreen({
                   data={state.cards[instance.cardId]}
                   flipId={instance.instanceId}
                   flipFrom="hero-deck"
+                  effectiveCost={hqCardCost(state, i)}
                   onClick={() => act((s) => recruitHero(s, instance.instanceId))}
                 />
               ) : (
@@ -275,9 +277,6 @@ function GameScreen({
                 </div>
               )}
               {explosions > 0 && <div className="markers">💥 {explosions}</div>}
-              {(state.hqSlotRecruit?.[CITY_NAMES[i]] ?? 0) > 0 && (
-                <div className="markers">💰 {state.hqSlotRecruit![CITY_NAMES[i]]} Recruit ({CITY_NAMES[i]})</div>
-              )}
             </div>
           )
         })}

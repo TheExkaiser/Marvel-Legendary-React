@@ -18,6 +18,7 @@ export interface CardData {
   conditionIcons?: string[]   // ikony warunku "jeśli zagrano X w tej turze" (może być kilka, np. ['strength','strength'])
   conditionText?: string      // efekt, który zachodzi przy spełnionym warunku
   keywords?: string[] // słowa kluczowe karty, np. ['teleport']
+  cosmicThreat?: string[] // Cosmic Threat: klasy kart (strength/instinct/covert/tech/ranged). Jedna klasa = stały modyfikator siły (Heraldowie), kilka = wybór (Galactus)
   versatile?: number // Versatile N: przy zagraniu wybierasz +N Attack albo +N Recruit
   focus?: number // Focus N Recruit: przycisk na zagranej karcie, zabiera N Recruit i odpala efekt z focus.ts
   focusLimit?: number // maks. liczba użyć Focusa tej karty w jednej turze (brak = bez limitu)
@@ -129,7 +130,8 @@ export interface GameState {
   cosmicThreatUsedThisTurn?: boolean // Cosmic Threat Galactusa: użyty w tej turze (reset w endTurn)
   cosmicThreatReduction?: number // Cosmic Threat Galactusa: obniżenie jego siły na czas jednej walki (czyszczone po walce)
   newHandDiscardCount?: number // Force of Eternity: ile kart odrzucić po dobraniu nowej ręki na koniec tury
-  hqSlotRecruit?: Record<string, number> // Underground Riches: Recruit tylko na Bohaterów z pola HQ stojącego pod daną lokacją miasta (klucz: nazwa z CITY_NAMES, reset w endTurn)
+  hqCostModifiers?: Record<string, number> // Underground Riches: modyfikator kosztu Bohaterów w polu HQ stojącym pod daną lokacją miasta (klucz: nazwa z CITY_NAMES, reset w endTurn)
+  burrowingVillainId?: string // Burrow: instanceId Villaina, który po tej walce wraca do Streets zamiast do Victory Pile (ustawia onFight, czyta combat.ts)
   cancelFightEffectsThisTurn?: boolean // Ultimate Nullifier: do końca tury możesz anulować efekt Fight Villaina / taktyki (combat.ts)
   versatileBothThisTurn?: boolean // Against All Odds: do końca tury Versatile daje i Attack, i Recruit
   status: GameStatus
