@@ -66,8 +66,18 @@ function fillHeroes(
   const tags = [...tagCounts.keys()]
   if (tags.length === 0) return fillIds(kept, groups.map((g) => g.id), count, required, rng)
   const bestCount = Math.max(...tags.map((tag) => tagCounts.get(tag) ?? 0))
-  const bestTags = tags.filter((tag) => tagCounts.get(tag) === bestCount)
-  const target = bestTags[Math.floor(rng() * bestTags.length)]
+  const slotsToFill = count - kept.length
+  // Team Full nie powinien preferować największego teamu (np. X-Menów) za
+  // każdym razem. Najpierw losujemy spośród teamów, które są w stanie
+  // samodzielnie wypełnić brakujące miejsca. Jeśli żaden nie jest tak duży,
+  // zostaje bezpieczny fallback do największej dostępnej grupy.
+  const fullCandidates = mode.endsWith('full')
+    ? tags.filter((tag) => (tagCounts.get(tag) ?? 0) >= slotsToFill)
+    : []
+  const targetTags = fullCandidates.length > 0
+    ? fullCandidates
+    : tags.filter((tag) => tagCounts.get(tag) === bestCount)
+  const target = targetTags[Math.floor(rng() * targetTags.length)]
   const matching = available.filter((group) => groupTags(group, tagKey).includes(target))
   const preferredCount = mode.endsWith('full') ? count - kept.length : Math.ceil((count - kept.length) / 2)
   const preferred = shuffled(matching, rng).slice(0, preferredCount).map((group) => group.id)

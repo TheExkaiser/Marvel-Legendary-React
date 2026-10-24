@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { CSSProperties } from 'react'
+import type { CSSProperties, WheelEvent as ReactWheelEvent } from 'react'
 import { useGame } from './useGame'
 import type { GameSetup } from './engine/types'
 import { getScheme } from './engine/schemeRegistry'
@@ -162,8 +162,38 @@ function GameScreen({
     teleport: { title: 'Teleport', cards: teleported },
   }
 
+  // Stałe panele i przyciski potrafią przejąć wheel jako obszar interaktywny.
+  // Przepuszczamy go do wewnętrznego panelu tylko wtedy, gdy panel faktycznie
+  // może przewijać się w danym kierunku; w pozostałych przypadkach przewijamy planszę.
+  function handleGameWheel(event: ReactWheelEvent<HTMLDivElement>) {
+    if (event.deltaY === 0 || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return
+
+    const target = event.target as HTMLElement
+    const fixedUi = target.closest<HTMLElement>(
+      '.stats-panel, .log-shell, .drawer-tab, .drawer-panel, .hamburger-wrap, .end-turn-button, .piles-panel',
+    )
+    // W centrum planszy zostawiamy natywne przewijanie przeglądarki. Jest
+    // płynniejsze niż ręczne wywoływanie scrollBy dla każdego eventu wheel.
+    if (!fixedUi) return
+
+    const scrollable = target.closest<HTMLElement>(
+      '.log-drawer, .drawer-panel, .modal-content, .history-table-wrap, .pile-grid',
+    )
+    if (
+      scrollable &&
+      scrollable.scrollHeight > scrollable.clientHeight &&
+      ((event.deltaY < 0 && scrollable.scrollTop > 0) ||
+        (event.deltaY > 0 && scrollable.scrollTop + scrollable.clientHeight < scrollable.scrollHeight))
+    ) {
+      return
+    }
+
+    event.preventDefault()
+    window.scrollBy(0, event.deltaY)
+  }
+
   return (
-    <div className="app">
+    <div className="app" onWheel={handleGameWheel}>
       {/* ===== Górny pasek: log (na całą szerokość) + hamburger menu ===== */}
       <LogPanel log={state.log} />
       <HamburgerMenu

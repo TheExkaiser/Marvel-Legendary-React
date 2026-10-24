@@ -60,7 +60,8 @@ body {
     linear-gradient(170deg, var(--base) 0%, var(--deep) 55%, var(--abyss) 100%);
   background-attachment: fixed;
   overflow-x: hidden;
-  overscroll-behavior: none;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: auto;
 }
 
 button,
@@ -119,6 +120,7 @@ button,
   max-width: 1000px;
   margin: 0 auto;
   padding: 60px 16px 280px; /* góra: pasek logu, dół: miejsce na stałe panele */
+  user-select: none;
 }
 
 h1 {

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { CardGroup, GameSetup, SetData, SetupChoices } from '../engine/types'
 import { buildSetup, getSetupProblems } from '../engine/buildSetup'
 import { DEFAULT_SETUP_RULES, resolveRules, withLedGroup } from '../engine/setupRules'
-import { EMPTY_CHOICES, completeChoices, pruneChoices, randomizeHeroIds } from '../engine/setupChoices'
+import { EMPTY_CHOICES, completeChoices, pruneChoices } from '../engine/setupChoices'
 import { GAME_MODES } from '../data/gameModes'
 import { DEBUG_PRESET } from '../data/sets/setup'
 import { consumePendingSetupChoices, type GameLogMeta } from '../gameLog'
@@ -67,6 +67,12 @@ interface Category {
   required: string[]
   single?: boolean // wybór jednej rzeczy: kliknięcie innego kafelka podmienia wybór
   onChange: (ids: string[]) => void
+}
+
+interface SetDisablePrompt {
+  setId: string
+  setName: string
+  selectedNames: string[]
 }
 
 function groupItems(
@@ -223,6 +229,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   const [setFilter, setSetFilter] = useState('')
   const [selectedOnly, setSelectedOnly] = useState(false)
   const [thematicOpen, setThematicOpen] = useState(false)
+  const [setDisablePrompt, setSetDisablePrompt] = useState<SetDisablePrompt | null>(null)
 
   // Pula do wyboru = suma zaznaczonych zestawów
   const activeSets = useMemo(() => sets.filter((s) => enabledSetIds.includes(s.id)), [sets, enabledSetIds])
@@ -263,12 +270,52 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   }
 
   function toggleSet(id: string) {
-    const next = enabledSetIds.includes(id)
-      ? enabledSetIds.filter((x) => x !== id)
-      : [...enabledSetIds, id]
-    if (next.length === 0) return // musi zostać przynajmniej jeden zestaw
+    if (enabledSetIds.includes(id)) {
+      if (enabledSetIds.length === 1) return // musi zostać przynajmniej jeden zestaw
+
+      const set = sets.find((candidate) => candidate.id === id)
+      if (!set) return
+
+      const selectedIds = new Set([
+        choices.schemeId,
+        choices.mastermindId,
+        ...choices.heroIds,
+        ...choices.villainDeckHeroIds,
+        ...choices.villainGroupIds,
+        ...choices.henchmenGroupIds,
+      ])
+      const selectedNames = [
+        ...set.schemes.filter((item) => selectedIds.has(item.id)).map((item) => item.name),
+        ...set.masterminds.filter((item) => selectedIds.has(item.card.id)).map((item) => item.card.name),
+        ...set.heroes.filter((item) => selectedIds.has(item.id)).map((item) => item.name),
+        ...set.villainGroups.filter((item) => selectedIds.has(item.id)).map((item) => item.name),
+        ...set.henchmenGroups.filter((item) => selectedIds.has(item.id)).map((item) => item.name),
+        // Bystander groups are selected by default unless explicitly excluded.
+        ...set.bystanderGroups
+          .filter((item) => !choices.excludedBystanderGroupIds.includes(item.id))
+          .map((item) => item.name),
+      ]
+
+      if (selectedNames.length > 0) {
+        setSetDisablePrompt({ setId: id, setName: set.name, selectedNames })
+        return
+      }
+
+      disableSet(id)
+      return
+    }
+
+    const next = [...enabledSetIds, id]
     setEnabledSetIds(next)
     setChoices(pruneChoices(choices, sets.filter((s) => next.includes(s.id)), GAME_MODES))
+  }
+
+  function disableSet(id: string) {
+    const next = enabledSetIds.filter((x) => x !== id)
+    if (next.length === 0) return
+    setEnabledSetIds(next)
+    setChoices(pruneChoices(choices, sets.filter((s) => next.includes(s.id)), GAME_MODES))
+    setSetDisablePrompt(null)
   }
 
   /** Zmiana schematu od razu wstawia wymaganych bohaterów talii złoczyńców (i zdejmuje ich ze zwykłych bohaterów). */
@@ -409,20 +456,6 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   function rerollCurrent() {
     for (const p of panels) {
       const pool = p.visible.filter((i) => !p.blocked.includes(i.id))
-      if (p.id === 'heroes' && !selectedOnly) {
-        const allowedIds = new Set(pool.map((item) => item.id))
-        const heroGroups = activeSets
-          .flatMap((set) => set.heroes)
-          .filter((group) => allowedIds.has(group.id) && !p.blocked.includes(group.id))
-        const heroIds = randomizeHeroIds(
-          heroGroups,
-          p.cat.max,
-          p.cat.required.filter((id) => allowedIds.has(id)),
-          choices.heroSelectionMode ?? 'full-random',
-        )
-        p.cat.onChange(heroIds)
-        continue
-      }
       const lockedCount = p.cat.required.filter((id) => pool.some((i) => i.id === id)).length
       const count =
         tab === 'extras'
@@ -558,17 +591,11 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
               )}
             </select>
 
-            <div className="setup-label setup-label-spaced">Hero Randomization</div>
-            <select
-              value={choices.heroSelectionMode ?? 'full-random'}
-              onChange={(e) => update({ heroSelectionMode: e.target.value as SetupChoices['heroSelectionMode'] })}
-            >
-              <option value="full-random">Full Random</option>
-              <option value="team-partial">Team Partial</option>
-              <option value="team-full">Team Full</option>
-              <option value="type-partial">Type Partial</option>
-              <option value="type-full">Type Full</option>
-            </select>
+            {/*
+              Temporarily disabled: hero randomization modes are kept in the
+              setup model, but category Random now uses the currently visible
+              pool for every category and every filter.
+            */}
           </section>
         </aside>
 
@@ -789,6 +816,26 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
             setHistoryOpen(false)
           }}
         />
+      )}
+
+      {setDisablePrompt && (
+        <div className="modal-overlay" onClick={() => setSetDisablePrompt(null)}>
+          <div className="modal-content set-disable-modal" onClick={(event) => event.stopPropagation()}>
+            <h2>Disable {setDisablePrompt.setName}?</h2>
+            <p>
+              This set contains selected setup elements. Disabling it will remove them from the current setup:
+            </p>
+            <ul className="set-disable-list">
+              {setDisablePrompt.selectedNames.map((name) => <li key={name}>{name}</li>)}
+            </ul>
+            <div className="set-disable-actions">
+              <button onClick={() => setSetDisablePrompt(null)}>Cancel</button>
+              <button className="setup-danger" onClick={() => disableSet(setDisablePrompt.setId)}>
+                Disable and remove
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {thematicOpen && (
