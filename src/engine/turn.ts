@@ -155,7 +155,7 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.focusUsesThisTurn = {}
   state.cancelFightEffectsThisTurn = false
   state.cosmicThreatUsedThisTurn = false
-  state.hqCostModifiers = {}
+  state.hqRecruitBonuses = {}
 
   const drawAmount = HAND_SIZE + state.bonusDrawNextTurn
   state.bonusDrawNextTurn = 0

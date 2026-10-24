@@ -335,11 +335,9 @@ const X_CUTIONERS_SONG: SchemeDef = {
     return true
   },
 
-  // +2 Attack za każdego Bohatera (dotyczy Villainów, nie Mastermina)
-  villainStrengthModifier: (state, instance) => {
-    if (instance.instanceId === state.mastermind.instanceId) return 0
-    return 2 * (state.captives[instance.instanceId] ?? []).filter((c) => isHeroCard(state, c)).length
-  },
+  // +2 Attack for each captured Hero, including Heroes captured by the Mastermind.
+  villainStrengthModifier: (state, instance) =>
+    2 * (state.captives[instance.instanceId] ?? []).filter((c) => isHeroCard(state, c)).length,
 
   // Walka z wrogiem: wszyscy Bohaterowie, których trzymał, trafiają do Twoich odrzuconych
   onCaptivesRescued: (state, _villain, captives) => {

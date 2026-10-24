@@ -94,9 +94,10 @@ registerCardAbility('mole-man-secret-tunnel', async (state) => {
   state.locationAttackModifiers['Streets'] = (state.locationAttackModifiers['Streets'] ?? 0) - 6
 })
 
-// "+6 Recruit tylko na Bohaterów z pola HQ pod Streets" = Bohaterowie w tym polu kosztują 6 mniej w tej turze (nie mniej niż 0).
+// "+6 Recruit tylko na Bohaterów z pola HQ pod Streets" = jednorazowa pula 6 Recruit,
+// którą można wydać wyłącznie na Bohaterów w tym polu HQ.
 // Pole HQ o indeksie i leży pod CITY_NAMES[i]. Gdy Streets są zniszczone, efekt nic nie robi.
 registerCardAbility('mole-man-underground-riches', async (state) => {
   if (isCityDestroyed(state, CITY_NAMES.indexOf('Streets'))) return
-  state.hqCostModifiers = { ...state.hqCostModifiers, Streets: (state.hqCostModifiers?.Streets ?? 0) - 6 }
+  state.hqRecruitBonuses = { ...state.hqRecruitBonuses, Streets: (state.hqRecruitBonuses?.Streets ?? 0) + 6 }
 })

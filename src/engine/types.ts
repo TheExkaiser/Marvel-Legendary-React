@@ -130,7 +130,7 @@ export interface GameState {
   cosmicThreatUsedThisTurn?: boolean // Cosmic Threat Galactusa: użyty w tej turze (reset w endTurn)
   cosmicThreatReduction?: number // Cosmic Threat Galactusa: obniżenie jego siły na czas jednej walki (czyszczone po walce)
   newHandDiscardCount?: number // Force of Eternity: ile kart odrzucić po dobraniu nowej ręki na koniec tury
-  hqCostModifiers?: Record<string, number> // Underground Riches: modyfikator kosztu Bohaterów w polu HQ stojącym pod daną lokacją miasta (klucz: nazwa z CITY_NAMES, reset w endTurn)
+  hqRecruitBonuses?: Record<string, number> // Underground Riches: jednorazowa pula Recruit do wydania na Bohaterów w polu HQ pod daną lokacją (klucz: nazwa z CITY_NAMES, reset w endTurn)
   burrowingVillainId?: string // Burrow: instanceId Villaina, który po tej walce wraca do Streets zamiast do Victory Pile (ustawia onFight, czyta combat.ts)
   cancelFightEffectsThisTurn?: boolean // Ultimate Nullifier: do końca tury możesz anulować efekt Fight Villaina / taktyki (combat.ts)
   versatileBothThisTurn?: boolean // Against All Odds: do końca tury Versatile daje i Attack, i Recruit

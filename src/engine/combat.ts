@@ -222,6 +222,16 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
   }
 }
 
+async function resolveMastermindCaptives(state: GameState, ui: UiAdapter): Promise<void> {
+  const mastermind = state.mastermind
+  const captives = state.captives[mastermind.instanceId] ?? []
+  const scheme = getScheme(state)
+  const rescued = scheme.onCaptivesRescued?.(state, mastermind, captives) ?? captives
+  delete state.captives[mastermind.instanceId]
+
+  for (const card of rescued) await rescueCard(state, card, ui)
+}
+
 export async function fightMastermind(state: GameState, ui: UiAdapter): Promise<void> {
   assertPlaying(state)
 
@@ -238,6 +248,7 @@ export async function fightMastermind(state: GameState, ui: UiAdapter): Promise<
 
     await spendAttack(state, strength, ui, mmId)
     await claimTactic(state, ui)
+    await resolveMastermindCaptives(state, ui)
   } finally {
     state.cosmicThreatReduction = 0
   }
