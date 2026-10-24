@@ -36,3 +36,45 @@ export const SYMBIOTE_SPIDER_MAN_CARDS: DeckEntry[] = [
   { count: 3, card: { id: 'hero-symbiote-spider-man-shadowed-spider', name: 'Shadowed Spider', hero: 'Symbiote Spider-Man', img: img('hero-symbiote-spider-man-shadowed-spider'), team: ['spider-friends'], type: ['covert'], attack: 1, cost: 2, text: 'Wall-Crawl. You get +1 Attack for each other Hero you played this turn that costs 1 or 2.' } },
   { count: 1, card: { id: 'hero-symbiote-spider-man-thwip', name: 'Thwip!', hero: 'Symbiote Spider-Man', img: img('hero-symbiote-spider-man-thwip'), team: ['spider-friends'], type: ['ranged'], attack: 4, cost: 2, text: 'To play this card, you must put two cards from your hand on top of your deck.' } },
 ]
+
+const villainImg = (slug: string) => `/cards/paint-the-town-red/villain-${slug}.webp`
+
+function villainCard(
+  id: string,
+  name: string,
+  group: string,
+  strength: number | undefined,
+  vp: number,
+  text: string,
+  keywords: string[] = [],
+): DeckEntry {
+  return {
+    count: 1,
+    card: {
+      id: `villain-${id}`,
+      name,
+      img: villainImg(id),
+      strength,
+      vp,
+      villainGroup: group,
+      text,
+      keywords,
+    },
+  }
+}
+
+export const MAXIMUM_CARNAGE_CARDS: DeckEntry[] = [
+  { ...villainCard('carrion', 'Carrion', 'Maximum Carnage', 4, 3, 'Feast. Whenever Carrion feasts on a Hero that costs 1 or more, put Carrion back in the city space where he was.', ['feast']), count: 2 },
+  { ...villainCard('demogoblin', 'Demogoblin', 'Maximum Carnage', 5, 3, 'Ambush: Demogoblin captures a Bystander. Feast.', ['feast']), count: 2 },
+  { ...villainCard('doppelganger', 'Doppelganger', 'Maximum Carnage', undefined, 3, "Doppelganger's Attack is equal to the Cost of the Hero in the HQ space under him. Feast.", ['feast']), count: 2 },
+  { ...villainCard('shriek', 'Shriek', 'Maximum Carnage', 6, 4, 'Feast. When Shriek feasts on a 0-cost Hero, each other player gains a Wound. Escape: Each player gains a Wound.', ['feast']), count: 2 },
+]
+
+export const SINISTER_SIX_CARDS: DeckEntry[] = [
+  villainCard('chameleon', 'Chameleon', 'Sinister Six', 6, 2, 'Fight: Copy the effects of the Hero in the HQ space under Chameleon, including its Recruit and Attack.'),
+  villainCard('hobgoblin', 'Hobgoblin', 'Sinister Six', 5, 3, 'Ambush: Each Sinister Six Villain captures a Bystander.'),
+  villainCard('kraven-the-hunter', 'Kraven the Hunter', 'Sinister Six', undefined, 4, 'Kraven’s Attack is equal to the Cost of the highest-cost Hero in the HQ. Escape: After you do the normal escape KO, KO a Hero from the HQ with the highest cost.'),
+  villainCard('sandman', 'Sandman', 'Sinister Six', undefined, 4, 'Sandman’s Attack is twice the number of Villains in the city. Escape: Each player reveals an Instinct Hero or gains a Wound.'),
+  villainCard('shocker', 'Shocker', 'Sinister Six', 5, 3, 'Ambush: Each player reveals an Instinct Hero or discards a card.'),
+  villainCard('vulture', 'Vulture', 'Sinister Six', 4, 2, 'Ambush: After Vulture enters the city, if there is a Villain on the Rooftops or Bridge, swap Vulture with one of those Villains. Escape: Each player reveals an Instinct Hero or gains a Wound.'),
+].map((entry) => ({ ...entry, count: entry.card.id === 'villain-chameleon' || entry.card.id === 'villain-hobgoblin' || entry.card.id === 'villain-kraven-the-hunter' || entry.card.id === 'villain-sandman' ? 1 : 2 }))

@@ -137,6 +137,7 @@ export interface GameState {
   schemeTwists?: CardInstance[] // Twisty odłożone obok Scheme'u
   mastermindSchemeTwists?: CardInstance[] // Twisty odłożone obok Masterminda przez Scheme
   burrowingVillainId?: string // Burrow: instanceId Villaina, który po tej walce wraca do Streets zamiast do Victory Pile (ustawia onFight, czyta combat.ts)
+  returnVillainToCity?: { instanceId: string; cityIndex: number } // Feast: Carrion returns to the space where it was fought
   cancelFightEffectsThisTurn?: boolean // Ultimate Nullifier: do końca tury możesz anulować efekt Fight Villaina / taktyki (combat.ts)
   versatileBothThisTurn?: boolean // Against All Odds: do końca tury Versatile daje i Attack, i Recruit
   status: GameStatus

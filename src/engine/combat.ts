@@ -127,6 +127,30 @@ async function removeVillainFromCity(state: GameState, index: number, ui: UiAdap
   }
 }
 
+async function resolveVillainFightEffects(
+  state: GameState,
+  ui: UiAdapter,
+  villain: CardInstance,
+): Promise<boolean> {
+  const data = state.cards[villain.cardId]
+  const abilities = getVillainAbilities(villain.cardId)
+  if (!abilities?.onFight && !((data.keywords ?? []).includes('feast') && abilities?.onFeast)) return true
+  if (await fightEffectCancelled(state, ui, villain)) return false
+
+  await asEnemyEffect(state, async () => {
+    if ((data.keywords ?? []).includes('feast')) {
+      const feasted = state.deck.pop()
+      if (feasted) {
+        state.ko.push(feasted)
+        await ui.revealCard(feasted, `${data.name} feasts on ${state.cards[feasted.cardId].name}`)
+        await abilities?.onFeast?.(state, ui, villain, feasted)
+      }
+    }
+    await abilities?.onFight?.(state, ui, villain)
+  })
+  return true
+}
+
 /** Mind Control (Professor X): zdobywasz pokonanego Villaina. Idzie do Twoich odrzuconych jak kupiona karta
  * i działa jak Bohater z Attack równym swojej sile. Działa przy każdym pokonaniu (walka, za darmo, z talii). */
 async function offerMindControl(state: GameState, villain: CardInstance, ui: UiAdapter): Promise<void> {
@@ -168,10 +192,7 @@ export async function defeatVillainFromDeck(
 
   state.villainDeck.pop()
 
-  const abilities = getVillainAbilities(villain.cardId)
-  if (abilities?.onFight && !(await fightEffectCancelled(state, ui, villain))) {
-    await asEnemyEffect(state, () => abilities.onFight!(state, ui, villain))
-  }
+  await resolveVillainFightEffects(state, ui, villain)
   state.burrowingVillainId = undefined // Villain z talii nie stoi w mieście, więc nie ma gdzie się zakopać
 
   addRecruit(state, state.defeatRecruitBonus ?? 0)
@@ -210,9 +231,14 @@ export async function fightVillain(
 
   await spendAttack(state, strength, ui, villain.cardId)
 
-  const abilities = getVillainAbilities(villain.cardId)
-  if (abilities?.onFight && !(await fightEffectCancelled(state, ui, villain))) {
-    await asEnemyEffect(state, () => abilities.onFight!(state, ui, villain))
+  await resolveVillainFightEffects(state, ui, villain)
+
+  if (state.returnVillainToCity?.instanceId === villain.instanceId) {
+    const returnIndex = state.returnVillainToCity.cityIndex
+    state.returnVillainToCity = undefined
+    state.city[returnIndex] = villain
+    logEvent(state, `Feast returned: ${state.cards[villain.cardId].name}`)
+    return
   }
 
   await removeVillainFromCity(state, index, ui)

@@ -515,7 +515,8 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
     const available = (preferred: string[], pool: string[]) => preferred.filter((id) => pool.includes(id))
     const pickOne = (preferred: string[], pool: string[]) => {
       const candidates = available(preferred, pool)
-      return candidates[Math.floor(Math.random() * candidates.length)]
+      const fallback = candidates.length > 0 ? candidates : pool
+      return fallback[Math.floor(Math.random() * fallback.length)]
     }
     const schemeId = pickOne(preset.schemeIds, activeSchemeIds)
     const mastermindId = pickOne(preset.mastermindIds, activeMastermindIds)
