@@ -15,10 +15,22 @@ export default function DevNoticePopup() {
           correctly on PC at Full HD resolution. Other devices and resolutions
           may not work properly.
         </p>
-        <p>
-          Currently implemented and tested: the Core Set and most of the Dark City
-          expansion. Minor undiscovered bugs may still occur.
-        </p>
+        <p className="dev-notice-implemented">Implemented and mostly tested:</p>
+        <div className="dev-notice-sets">
+          <div className="dev-notice-set">
+            <img src={`${import.meta.env.BASE_URL}icons/sets/core_set.png`} alt="" />
+            <strong>Core Set</strong>
+          </div>
+          <div className="dev-notice-set">
+            <img src={`${import.meta.env.BASE_URL}icons/sets/dark_city.png`} alt="" />
+            <strong>Dark City</strong>
+          </div>
+          <div className="dev-notice-set">
+            <img src={`${import.meta.env.BASE_URL}icons/sets/fantastic_four.png`} alt="" />
+            <strong>Fantastic Four</strong>
+          </div>
+        </div>
+        <p>Minor undiscovered bugs may still occur.</p>
         <p className="dev-notice-hint">Click anywhere to close</p>
       </div>
     </div>
