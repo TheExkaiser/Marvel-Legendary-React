@@ -7,7 +7,8 @@ export interface ThemeDef {
 // Nowy motyw = nowy wpis tutaj (plus ewentualny blok CSS pod :root[data-theme='id'])
 export const THEMES: ThemeDef[] = [
   { id: 'classic', label: 'Classic (gradient)' },
-  { id: 'image', label: 'Background image', backgroundImage: 'backgrounds/bg_01.jpg' },
+  { id: 'image', label: 'Default Image', backgroundImage: 'backgrounds/bg_01.jpg' },
+  {id: 'image2', label: 'Dark City', backgroundImage: 'backgrounds/bg_02.jpeg' },
 ]
 
 export const DEFAULT_THEME_ID = 'classic'

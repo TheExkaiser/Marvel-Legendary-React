@@ -7,7 +7,7 @@ import { sumVictoryPoints, finalScore } from './engine/keywords'
 import {
   playCard,
   teleportCard,
-  recruitHero,
+  recruitHeroWithUi,
   recruitOfficer,
   fightVillain,
   fightMastermind,
@@ -335,7 +335,7 @@ function GameScreen({
                   flipFrom="hero-deck"
                   effectiveCost={hqCardCost(state, i)}
                   costResource={negativeZoneActive ? 'attack' : 'recruit'}
-                  onClick={() => act((s) => recruitHero(s, instance.instanceId))}
+                  onClick={() => act((s, ui) => recruitHeroWithUi(s, instance.instanceId, ui))}
                 />
               ) : (
                 <div className={destroyed ? 'slot-empty slot-destroyed' : 'slot-empty'}>

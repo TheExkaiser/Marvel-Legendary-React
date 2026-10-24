@@ -123,6 +123,9 @@ export interface GameState {
   rescueRecruitBonus?: number // Jean Grey: +Recruit za każdego uratowanego Bystandera w tej turze
   rescueAttackBonus?: number // Jean Grey: +Attack za każdego uratowanego Bystandera w tej turze
   rescueDrawBonus?: number // Jean Grey: dobranie karty za każdego uratowanego Bystandera w tej turze
+  bystandersRescuedThisTurn?: number // Paint the Town Red: Spider Friends bonuses
+  rooftopsKoAvailable?: number // Paint the Town Red: Lunar Communion
+  rooftopsRescueVpBonus?: number // Paint the Town Red: Golden Ankh of Khonshu
   enemyEffectDepth?: number // >0 w trakcie efektu Villaina / Master Strike'a / Taktyki (Impenetrable Ice Wall)
   mindControlThisTurn?: boolean // Professor X (Mind Control): po pokonaniu Villaina możesz go zdobyć
   instanceOverrides?: Record<string, InstanceOverride> // instanceId -> nadpisane dane karty
@@ -233,6 +236,8 @@ export interface GameModeDef {
 export interface CardGroup {
   id: string
   name: string
+  /** Civilian/real identity shared by every card in this Hero group. */
+  realName?: string
   cards: DeckEntry[]
   icon?: string // np. 'icons/heroes/spider-man.png' (plik w folderze public/)
 }
@@ -287,6 +292,8 @@ export interface SetupChoices {
   henchmenGroupIds: string[]
   excludedBystanderGroupIds: string[] // wyłączone grupy Bystanderów; domyślnie (pusta lista) wybrane są wszystkie z aktywnych zestawów
   heroSelectionMode?: HeroSelectionMode
+  /** Prevents two selected Hero groups from sharing the same real identity. */
+  uniqueHeroRealNames?: boolean
 }
 
 export type HeroSelectionMode =

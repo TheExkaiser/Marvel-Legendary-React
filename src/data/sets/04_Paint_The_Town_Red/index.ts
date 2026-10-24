@@ -7,6 +7,7 @@ import {
   PAINT_THE_TOWN_RED_BYSTANDER_GROUPS,
 } from './content'
 import { PAINT_THE_TOWN_RED_SCHEMES } from './schemes'
+import './heroAbilities'
 
 // Szkielet dodatku Paint the Town Red. Kolejne moduły zdolności można
 // podłączać tutaj analogicznie do pozostałych setów.

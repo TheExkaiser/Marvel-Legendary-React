@@ -3,7 +3,7 @@ export { createGameState, startGame } from './setup'
 export { drawCards, takeTopCards } from './deckOps'
 export { playCard, endTurn, teleportCard } from './turn'
 export { villainPhase } from './villainPhase'
-export { recruitHero, recruitOfficer } from './recruit'
+export { recruitHero, recruitHeroWithUi, recruitOfficer } from './recruit'
 export {
   fightVillain,
   defeatVillainFree,

@@ -11,6 +11,7 @@ export const EMPTY_CHOICES: SetupChoices = {
   henchmenGroupIds: [],
   excludedBystanderGroupIds: [],
   heroSelectionMode: 'full-random',
+  uniqueHeroRealNames: true,
 }
 
 // rng można podmienić (np. na generator z ziarnem w trybie debug)
@@ -52,11 +53,14 @@ function fillHeroes(
   required: string[],
   mode: HeroSelectionMode,
   rng: Rng,
+  uniqueRealNames = false,
 ): string[] {
   const available = groups.filter((group) => !current.includes(group.id))
   const requiredIds = required.filter((id) => groups.some((group) => group.id === id))
   const kept = [...new Set([...requiredIds, ...current.filter((id) => groups.some((group) => group.id === id))])].slice(0, count)
-  if (kept.length >= count || mode === 'full-random') return fillIds(kept, groups.map((g) => g.id), count, required, rng)
+  if (kept.length >= count || mode === 'full-random') {
+    return fillHeroIds(kept, groups, count, required, rng, uniqueRealNames)
+  }
 
   const tagKey = mode.startsWith('team') ? 'team' : 'type'
   const tagCounts = new Map<string, number>()
@@ -64,7 +68,7 @@ function fillHeroes(
     for (const tag of groupTags(group, tagKey)) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1)
   }
   const tags = [...tagCounts.keys()]
-  if (tags.length === 0) return fillIds(kept, groups.map((g) => g.id), count, required, rng)
+  if (tags.length === 0) return fillHeroIds(kept, groups, count, required, rng, uniqueRealNames)
   const bestCount = Math.max(...tags.map((tag) => tagCounts.get(tag) ?? 0))
   const slotsToFill = count - kept.length
   // Team Full nie powinien preferować największego teamu (np. X-Menów) za
@@ -81,7 +85,34 @@ function fillHeroes(
   const matching = available.filter((group) => groupTags(group, tagKey).includes(target))
   const preferredCount = mode.endsWith('full') ? count - kept.length : Math.ceil((count - kept.length) / 2)
   const preferred = shuffled(matching, rng).slice(0, preferredCount).map((group) => group.id)
-  return fillIds([...kept, ...preferred], groups.map((g) => g.id), count, required, rng)
+  return fillHeroIds([...kept, ...preferred], groups, count, required, rng, uniqueRealNames)
+}
+
+function fillHeroIds(
+  current: string[],
+  groups: CardGroup[],
+  count: number,
+  required: string[],
+  rng: Rng,
+  uniqueRealNames: boolean,
+): string[] {
+  const byId = new Map(groups.map((group) => [group.id, group]))
+  const result = [...new Set(required.filter((id) => byId.has(id)).concat(current.filter((id) => byId.has(id))))].slice(0, count)
+  const usedNames = new Set(
+    result
+      .map((id) => byId.get(id)?.realName)
+      .filter((name): name is string => Boolean(name)),
+  )
+  const candidates = shuffled(
+    groups.filter((group) => !result.includes(group.id) && (!uniqueRealNames || !group.realName || !usedNames.has(group.realName))),
+    rng,
+  )
+  for (const group of candidates) {
+    if (result.length >= count) break
+    result.push(group.id)
+    if (uniqueRealNames && group.realName) usedNames.add(group.realName)
+  }
+  return result
 }
 
 /** Losuje bohaterów od zera, z zachowaniem wybranego trybu dopasowania. */
@@ -91,8 +122,9 @@ export function randomizeHeroIds(
   required: string[] = [],
   mode: HeroSelectionMode = 'full-random',
   rng: Rng = Math.random,
+  uniqueRealNames = false,
 ): string[] {
-  return fillHeroes([], groups, count, required, mode, rng)
+  return fillHeroes([], groups, count, required, mode, rng, uniqueRealNames)
 }
 
 /**
@@ -128,6 +160,16 @@ export function completeChoices(
       : fillIds(partial.villainDeckHeroIds ?? [], heroPool, rules.villainDeckHeroes, rules.requiredVillainDeckHeroes, rng)
 
   const heroSelectionMode = partial.heroSelectionMode ?? 'full-random'
+  const uniqueHeroRealNames = partial.uniqueHeroRealNames ?? true
+  const villainDeckRealNames = new Set(
+    villainDeckHeroIds
+      .map((id) => sets.flatMap((set) => set.heroes).find((group) => group.id === id)?.realName)
+      .filter((name): name is string => Boolean(name)),
+  )
+  const heroGroups = sets
+    .flatMap((s) => s.heroes)
+    .filter((group) => !villainDeckHeroIds.includes(group.id))
+    .filter((group) => !uniqueHeroRealNames || !group.realName || !villainDeckRealNames.has(group.realName))
 
   return {
     gameModeId: gameMode.id,
@@ -135,11 +177,12 @@ export function completeChoices(
     mastermindId: mastermind.card.id,
     heroIds: fillHeroes(
       partial.heroIds ?? [],
-      sets.flatMap((s) => s.heroes).filter((group) => !villainDeckHeroIds.includes(group.id)),
+      heroGroups,
       rules.heroes,
       rules.requiredHeroes,
       heroSelectionMode,
       rng,
+      uniqueHeroRealNames,
     ),
     villainDeckHeroIds,
     villainGroupIds: fillIds(partial.villainGroupIds ?? [], ids(sets.flatMap((s) => s.villainGroups)), rules.villainGroups, rules.requiredVillainGroups, rng),
@@ -167,5 +210,6 @@ export function pruneChoices(choices: SetupChoices, sets: SetData[], gameModes: 
     henchmenGroupIds: keep(sets.flatMap((s) => s.henchmenGroups), choices.henchmenGroupIds),
     excludedBystanderGroupIds: keep(sets.flatMap((s) => s.bystanderGroups), choices.excludedBystanderGroupIds ?? []),
     heroSelectionMode: choices.heroSelectionMode ?? 'full-random',
+    uniqueHeroRealNames: choices.uniqueHeroRealNames ?? true,
   }
 }

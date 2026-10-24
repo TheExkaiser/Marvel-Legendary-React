@@ -18,6 +18,7 @@ import { CITY_NAMES } from '../../../engine/constants'
 import { refillHq } from '../../../engine/recruit'
 import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
+import { chooseOneCard, revealOneOr } from '../../../engine/abilityHelpers'
 
 // ---------- Blob ----------
 
@@ -35,10 +36,7 @@ async function koTwoHeroesFrom(
     const heroes = pile.filter((c) => state.cards[c.cardId].hero !== undefined)
     if (heroes.length === 0) return
 
-    const chosen =
-      heroes.length === 1
-        ? heroes[0]
-        : await ui.choose(heroes, { prompt, optional: false })
+    const chosen = await chooseOneCard(ui, heroes, prompt)
     if (!chosen) return
     koCard(state, chosen.instanceId)
   }
@@ -66,37 +64,15 @@ registerVillainAbilities('villain-mystique', {
 // ---------- Sabretooth ----------
 
 async function revealTeamOrWound(state: GameState, ui: UiAdapter, team: string, label: string, prompt: string): Promise<void> {
-  const toReveal = revealCards(state, { team })
-
-  if (toReveal.length > 0) {
-    const chosen =
-      toReveal.length === 1
-        ? toReveal[0]
-        : await ui.choose(toReveal, { prompt, optional: false })
-    if (chosen) {
-      await ui.showInfo(chosen, `${prompt}: revealed a ${label} Hero`)
-      return
-    }
-  }
-
-  await gainWound(state, ui)
+  await revealOneOr(ui, revealCards(state, { team }), prompt, `${prompt}: revealed a ${label} Hero`, async () => {
+    await gainWound(state, ui)
+  })
 }
 
 async function revealTypeOrWound(state: GameState, ui: UiAdapter, type: string, label: string, prompt: string): Promise<void> {
-  const toReveal = revealCards(state, { type })
-
-  if (toReveal.length > 0) {
-    const chosen =
-      toReveal.length === 1
-        ? toReveal[0]
-        : await ui.choose(toReveal, { prompt, optional: false })
-    if (chosen) {
-      await ui.showInfo(chosen, `${prompt}: revealed a ${label} Hero`)
-      return
-    }
-  }
-
-  await gainWound(state, ui)
+  await revealOneOr(ui, revealCards(state, { type }), prompt, `${prompt}: revealed a ${label} Hero`, async () => {
+    await gainWound(state, ui)
+  })
 }
 
 registerVillainAbilities('villain-sabretooth', {

@@ -43,6 +43,20 @@
   backdrop-filter: blur(8px);
 }
 
+.setup-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+  color: var(--text-muted, #b8c8dd);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.setup-option input {
+  accent-color: #55c7ff;
+}
+
 /* ===== Układ główny ===== */
 
 .setup-body {

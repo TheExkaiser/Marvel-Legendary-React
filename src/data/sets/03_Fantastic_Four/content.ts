@@ -12,11 +12,11 @@ import {
 } from './cards'
 
 export const FANTASTIC_FOUR_HEROES: CardGroup[] = [
-  { id: 'fantasticfour_human_torch', name: 'Human Torch', cards: HUMAN_TORCH_CARDS },
-  { id: 'fantasticfour_invisible_woman', name: 'Invisible Woman', cards: INVISIBLE_WOMAN_CARDS },
-  { id: 'fantasticfour_mr_fantastic', name: 'Mr. Fantastic', cards: MR_FANTASTIC_CARDS },
-  { id: 'fantasticfour_silver_surfer', name: 'Silver Surfer', cards: SILVER_SURFER_CARDS },
-  { id: 'fantasticfour_thing', name: 'Thing', cards: THING_CARDS },
+  { id: 'fantasticfour_human_torch', name: 'Human Torch', realName: 'Johnny Storm', cards: HUMAN_TORCH_CARDS },
+  { id: 'fantasticfour_invisible_woman', name: 'Invisible Woman', realName: 'Susan Storm', cards: INVISIBLE_WOMAN_CARDS },
+  { id: 'fantasticfour_mr_fantastic', name: 'Mr. Fantastic', realName: 'Reed Richards', cards: MR_FANTASTIC_CARDS },
+  { id: 'fantasticfour_silver_surfer', name: 'Silver Surfer', realName: 'Norrin Radd', cards: SILVER_SURFER_CARDS },
+  { id: 'fantasticfour_thing', name: 'Thing', realName: 'Ben Grimm', cards: THING_CARDS },
 ]
 
 export const FANTASTIC_FOUR_VILLAIN_GROUPS: CardGroup[] = [

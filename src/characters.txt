@@ -1,0 +1,142 @@
+MARVEL LEGENDARY CONTENT CATALOG
+
+=== 01_Core_Set ===
+
+HEROES
+- Black Widow | Real Name: Natasha Romanoff | Teams: avengers
+- Captain America | Real Name: Steve Rogers | Teams: avengers
+- Cyclops | Real Name: Scott Summers | Teams: x-men
+- Deadpool | Real Name: Wade Wilson | Teams: —
+- Emma Frost | Real Name: Emma Frost | Teams: x-men
+- Hawkeye | Real Name: Clint Barton | Teams: avengers
+- Gambit | Real Name: Remy LeBeau | Teams: x-men
+- Hulk | Real Name: Bruce Banner | Teams: avengers
+- Iron Man | Real Name: Tony Stark | Teams: avengers
+- Nick Fury | Real Name: Nick Fury | Teams: S.H.I.E.L.D.
+- Rogue | Real Name: Anna Marie | Teams: x-men
+- Spider-Man | Real Name: Peter Parker | Teams: spider-friends
+- Storm | Real Name: Ororo Munroe | Teams: x-men
+- Thor | Real Name: Thor Odinson | Teams: avengers
+- Wolverine | Real Name: James Howlett | Teams: x-men
+
+VILLAIN GROUPS
+- Brotherhood: Blob, Juggernaut, Mystique, Sabretooth
+- Enemies of Asgard: Destroyer, Enchantress, Frost Giant, Ymir, Frost Giant King
+- HYDRA: Endless Armies of HYDRA, HYDRA Kidnappers, Supreme HYDRA, Viper
+- Masters of Evil: Baron Zemo, Melter, Ultron, Whirlwind
+- Radiation: Abomination, The Leader, Maestro, Zzzax
+- Skrulls: Paibok the Power Skrull, Skrull Queen Veranke, Skrull Shapeshifters, Super-Skrull
+- Spider-Foes: Doctor Octopus, Green Goblin, The Lizard, Venom
+
+HENCHMEN GROUPS
+- Doombot Legion: Doombot Legion
+- Hand Ninjas: Hand Ninjas
+- Savage Land Mutates: Savage Land Mutates
+- Sentinel: Sentinel
+
+MASTERMINDS
+- Dr. Doom
+- Loki
+- Magneto
+- Red Skull
+
+SCHEMES
+- Unleash the Power of the Cosmic Cube
+- The Legacy Virus
+- Midtown Bank Robbery
+- Negative Zone Prison Breakout
+- Portals to the Dark Dimension
+- Secret Invasion of the Skrull Shapeshifters
+
+=== 02_Dark_City ===
+
+HEROES
+- Angel | Real Name: Warren Worthington III | Teams: x-men
+- Bishop | Real Name: Lucas Bishop | Teams: x-men
+- Blade | Real Name: Eric Brooks | Teams: marvel-knights
+- Cable | Real Name: Nathan Summers | Teams: x-force
+- Colossus | Real Name: Piotr Rasputin | Teams: x-force
+- Daredevil | Real Name: Matt Murdock | Teams: marvel-knights
+- Domino | Real Name: Neena Thurman | Teams: x-force
+- Elektra | Real Name: Elektra Natchios | Teams: marvel-knights
+- Forge | Real Name: Forge | Teams: x-force
+- Ghost Rider | Real Name: Johnny Blaze | Teams: marvel-knights
+- Iceman | Real Name: Bobby Drake | Teams: x-men
+- Iron Fist | Real Name: Danny Rand | Teams: marvel-knights
+- Jean Grey | Real Name: Jean Grey | Teams: x-men
+- Nightcrawler | Real Name: Kurt Wagner | Teams: x-men
+- Professor X | Real Name: Charles Xavier | Teams: x-men
+- Punisher | Real Name: Frank Castle | Teams: marvel-knights
+- Wolverine | Real Name: James Howlett | Teams: x-force
+
+VILLAIN GROUPS
+- Emissaries of Evil: Egghead, Electro, Gladiator, Rhino
+- Four Horsemen: Death, Famine, Pestilence, War
+- Marauders: Blockbuster, Chimera, Scalphunter, Vertigo
+- MLF: Forearm, Reignfire, Wildside, Zero
+- Streets of New York: Bullseye, Hammerhead, Jigsaw, Tombstone
+- Underworld: Azazel, Blackheart, Dracula, Lilith, Daughter of Dracula
+
+HENCHMEN GROUPS
+- Maggia Goons: Maggia Goons
+- Phalanx: Phalanx
+
+MASTERMINDS
+- Apocalypse
+- Kingpin
+- Mephisto
+- Mr. Sinister
+- Stryfe
+
+SCHEMES
+- Massive Earthquake Generator
+- Organized Crime Wave
+- Transform Citizens Into Demons
+- Steal the Weaponized Plutonium
+- Baby Hope
+- Capture Baby Hope
+- Save Humanity
+- Detonate the Helicarrier
+
+=== 03_Fantastic_Four ===
+
+HEROES
+- Human Torch | Real Name: Johnny Storm | Teams: fantastic-four
+- Invisible Woman | Real Name: Susan Storm | Teams: fantastic-four
+- Mr. Fantastic | Real Name: Reed Richards | Teams: fantastic-four
+- Silver Surfer | Real Name: Norrin Radd | Teams: —
+- Thing | Real Name: Ben Grimm | Teams: fantastic-four
+
+VILLAIN GROUPS
+- Heralds of Galactus: Firelord, Morg, Stardust, Terrax the Tamer
+- Subterranea: Giganto, Megataur, Moloids
+
+HENCHMEN GROUPS
+
+MASTERMINDS
+- Galactus
+- Mole Man
+
+SCHEMES
+- Bathe the Earth in Cosmic Rays
+- Flood the Planet with Melted Glaciers
+- Invincible Force Field
+- Pull Reality Into the Negative Zone
+
+=== 04_Paint_The_Town_Red ===
+
+HEROES
+- Black Cat | Real Name: Felicia Hardy | Teams: spider-friends
+- Moon Knight | Real Name: Marc Spector | Teams: marvel-knights
+- Scarlet Spider | Real Name: Ben Reilly | Teams: spider-friends
+- Spider-Woman | Real Name: Jessica Drew | Teams: spider-friends
+- Symbiote Spider-Man | Real Name: Peter Parker | Teams: spider-friends
+
+VILLAIN GROUPS
+
+HENCHMEN GROUPS
+
+MASTERMINDS
+
+SCHEMES
+

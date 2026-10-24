@@ -73,9 +73,9 @@ function CostModifierBadge({ data, effectiveCost, costResource = 'recruit' }: { 
   return (
     <div className="attack-modifier-badge">
       <img
-        className="attack-modifier-icon"
-        src={`${import.meta.env.BASE_URL}icons/${costResource}.png`}
-        alt={costResource === 'attack' ? 'Attack cost' : 'Recruit cost'}
+        className="attack-modifier-icon cost-icon"
+        src={`${import.meta.env.BASE_URL}icons/cost.png`}
+        alt="Cost"
       />
       <span className="attack-modifier-value" style={{ color }}>{effectiveCost}</span>
     </div>

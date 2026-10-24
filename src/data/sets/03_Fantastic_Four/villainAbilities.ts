@@ -8,6 +8,7 @@ import { CITY_NAMES } from '../../../engine/constants'
 import { getCardData } from '../../../engine/cardData'
 import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
+import { chooseOneCard } from '../../../engine/abilityHelpers'
 
 // Cosmic Threat (jedna klasa) działa jako stały modyfikator siły: keywords.ts, cosmicThreatReduction.
 
@@ -112,10 +113,7 @@ registerVillainAbilities('villain-moloids', {
   onFight: async (state, ui, self) => {
     const heroes = haveCards(state).filter((c) => state.cards[c.cardId].hero !== undefined)
     if (heroes.length > 0) {
-      const chosen =
-        heroes.length === 1
-          ? heroes[0]
-          : await ui.choose(heroes, { prompt: 'Moloids (Fight): KO one of your Heroes', optional: false })
+      const chosen = await chooseOneCard(ui, heroes, 'Moloids (Fight): KO one of your Heroes')
       if (chosen) koCard(state, chosen.instanceId)
     }
     markBurrow(state, self)

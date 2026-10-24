@@ -100,13 +100,15 @@ button,
   }
 }
 
-/* Motyw "image": ten sam kolorystyczny theme, ale grafika zamiast gradientu.
-   Kod ustawia <html data-theme="image"> oraz zmienną --bg-image (ścieżka z BASE_URL). */
-:root[data-theme='image'] body {
+/* Motywy obrazkowe: grafika zamiast gradientu.
+   Kod ustawia data-theme oraz zmienną --bg-image (ścieżka z BASE_URL). */
+:root[data-theme='image'] body,
+:root[data-theme='image2'] body {
   background: none;
 }
 
-:root[data-theme='image']::before {
+:root[data-theme='image']::before,
+:root[data-theme='image2']::before {
   content: '';
   position: fixed;
   inset: 0;
@@ -430,6 +432,43 @@ button:disabled {
   border-radius: 16px;
   background: linear-gradient(170deg, var(--panel-solid), var(--deep));
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(56, 225, 255, 0.08);
+}
+
+.option-prompt {
+  width: min(500px, calc(100vw - 32px));
+  padding: 24px;
+  text-align: center;
+}
+
+.option-prompt-card {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 20px;
+}
+
+.option-prompt-card .card {
+  width: 148px;
+  box-shadow: 0 0 0 2px var(--cyan), 0 0 28px rgba(56, 225, 255, 0.35), 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.option-prompt-text {
+  max-width: 390px;
+  margin: 0 auto 22px;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.option-prompt-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.option-prompt-options button {
+  min-width: 150px;
 }
 
 .dismiss-hint {

@@ -17,13 +17,9 @@ import { shuffle } from '../../../engine/random'
 import { CITY_NAMES } from '../../../engine/constants'
 import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
+import { chooseOneCard, revealOneOr } from '../../../engine/abilityHelpers'
 
 // ---------- Helpery ----------
-
-async function chooseOne(ui: UiAdapter, pool: CardInstance[], prompt: string): Promise<CardInstance | undefined> {
-  if (pool.length <= 1) return pool[0]
-  return (await ui.choose(pool, { prompt, optional: false })) ?? undefined
-}
 
 async function revealTypeOr(
   state: GameState,
@@ -33,12 +29,7 @@ async function revealTypeOr(
   prompt: string,
   otherwise: () => Promise<void>,
 ): Promise<void> {
-  const chosen = await chooseOne(ui, revealCards(state, { type }), prompt)
-  if (chosen) {
-    await ui.showInfo(chosen, `${prompt}: revealed a ${label} Hero`)
-    return
-  }
-  await otherwise()
+  await revealOneOr(ui, revealCards(state, { type }), prompt, `${prompt}: revealed a ${label} Hero`, otherwise)
 }
 
 // ---------- Four Horsemen ----------
@@ -48,13 +39,13 @@ async function deathEffect(state: GameState, ui: UiAdapter): Promise<void> {
     const data = state.cards[c.cardId]
     return data.hero !== undefined && (data.cost ?? 0) >= 1
   })
-  const chosen = await chooseOne(ui, heroes, 'Death: KO a Hero that costs 1 or more from your hand')
+  const chosen = await chooseOneCard(ui, heroes, 'Death: KO a Hero that costs 1 or more from your hand')
   if (chosen) koCard(state, chosen.instanceId)
 }
 
 async function famineEffect(state: GameState, ui: UiAdapter): Promise<void> {
   await revealTypeOr(state, ui, 'instinct', 'an Instinct', 'Famine: reveal an Instinct Hero or discard a card', async () => {
-    const chosen = await chooseOne(ui, state.hand, 'Famine: discard a card')
+    const chosen = await chooseOneCard(ui, state.hand, 'Famine: discard a card')
     if (chosen) await discardCard(state, chosen.instanceId, ui)
   })
 }
@@ -101,7 +92,7 @@ async function koHeroWithIcon(state: GameState, ui: UiAdapter, icon: 'recruit' |
     return data.hero !== undefined && (data[icon] ?? 0) > 0
   })
   const label = icon === 'recruit' ? 'Recruit' : 'Attack'
-  const chosen = await chooseOne(ui, heroes, `KO one of your Heroes with a ${label} icon`)
+  const chosen = await chooseOneCard(ui, heroes, `KO one of your Heroes with a ${label} icon`)
   if (chosen) koCard(state, chosen.instanceId)
 }
 
@@ -121,7 +112,7 @@ registerVillainAbilities('villain-hammerhead', {
 registerVillainAbilities('villain-jigsaw', {
   onAmbush: async (state, ui) => {
     for (let i = 0; i < 3 && state.hand.length > 0; i++) {
-      const chosen = await chooseOne(ui, state.hand, `Jigsaw: discard a card (${i + 1}/3)`)
+      const chosen = await chooseOneCard(ui, state.hand, `Jigsaw: discard a card (${i + 1}/3)`)
       if (chosen) await discardCard(state, chosen.instanceId, ui)
     }
     drawCards(state, 2)
@@ -170,7 +161,7 @@ async function captureRevealedBystanders(state: GameState, ui: UiAdapter, self: 
 async function koHeroes(state: GameState, ui: UiAdapter, count: number, prompt: string): Promise<void> {
   for (let i = 0; i < count; i++) {
     const heroes = haveZone(state).filter((c) => state.cards[c.cardId].hero !== undefined)
-    const chosen = await chooseOne(ui, heroes, prompt)
+      const chosen = await chooseOneCard(ui, heroes, prompt)
     if (chosen) koCard(state, chosen.instanceId)
   }
 }
@@ -310,7 +301,7 @@ registerVillainAbilities('villain-zero', {
   onFight: async (state, ui) => {
     // koszt walki: wymaganie wyżej gwarantuje, że są co najmniej 3 takie karty
     for (let i = 0; i < 3; i++) {
-      const chosen = await chooseOne(ui, zeroCostInHand(state), `Zero: discard a card that costs 0 (${i + 1}/3)`)
+      const chosen = await chooseOneCard(ui, zeroCostInHand(state), `Zero: discard a card that costs 0 (${i + 1}/3)`)
       if (chosen) await discardCard(state, chosen.instanceId, ui)
     }
   },
@@ -321,13 +312,13 @@ registerVillainAbilities('villain-zero', {
 registerVillainAbilities('villain-azazel', {
   onFight: async (state, ui) => {
     const options = state.hand.filter((c) => state.cards[c.cardId].kind !== 'wound')
-    const chosen = await chooseOne(ui, options, 'Azazel: choose a card in your hand to gain Teleport this turn')
+    const chosen = await chooseOneCard(ui, options, 'Azazel: choose a card in your hand to gain Teleport this turn')
     if (chosen) state.teleportGrantedThisTurn = [...(state.teleportGrantedThisTurn ?? []), chosen.instanceId]
   },
 })
 
 async function blackheartEffect(state: GameState, ui: UiAdapter): Promise<void> {
-  const chosen = await chooseOne(
+  const chosen = await chooseOneCard(
     ui,
     revealCards(state, { team: 'marvel-knights' }),
     'Blackheart: reveal a Marvel Knights Hero or gain a Wound',

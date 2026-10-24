@@ -26,6 +26,7 @@ import {
 import { registerPlayRequirement } from '../../../engine/cardRequirements'
 import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
+import { chooseOneCard } from '../../../engine/abilityHelpers'
 import { registerDiscardReplacement } from '../../../engine/replacements'
 import { villainPhase } from '../../../engine/villainPhase'
 import { CITY_NAMES } from '../../../engine/constants'
@@ -68,10 +69,7 @@ registerCardAbility('hero-black-widow-silent-sniper', async (state, { ui }) => {
   ]
   if (targets.length === 0) return
 
-  const chosen =
-    targets.length === 1
-      ? targets[0]
-      : await ui.choose(targets, { prompt: 'Silent Sniper: wybierz cel z Bystanderem', optional: false })
+  const chosen = await chooseOneCard(ui, targets, 'Silent Sniper: wybierz cel z Bystanderem')
   if (!chosen) return
 
   if (chosen.instanceId === state.mastermind.instanceId) {
@@ -144,13 +142,7 @@ registerCardAbility('hero-deadpool-here-hold-this-for-a-second', async (state, {
   const bystander = state.bystanders[state.bystanders.length - 1]
   if (villains.length === 0 || !bystander) return
 
-  const target =
-    villains.length === 1
-      ? villains[0]
-      : await ui.choose(villains, {
-          prompt: 'Wybierz złoczyńcę, który porwie Bystandera',
-          optional: false,
-        })
+  const target = await chooseOneCard(ui, villains, 'Wybierz złoczyńcę, który porwie Bystandera')
   if (!target) return
 
   state.bystanders.pop()
@@ -439,10 +431,7 @@ registerCardAbility('hero-nick-fury-pure-fury', async (state, { ui, self }) => {
     return
   }
 
-  const chosen =
-    targets.length === 1
-      ? targets[0]
-      : await ui.choose(targets, { prompt: 'Pure Fury: choose a target to defeat', optional: false })
+  const chosen = await chooseOneCard(ui, targets, 'Pure Fury: choose a target to defeat')
   if (!chosen) return
 
   if (chosen.instanceId === state.mastermind.instanceId) {

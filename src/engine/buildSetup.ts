@@ -1,4 +1,4 @@
-import type { GameModeDef, GameSetup, SetData, SetupChoices, SetupRules, DeckEntry } from './types'
+import type { CardGroup, GameModeDef, GameSetup, SetData, SetupChoices, SetupRules, DeckEntry } from './types'
 import { resolveRules } from './setupRules'
 
 /** Szuka elementu po id; getId mówi, skąd wziąć id (masterminda mają je w card.id). */
@@ -57,6 +57,19 @@ export function getSetupProblems(choices: SetupChoices, rules: SetupRules): stri
   return problems
 }
 
+export function getHeroRealNameConflicts(heroIds: string[], heroGroups: CardGroup[]): string[] {
+  const groups = new Map(heroGroups.map((group) => [group.id, group]))
+  const owners = new Map<string, string[]>()
+  for (const id of heroIds) {
+    const group = groups.get(id)
+    if (!group?.realName) continue
+    owners.set(group.realName, [...(owners.get(group.realName) ?? []), group.name])
+  }
+  return [...owners.entries()]
+    .filter(([, names]) => names.length > 1)
+    .map(([realName, names]) => `${realName}: ${names.join(', ')}`)
+}
+
 /** Przycina liczbę kopii w każdym DeckEntry do maxCount (nie mutuje oryginałów z cards.ts). */
 function capCounts(entries: DeckEntry[], maxCount: number): DeckEntry[] {
   return entries.map((entry) => ({ ...entry, count: Math.min(entry.count, maxCount) }))
@@ -69,6 +82,14 @@ export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: Ga
   const rules = resolveRules(gameMode, scheme)
 
   const problems = getSetupProblems(choices, rules)
+  if (choices.uniqueHeroRealNames) {
+    for (const conflict of getHeroRealNameConflicts(
+      [...choices.heroIds, ...choices.villainDeckHeroIds],
+      sets.flatMap((set) => set.heroes),
+    )) {
+      problems.push(`Heroes: duplicate Real Name (${conflict})`)
+    }
+  }
   if (problems.length > 0) throw new Error(`Invalid setup:\n${problems.join('\n')}`)
 
   const mastermind = pick(

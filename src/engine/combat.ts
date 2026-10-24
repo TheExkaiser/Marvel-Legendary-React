@@ -14,6 +14,7 @@ import { asEnemyEffect } from './replacements'
 import { gainVillainAsHero } from './cardData'
 import { getMastermindRule } from './mastermindRules'
 import { isCityDestroyed } from './cityLayout'
+import { koCard } from './keywords'
 
 /** Czy Recruit płaci za tę kartę jak Attack: God of Thunder (cała tura) albo Bribe (tylko ta karta). */
 function recruitPays(state: GameState, cardId: string): boolean {
@@ -108,6 +109,21 @@ async function removeVillainFromCity(state: GameState, index: number, ui: UiAdap
     if (bonus.recruit) addRecruit(state, bonus.recruit)
     if (bonus.draw) drawCards(state, bonus.draw)
     for (let i = 0; i < (bonus.rescue ?? 0); i++) await rescueBystander(state, ui)
+  }
+
+  if (location === 'Rooftops') {
+    if ((state.rooftopsRescueVpBonus ?? 0) > 0) {
+      for (let i = 0; i < (state.cards[villain.cardId].vp ?? 0); i++) await rescueBystander(state, ui)
+      state.rooftopsRescueVpBonus = Math.max(0, (state.rooftopsRescueVpBonus ?? 0) - 1)
+    }
+    if ((state.rooftopsKoAvailable ?? 0) > 0) {
+      state.rooftopsKoAvailable = Math.max(0, (state.rooftopsKoAvailable ?? 0) - 1)
+      const chosen = await ui.choose([...state.hand, ...state.discard], {
+        prompt: 'Lunar Communion: możesz KO kartę z ręki lub stosu odrzuconych',
+        optional: true,
+      })
+      if (chosen) koCard(state, chosen.instanceId)
+    }
   }
 }
 

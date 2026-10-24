@@ -26,6 +26,34 @@ const hasKeyword = (card: CardData, keyword: string) => (card.keywords ?? []).in
 
 export const KEYWORD_GLOSSARY: KeywordEntry[] = [
   {
+    id: 'wall-crawl',
+    name: 'Wall-Crawl',
+    tooltip: 'When you recruit this Hero, you may put it on top of your deck.',
+    appearsOn: (c) => hasKeyword(c, 'wall-crawl'),
+    blocks: [
+      {
+        type: 'text',
+        text: `When you recruit this Hero, you may put it on top of your deck. Do not use any other abilities on the card until it is drawn from your deck.`,
+      },
+      {
+        type: 'text',
+        text: `You cannot use Wall-Crawl when you gain a Hero through a special ability instead of recruiting it.`,
+      },
+    ],
+  },
+  {
+    id: 'feast',
+    name: 'Feast',
+    tooltip: 'Fight: KO the top card of your deck.',
+    appearsOn: (c) => hasKeyword(c, 'feast'),
+    blocks: [
+      {
+        type: 'text',
+        text: `Feast means: Fight: KO the top card of your deck. A Feast effect is treated as a Fight effect.`,
+      },
+    ],
+  },
+  {
     id: 'teleport',
     name: 'Teleport',
     tooltip: 'Instead of playing a card with Teleport, you may set it aside. Add it to your new hand at the end of your turn as an extra card.',

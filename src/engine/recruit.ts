@@ -3,6 +3,7 @@ import { assertPlaying, logEvent } from './common'
 import { getScheme } from './schemeRegistry'
 import { rescueCard } from './wounds'
 import { CITY_NAMES } from './constants'
+import type { UiAdapter } from './ui'
 
 /** Save Humanity: za tyle Recruit ratujesz Bystandera z HQ. */
 const BYSTANDER_RESCUE_COST = 2
@@ -94,6 +95,56 @@ export function recruitHero(state: GameState, instanceId: string): void {
   else placeRecruitedCard(state, instance)
   logEvent(state, isBystander ? `Rescued: ${data.name}` : `Recruited: ${data.name}`)
   refillHq(state)
+}
+
+/** Rekrutacja z interfejsem UI. Obsługuje opcjonalny Wall-Crawl po normalnym
+ * trafieniu Bohatera do discardu. Specjalne efekty, które "gaining" Bohatera,
+ * nadal używają synchronicznego recruitHero i nie uruchamiają Wall-Crawl. */
+export async function recruitHeroWithUi(state: GameState, instanceId: string, ui: UiAdapter): Promise<void> {
+  const instance = state.hq.find((card) => card?.instanceId === instanceId)
+  if (!instance) return recruitHero(state, instanceId)
+
+  recruitHero(state, instanceId)
+  const data = state.cards[instance.cardId]
+  if (!data.hero || !(data.keywords ?? []).includes('wall-crawl')) return
+
+  const recruited = [...state.hand, ...state.discard].find((card) => card.instanceId === instanceId)
+  if (!recruited) return
+  const choice = await ui.chooseOptionWithCard(
+    recruited,
+    [
+      { id: 'top', label: 'Put on top of deck' },
+      { id: 'discard', label: 'Leave in discard pile' },
+    ],
+    `${data.name}: use Wall-Crawl and put this Hero on top of your deck?`,
+  )
+  if (choice !== 'top') return
+
+  const handIndex = state.hand.findIndex((card) => card.instanceId === instanceId)
+  if (handIndex >= 0) state.hand.splice(handIndex, 1)
+  const discardIndex = state.discard.findIndex((card) => card.instanceId === instanceId)
+  if (discardIndex >= 0) state.discard.splice(discardIndex, 1)
+  state.deck.push(recruited)
+
+  // Sting of the Spider: reaguje na kartę odłożoną na wierzch talii przez
+  // Wall-Crawl, ale dopiero wtedy, gdy Sting został wcześniej zagrany w tej turze.
+  const stingPlayed = state.cardsPlayedThisTurn.some(
+    (card) => card.cardId === 'hero-scarlet-spider-sting-of-the-spider',
+  )
+  if (stingPlayed) {
+    const choice = await ui.chooseOptionWithCard(
+      recruited,
+      [
+        { id: 'draw', label: 'Draw this card' },
+        { id: 'leave', label: 'Leave it on top' },
+      ],
+      'Sting of the Spider: draw the card put on top of your deck?',
+    )
+    if (choice === 'draw') {
+      state.deck.pop()
+      state.hand.push(recruited)
+    }
+  }
 }
 
 /** Kupuje S.H.I.E.L.D. Officera ze stosu oficerów. */

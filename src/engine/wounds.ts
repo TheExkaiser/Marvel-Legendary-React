@@ -40,6 +40,9 @@ export async function rescueCard(state: GameState, card: CardInstance, ui: UiAda
   const data = state.cards[card.cardId]
   await ui.showRescue(card, `Rescued: ${data.name}`)
   state.defeated.push(card)
+  if (data.kind === 'bystander') {
+    state.bystandersRescuedThisTurn = (state.bystandersRescuedThisTurn ?? 0) + 1
+  }
   applyRescueBonuses(state, 1)
   // Jeńcem bywa też Bohater (X-Cutioner's Song): jego zdolność zagrania nie może się tu odpalić
   if (data.kind !== 'bystander') return

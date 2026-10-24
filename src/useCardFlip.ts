@@ -5,7 +5,7 @@ import { useLayoutEffect, useRef } from 'react'
 // i gdzie jest teraz, a potem odpalamy krótkie przesunięcie ze starej pozycji do nowej.
 // Karty biorące udział w animacji mają atrybut data-flip-id (patrz CardView, prop flipId).
 
-const DURATION = 320 // ms
+const DURATION = 500 // ms — spokojniejszy, bardziej czytelny lot kart
 const EASING = 'cubic-bezier(0.2, 0.8, 0.2, 1)'
 const MIN_MOVE = 2 // px: mniejsze przesunięcia ignorujemy
 const FLYING_Z_INDEX = '60' // nad ręką (50), pod oknami modalnymi (100)
@@ -32,18 +32,20 @@ export function useCardFlip(discardIds: ReadonlySet<string>): void {
   useLayoutEffect(() => {
     const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-flip-id]'))
 
-    // 1. Zdejmij trwające animacje, żeby mierzyć prawdziwe (naturalne) pozycje
-    for (const el of elements) {
-      el.getAnimations()
-        .filter((a) => a.id === 'flip')
-        .forEach((a) => a.cancel())
-    }
-
-    // 2. Zmierz, gdzie karty są TERAZ
+    // 1. Zmierz, gdzie karty są TERAZ. Nie anulujemy aktywnych animacji:
+    // render w trakcie lotu nie może skrócić animacji do pojedynczej klatki.
     const current = new Map<string, Snapshot>()
     for (const el of elements) {
+      const id = el.dataset.flipId!
+      const active = el.getAnimations().some((animation) => animation.id === 'flip')
+      const previousSnapshot = previous.current.cards.get(id)
+      if (active && previousSnapshot) {
+        // Nie zapisuj pozycji z połowy lotu jako nowego stanu bazowego.
+        current.set(id, previousSnapshot)
+        continue
+      }
       const rect = el.getBoundingClientRect()
-      current.set(el.dataset.flipId!, {
+      current.set(id, {
         x: rect.left + rect.width / 2,
         y: rect.top + rect.height / 2,
         width: rect.width,
@@ -60,6 +62,9 @@ export function useCardFlip(discardIds: ReadonlySet<string>): void {
       const scrolledY = window.scrollY - previous.current.scrollY
 
       for (const el of elements) {
+        // Karta już leci — zostawiamy jej bieżącą animację do końca.
+        if (el.getAnimations().some((animation) => animation.id === 'flip')) continue
+
         const id = el.dataset.flipId!
         const after = current.get(id)!
         let before = previous.current.cards.get(id)
@@ -99,7 +104,12 @@ export function useCardFlip(discardIds: ReadonlySet<string>): void {
         const cleanup = () => {
           // Nie zdejmuj z-index, jeśli w międzyczasie ruszyła już nowa animacja tej karty
           const stillFlying = el.getAnimations().some((a) => a.id === 'flip')
-          if (!stillFlying) el.style.zIndex = ''
+          if (!stillFlying) {
+            el.style.zIndex = ''
+            // Po zakończeniu lotu zapamiętaj cel, żeby kolejny render nie
+            // uruchamiał tej samej animacji ponownie od starej pozycji.
+            previous.current.cards.set(id, after)
+          }
         }
         animation.onfinish = cleanup
         animation.oncancel = cleanup

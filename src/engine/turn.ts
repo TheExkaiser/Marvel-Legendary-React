@@ -142,6 +142,9 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.rescueRecruitBonus = 0
   state.rescueAttackBonus = 0
   state.rescueDrawBonus = 0
+  state.bystandersRescuedThisTurn = 0
+  state.rooftopsKoAvailable = 0
+  state.rooftopsRescueVpBonus = 0
   state.mindControlThisTurn = false
   state.versatileBothThisTurn = false
   state.locationDefeatBonuses = []

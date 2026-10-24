@@ -39,21 +39,21 @@ import {
 } from './cards'
 
 export const CORE_HEROES: CardGroup[] = [
-  { id: 'coreset_black_widow', name: 'Black Widow', cards: BLACK_WIDOW_CARDS },
-  { id: 'coreset_captain_america', name: 'Captain America', cards: CAPTAIN_AMERICA_CARDS },
-  { id: 'coreset_cyclops', name: 'Cyclops', cards: CYCLOPS_CARDS },
-  { id: 'coreset_deadpool', name: 'Deadpool', cards: DEADPOOL_CARDS },
-  { id: 'coreset_emma_frost', name: 'Emma Frost', cards: EMMA_FROST_CARDS },
-  { id: 'coreset_hawkeye', name: 'Hawkeye', cards: HAWKEYE_CARDS },
-  { id: 'coreset_gambit', name: 'Gambit', cards: GAMBIT_CARDS},
-  { id: 'coreset_hulk', name: 'Hulk', cards: HULK_CARDS },
-  { id: 'coreset_iron_man', name: 'Iron Man', cards: IRON_MAN_CARDS },
-  { id: 'coreset_nick_fury', name: 'Nick Fury', cards: NICK_FURY_CARDS },
-  { id: 'coreset_rogue', name: 'Rogue', cards: ROGUE_CARDS },
-  { id: 'coreset_spider_man', name: 'Spider-Man', cards: SPIDER_MAN_CARDS },
-  { id: 'coreset_storm', name: 'Storm', cards: STORM_CARDS },
-  { id: 'coreset_thor', name: 'Thor', cards: THOR_CARDS },
-  { id: 'coreset_wolverine', name: 'Wolverine', cards: WOLVERINE_CARDS },
+  { id: 'coreset_black_widow', name: 'Black Widow', realName: 'Natasha Romanoff', cards: BLACK_WIDOW_CARDS },
+  { id: 'coreset_captain_america', name: 'Captain America', realName: 'Steve Rogers', cards: CAPTAIN_AMERICA_CARDS },
+  { id: 'coreset_cyclops', name: 'Cyclops', realName: 'Scott Summers', cards: CYCLOPS_CARDS },
+  { id: 'coreset_deadpool', name: 'Deadpool', realName: 'Wade Wilson', cards: DEADPOOL_CARDS },
+  { id: 'coreset_emma_frost', name: 'Emma Frost', realName: 'Emma Frost', cards: EMMA_FROST_CARDS },
+  { id: 'coreset_hawkeye', name: 'Hawkeye', realName: 'Clint Barton', cards: HAWKEYE_CARDS },
+  { id: 'coreset_gambit', name: 'Gambit', realName: 'Remy LeBeau', cards: GAMBIT_CARDS},
+  { id: 'coreset_hulk', name: 'Hulk', realName: 'Bruce Banner', cards: HULK_CARDS },
+  { id: 'coreset_iron_man', name: 'Iron Man', realName: 'Tony Stark', cards: IRON_MAN_CARDS },
+  { id: 'coreset_nick_fury', name: 'Nick Fury', realName: 'Nick Fury', cards: NICK_FURY_CARDS },
+  { id: 'coreset_rogue', name: 'Rogue', realName: 'Anna Marie', cards: ROGUE_CARDS },
+  { id: 'coreset_spider_man', name: 'Spider-Man', realName: 'Peter Parker', cards: SPIDER_MAN_CARDS },
+  { id: 'coreset_storm', name: 'Storm', realName: 'Ororo Munroe', cards: STORM_CARDS },
+  { id: 'coreset_thor', name: 'Thor', realName: 'Thor Odinson', cards: THOR_CARDS },
+  { id: 'coreset_wolverine', name: 'Wolverine', realName: 'James Howlett', cards: WOLVERINE_CARDS },
 ]
 
 export const CORE_VILLAIN_GROUPS: CardGroup[] = [

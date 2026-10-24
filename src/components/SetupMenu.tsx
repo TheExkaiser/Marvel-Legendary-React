@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { CardGroup, GameSetup, SetData, SetupChoices } from '../engine/types'
-import { buildSetup, getSetupProblems } from '../engine/buildSetup'
+import { buildSetup, getHeroRealNameConflicts, getSetupProblems } from '../engine/buildSetup'
 import { DEFAULT_SETUP_RULES, resolveRules, withLedGroup } from '../engine/setupRules'
 import { EMPTY_CHOICES, completeChoices, pruneChoices } from '../engine/setupChoices'
 import { GAME_MODES } from '../data/gameModes'
@@ -153,6 +153,31 @@ function safely(action: () => void): void {
   }
 }
 
+/**
+ * Core Set supplies the shared cards and the default Bystanders even when its
+ * selectable content is disabled. Its Henchmen are only a fallback when no
+ * enabled set provides any Henchmen group.
+ */
+function buildSetupSets(allSets: SetData[], enabledSetIds: string[]): SetData[] {
+  const enabled = allSets.filter((set) => enabledSetIds.includes(set.id))
+  const core = allSets.find((set) => set.id === 'core_set')
+  if (!core || enabled.some((set) => set.id === core.id)) return enabled
+
+  const hasHenchmen = enabled.some((set) => set.henchmenGroups.length > 0)
+  return [
+    ...enabled,
+    {
+      ...core,
+      schemes: [],
+      heroes: [],
+      villainGroups: [],
+      masterminds: [],
+      henchmenGroups: hasHenchmen ? [] : core.henchmenGroups,
+      bystanderGroups: core.bystanderGroups,
+    },
+  ]
+}
+
 /** Losowy wybór: najpierw elementy wymagane, potem losowe, razem najwyżej `max`. */
 function randomPick(items: PickItem[], required: string[], max: number): string[] {
   const pool = items.map((i) => i.id)
@@ -233,6 +258,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
 
   // Pula do wyboru = suma zaznaczonych zestawów
   const activeSets = useMemo(() => sets.filter((s) => enabledSetIds.includes(s.id)), [sets, enabledSetIds])
+  const setupSets = useMemo(() => buildSetupSets(sets, enabledSetIds), [sets, enabledSetIds])
   const items = useMemo<Record<CategoryId, PickItem[]>>(() => {
     const heroes = groupItems(activeSets, (s) => s.heroes, 'icons/heroes', true)
     return {
@@ -240,10 +266,10 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
       heroes,
       deckHeroes: heroes,
       villains: groupItems(activeSets, (s) => s.villainGroups, 'icons/villainGroups', false),
-      henchmen: groupItems(activeSets, (s) => s.henchmenGroups, 'icons/henchmen', false),
-      bystanders: groupItems(activeSets, (s) => s.bystanderGroups, 'icons/bystanders', false),
+      henchmen: groupItems(setupSets, (s) => s.henchmenGroups, 'icons/henchmen', false),
+      bystanders: groupItems(setupSets, (s) => s.bystanderGroups, 'icons/bystanders', false),
     }
-  }, [activeSets])
+  }, [activeSets, setupSets])
 
   const gameMode = GAME_MODES.find((m) => m.id === choices.gameModeId)
   const scheme = activeSets.flatMap((s) => s.schemes).find((s) => s.id === choices.schemeId)
@@ -264,6 +290,14 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   if (!scheme) problems.push('Select a scheme')
   if (!mastermind) problems.push('Select a mastermind')
   problems.push(...getSetupProblems(choices, rules))
+  if (choices.uniqueHeroRealNames) {
+    for (const conflict of getHeroRealNameConflicts(
+      [...choices.heroIds, ...choices.villainDeckHeroIds],
+      activeSets.flatMap((set) => set.heroes),
+    )) {
+      problems.push(`Heroes: duplicate Real Name (${conflict})`)
+    }
+  }
 
   function update(patch: Partial<SetupChoices>) {
     setChoices((current) => ({ ...current, ...patch }))
@@ -285,15 +319,21 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
         ...choices.henchmenGroupIds,
       ])
       const selectedNames = [
-        ...set.schemes.filter((item) => selectedIds.has(item.id)).map((item) => item.name),
+        // Core schemes, like Core Bystanders, must not prevent disabling the
+        // set. They are pruned automatically when Core is turned off.
+        ...(set.id === 'core_set'
+          ? []
+          : set.schemes.filter((item) => selectedIds.has(item.id)).map((item) => item.name)),
         ...set.masterminds.filter((item) => selectedIds.has(item.card.id)).map((item) => item.card.name),
         ...set.heroes.filter((item) => selectedIds.has(item.id)).map((item) => item.name),
         ...set.villainGroups.filter((item) => selectedIds.has(item.id)).map((item) => item.name),
         ...set.henchmenGroups.filter((item) => selectedIds.has(item.id)).map((item) => item.name),
         // Bystander groups are selected by default unless explicitly excluded.
-        ...set.bystanderGroups
-          .filter((item) => !choices.excludedBystanderGroupIds.includes(item.id))
-          .map((item) => item.name),
+        ...(set.id === 'core_set'
+          ? []
+          : set.bystanderGroups
+              .filter((item) => !choices.excludedBystanderGroupIds.includes(item.id))
+              .map((item) => item.name)),
       ]
 
       if (selectedNames.length > 0) {
@@ -307,14 +347,14 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
 
     const next = [...enabledSetIds, id]
     setEnabledSetIds(next)
-    setChoices(pruneChoices(choices, sets.filter((s) => next.includes(s.id)), GAME_MODES))
+    setChoices(pruneChoices(choices, buildSetupSets(sets, next), GAME_MODES))
   }
 
   function disableSet(id: string) {
     const next = enabledSetIds.filter((x) => x !== id)
     if (next.length === 0) return
     setEnabledSetIds(next)
-    setChoices(pruneChoices(choices, sets.filter((s) => next.includes(s.id)), GAME_MODES))
+    setChoices(pruneChoices(choices, buildSetupSets(sets, next), GAME_MODES))
     setSetDisablePrompt(null)
   }
 
@@ -492,7 +532,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
       villainGroupIds: randomIds(available(preset.villainGroupIds, activeVillainIds), thematicRules.villainGroups),
       henchmenGroupIds: randomIds(available(preset.henchmenGroupIds, activeHenchmenIds), thematicRules.henchmenGroups),
     }
-    setChoices(completeChoices(thematic, activeSets, GAME_MODES))
+    setChoices(completeChoices(thematic, setupSets, GAME_MODES))
   }
 
   // Podsumowanie wyborów (chipsy w stopce, z możliwością usunięcia)
@@ -514,7 +554,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
 
   function start() {
     if (!gameMode || !scheme || !mastermind) return
-    const setup = buildSetup(choices, activeSets, GAME_MODES)
+    const setup = buildSetup(choices, setupSets, GAME_MODES)
     const logMeta: GameLogMeta = {
       choices,
       gameModeName: gameMode.name,
@@ -590,6 +630,15 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
                   ),
               )}
             </select>
+
+            <label className="setup-option">
+              <input
+                type="checkbox"
+                checked={choices.uniqueHeroRealNames ?? true}
+                onChange={(e) => update({ uniqueHeroRealNames: e.target.checked })}
+              />
+              <span>Prevent duplicate Hero real names</span>
+            </label>
 
             {/*
               Temporarily disabled: hero randomization modes are kept in the
@@ -788,17 +837,17 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
         )}
 
         <div className="setup-buttons">
-          <button onClick={() => safely(() => setChoices(completeChoices({}, activeSets, GAME_MODES)))}>
+          <button onClick={() => safely(() => setChoices(completeChoices({}, setupSets, GAME_MODES)))}>
             Randomize
           </button>
-          <button onClick={() => safely(() => setChoices(completeChoices(choices, activeSets, GAME_MODES)))}>
+          <button onClick={() => safely(() => setChoices(completeChoices(choices, setupSets, GAME_MODES)))}>
             Randomize Missing
           </button>
           <button onClick={() => setChoices({ ...EMPTY_CHOICES, gameModeId: GAME_MODES[0]?.id ?? '' })}>
             Clear
           </button>
           {import.meta.env.DEV && (
-            <button onClick={() => setChoices(pruneChoices(DEBUG_PRESET, activeSets, GAME_MODES))}>
+            <button onClick={() => setChoices(pruneChoices(DEBUG_PRESET, setupSets, GAME_MODES))}>
               Preset debug
             </button>
           )}
@@ -812,7 +861,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
         <GameHistoryMenu
           onClose={() => setHistoryOpen(false)}
           onApply={(applied) => {
-            setChoices(pruneChoices(applied, activeSets, GAME_MODES))
+            setChoices(pruneChoices(applied, setupSets, GAME_MODES))
             setHistoryOpen(false)
           }}
         />
