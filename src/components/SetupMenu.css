@@ -24,6 +24,13 @@
   gap: 12px;
 }
 
+.setup-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .setup-header h1 {
   margin: 0;
   font-size: clamp(24px, 3.4vw, 38px);
@@ -123,6 +130,54 @@
   box-shadow: none;
   filter: none;
   text-decoration: underline;
+}
+
+.thematic-modal {
+  width: min(760px, calc(100vw - 32px));
+}
+
+.thematic-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.thematic-modal h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 28px;
+}
+
+.thematic-modal p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.thematic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.thematic-card {
+  display: flex;
+  min-height: 84px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px;
+  text-align: left;
+  border-color: rgba(56, 225, 255, 0.35);
+  background: linear-gradient(145deg, rgba(56, 225, 255, 0.13), rgba(12, 28, 56, 0.8));
+}
+
+.thematic-card span {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .setup-pill {

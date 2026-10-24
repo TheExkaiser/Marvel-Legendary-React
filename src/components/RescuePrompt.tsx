@@ -10,11 +10,11 @@ interface RescuePromptProps {
 export function RescuePrompt({ message, bystanderData, onClose }: RescuePromptProps) {
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content rescue-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content rescue-content">
         <h3>{message}</h3>
-        <button className="close-button" onClick={onClose}>✕</button>
         <CardView data={bystanderData} />
         {bystanderData.text && <p className="rescue-effect">{bystanderData.text}</p>}
+        <p className="dismiss-hint">Press anywhere to close</p>
       </div>
     </div>
   )

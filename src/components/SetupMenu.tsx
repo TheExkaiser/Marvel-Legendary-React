@@ -2,12 +2,13 @@ import { useMemo, useState } from 'react'
 import type { CardGroup, GameSetup, SetData, SetupChoices } from '../engine/types'
 import { buildSetup, getSetupProblems } from '../engine/buildSetup'
 import { DEFAULT_SETUP_RULES, resolveRules, withLedGroup } from '../engine/setupRules'
-import { EMPTY_CHOICES, completeChoices, pruneChoices } from '../engine/setupChoices'
+import { EMPTY_CHOICES, completeChoices, pruneChoices, randomizeHeroIds } from '../engine/setupChoices'
 import { GAME_MODES } from '../data/gameModes'
 import { DEBUG_PRESET } from '../data/sets/setup'
 import { consumePendingSetupChoices, type GameLogMeta } from '../gameLog'
 import { GameHistoryMenu } from './GameHistoryMenu'
 import { teamIcon, teamName } from '../data/teams'
+import { THEMATIC_SETUPS, type ThematicSetup } from '../data/thematicSetups'
 import './SetupMenu.css'
 
 interface SetupMenuProps {
@@ -158,6 +159,10 @@ function randomPick(items: PickItem[], required: string[], max: number): string[
   return [...locked, ...rest].slice(0, max)
 }
 
+function randomIds(ids: string[], count: number): string[] {
+  return randomPick(ids.map((id) => ({ id, name: id, setId: '', setName: '' })), [], count)
+}
+
 function iconSrc(path: string): string {
   return import.meta.env.BASE_URL + path
 }
@@ -215,7 +220,9 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   const [sortMode, setSortMode] = useState<SortMode>('alpha')
   const [query, setQuery] = useState('')
   const [teamFilter, setTeamFilter] = useState<string[]>([])
+  const [setFilter, setSetFilter] = useState('')
   const [selectedOnly, setSelectedOnly] = useState(false)
+  const [thematicOpen, setThematicOpen] = useState(false)
 
   // Pula do wyboru = suma zaznaczonych zestawów
   const activeSets = useMemo(() => sets.filter((s) => enabledSetIds.includes(s.id)), [sets, enabledSetIds])
@@ -358,12 +365,14 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   function selectTab(next: TabId) {
     setTab(next)
     setQuery('')
+    setSetFilter('')
     setSelectedOnly(false)
   }
 
   function clearFilters() {
     setQuery('')
     setTeamFilter([])
+    setSetFilter('')
     setSelectedOnly(false)
   }
 
@@ -383,6 +392,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
     const blocked = id === 'heroes' ? choices.villainDeckHeroIds : id === 'deckHeroes' ? choices.heroIds : []
     const visible = c.items.filter((i) => {
       if (selectedOnly && !c.selected.includes(i.id)) return false
+      if (setFilter && i.setId !== setFilter) return false
       if (isHeroTab && activeTeamFilter.length > 0 && !(i.team && activeTeamFilter.includes(i.team))) {
         return false
       }
@@ -398,7 +408,21 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   // Extras są opcjonalne, więc losuje się z nich losową liczbę (wymagane zawsze zostają).
   function rerollCurrent() {
     for (const p of panels) {
-      const pool = p.cat.items.filter((i) => !p.blocked.includes(i.id))
+      const pool = p.visible.filter((i) => !p.blocked.includes(i.id))
+      if (p.id === 'heroes' && !selectedOnly) {
+        const allowedIds = new Set(pool.map((item) => item.id))
+        const heroGroups = activeSets
+          .flatMap((set) => set.heroes)
+          .filter((group) => allowedIds.has(group.id) && !p.blocked.includes(group.id))
+        const heroIds = randomizeHeroIds(
+          heroGroups,
+          p.cat.max,
+          p.cat.required.filter((id) => allowedIds.has(id)),
+          choices.heroSelectionMode ?? 'full-random',
+        )
+        p.cat.onChange(heroIds)
+        continue
+      }
       const lockedCount = p.cat.required.filter((id) => pool.some((i) => i.id === id)).length
       const count =
         tab === 'extras'
@@ -406,6 +430,36 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
           : p.cat.max
       p.cat.onChange(randomPick(pool, p.cat.required, count))
     }
+  }
+
+  function applyThematicSetup(preset: ThematicSetup) {
+    const activeSchemeIds = activeSets.flatMap((s) => s.schemes.map((s) => s.id))
+    const activeMastermindIds = activeSets.flatMap((s) => s.masterminds.map((m) => m.card.id))
+    const activeHeroIds = activeSets.flatMap((s) => s.heroes.map((g) => g.id))
+    const activeVillainIds = activeSets.flatMap((s) => s.villainGroups.map((g) => g.id))
+    const activeHenchmenIds = activeSets.flatMap((s) => s.henchmenGroups.map((g) => g.id))
+
+    const available = (preferred: string[], pool: string[]) => preferred.filter((id) => pool.includes(id))
+    const pickOne = (preferred: string[], pool: string[]) => {
+      const candidates = available(preferred, pool)
+      return candidates[Math.floor(Math.random() * candidates.length)]
+    }
+    const schemeId = pickOne(preset.schemeIds, activeSchemeIds)
+    const mastermindId = pickOne(preset.mastermindIds, activeMastermindIds)
+    const selectedScheme = activeSets.flatMap((s) => s.schemes).find((s) => s.id === schemeId) ?? scheme
+    const selectedMastermind = activeSets.flatMap((s) => s.masterminds).find((m) => m.card.id === mastermindId) ?? mastermind
+    const thematicRules = selectedScheme && selectedMastermind && gameMode
+      ? resolveRules(gameMode, selectedScheme, selectedMastermind)
+      : rules
+    const thematic = {
+      ...choices,
+      ...(schemeId ? { schemeId } : {}),
+      ...(mastermindId ? { mastermindId } : {}),
+      heroIds: randomIds(available(preset.heroPoolIds, activeHeroIds), thematicRules.heroes),
+      villainGroupIds: randomIds(available(preset.villainGroupIds, activeVillainIds), thematicRules.villainGroups),
+      henchmenGroupIds: randomIds(available(preset.henchmenGroupIds, activeHenchmenIds), thematicRules.henchmenGroups),
+    }
+    setChoices(completeChoices(thematic, activeSets, GAME_MODES))
   }
 
   // Podsumowanie wyborów (chipsy w stopce, z możliwością usunięcia)
@@ -444,7 +498,10 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
     <div className="setup-menu">
       <header className="setup-header">
         <h1>Marvel Legendary</h1>
-        <button onClick={() => setHistoryOpen(true)}>Game History</button>
+        <div className="setup-header-actions">
+          <button onClick={() => setThematicOpen(true)}>Thematic Setups</button>
+          <button onClick={() => setHistoryOpen(true)}>Game History</button>
+        </div>
       </header>
 
       <div className="setup-body">
@@ -499,6 +556,18 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
                     </optgroup>
                   ),
               )}
+            </select>
+
+            <div className="setup-label setup-label-spaced">Hero Randomization</div>
+            <select
+              value={choices.heroSelectionMode ?? 'full-random'}
+              onChange={(e) => update({ heroSelectionMode: e.target.value as SetupChoices['heroSelectionMode'] })}
+            >
+              <option value="full-random">Full Random</option>
+              <option value="team-partial">Team Partial</option>
+              <option value="team-full">Team Full</option>
+              <option value="type-partial">Type Partial</option>
+              <option value="type-full">Type Full</option>
             </select>
           </section>
         </aside>
@@ -560,6 +629,12 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
                   </option>
                 ))}
               </select>
+                <select value={setFilter} onChange={(e) => setSetFilter(e.target.value)} aria-label="Set filter">
+                  <option value="">All enabled sets</option>
+                  {activeSets.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
 
               <button
                 className={selectedOnly ? 'setup-pill on' : 'setup-pill'}
@@ -714,6 +789,34 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
             setHistoryOpen(false)
           }}
         />
+      )}
+
+      {thematicOpen && (
+        <div className="modal-overlay" onClick={() => setThematicOpen(false)}>
+          <div className="modal-content thematic-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="thematic-modal-head">
+              <div>
+                <h2>Thematic Setups</h2>
+                <p>Choose a preset pool. Missing cards are filled from the enabled sets.</p>
+              </div>
+              <button className="modal-close" onClick={() => setThematicOpen(false)} aria-label="Close thematic setups">
+                ×
+              </button>
+            </div>
+            <div className="thematic-grid">
+              {THEMATIC_SETUPS.map((preset) => (
+                <button
+                  key={preset.id}
+                  className="thematic-card"
+                  onClick={() => safely(() => { applyThematicSetup(preset); setThematicOpen(false) })}
+                >
+                  <strong>{preset.name}</strong>
+                  <span>Random setup from a curated pool</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

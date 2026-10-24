@@ -286,4 +286,12 @@ export interface SetupChoices {
   villainGroupIds: string[]
   henchmenGroupIds: string[]
   excludedBystanderGroupIds: string[] // wyłączone grupy Bystanderów; domyślnie (pusta lista) wybrane są wszystkie z aktywnych zestawów
+  heroSelectionMode?: HeroSelectionMode
 }
+
+export type HeroSelectionMode =
+  | 'full-random'
+  | 'team-partial'
+  | 'team-full'
+  | 'type-partial'
+  | 'type-full'

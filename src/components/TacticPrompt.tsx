@@ -10,7 +10,7 @@ export function TacticPrompt({ state, card, onClose }: TacticPromptProps) {
   const data = state.cards[card.cardId]
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content zoom-content">
         <h3>{data.name}</h3>
         <div className="zoom-body">
@@ -19,7 +19,7 @@ export function TacticPrompt({ state, card, onClose }: TacticPromptProps) {
             {data.text && <p>{data.text}</p>}
           </div>
         </div>
-        <button onClick={onClose}>Zamknij</button>
+        <p className="dismiss-hint">Press anywhere to close</p>
       </div>
     </div>
   )

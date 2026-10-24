@@ -147,10 +147,10 @@ function CardZoomModal({
 }) {
   return createPortal(
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content zoom-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content zoom-content">
         <h3>{data.name}</h3>
-        <button className="close-button" onClick={onClose}>✕</button>
         <CardZoomContent data={data} capturedCards={capturedCards} />
+        <p className="dismiss-hint">Press anywhere to close</p>
       </div>
     </div>,
     document.body,

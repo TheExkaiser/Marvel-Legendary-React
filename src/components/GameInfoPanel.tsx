@@ -52,10 +52,10 @@ export function GameInfoPanel({
 
       {showScheme && (
         <div className="modal-overlay" onClick={() => setShowScheme(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content">
             <h3>{scheme.name}</h3>
-            {schemeText ? <p>{schemeText}</p> : <p>(brak opisu)</p>}
-            <button onClick={() => setShowScheme(false)}>Zamknij</button>
+            {schemeText ? <p>{schemeText}</p> : <p>(No description)</p>}
+            <p className="dismiss-hint">Press anywhere to close</p>
           </div>
         </div>
       )}

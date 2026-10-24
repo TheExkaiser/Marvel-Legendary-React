@@ -1,15 +1,28 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 type StatProps = {
   icon: string
   label: string
   value: number
+  delta?: number
+  deltaEventId?: number
   onClick?: () => void
 }
 
-function Stat({ icon, label, value, onClick }: StatProps) {
+function Stat({ icon, label, value, delta, deltaEventId, onClick }: StatProps) {
   const [iconFailed, setIconFailed] = useState(false)
+  const [animations, setAnimations] = useState<Array<{ id: number; value: number }>>([])
+
+  useEffect(() => {
+    if (!deltaEventId || delta === undefined || delta === 0) return
+
+    const animation = { id: deltaEventId, value: delta }
+    setAnimations((current) => [...current, animation])
+    window.setTimeout(() => {
+      setAnimations((current) => current.filter((entry) => entry.id !== animation.id))
+    }, 1000)
+  }, [deltaEventId, delta])
 
   return (
     <div className={onClick ? 'stat stat-clickable' : 'stat'} onClick={onClick}>
@@ -25,6 +38,12 @@ function Stat({ icon, label, value, onClick }: StatProps) {
         />
       )}
       <span className="stat-value">{value}</span>
+      {animations.map((animation) => (
+        <span key={animation.id} className={`stat-delta ${animation.value > 0 ? 'positive' : 'negative'}`}>
+          <img src={`${import.meta.env.BASE_URL}icons/${icon}`} alt="" />
+          {animation.value > 0 ? '+' : ''}{animation.value}
+        </span>
+      ))}
     </div>
   )
 }
@@ -36,6 +55,8 @@ type StatsPanelProps = {
   attack: number
   recruit: number
   victoryPoints: number
+  resourceDeltas?: Partial<Record<'attack' | 'recruit' | 'victory', number>>
+  resourceDeltaEventId?: number
   onVictoryClick?: () => void
   scheme: SchemeInfo
   twistsRevealed: number
@@ -54,6 +75,8 @@ export function StatsPanel({
   attack,
   recruit,
   victoryPoints,
+  resourceDeltas,
+  resourceDeltaEventId,
   onVictoryClick,
   scheme,
   twistsRevealed,
@@ -80,9 +103,9 @@ export function StatsPanel({
         <div className="stat-info-icon" title="Więcej informacji">
           i
         </div>
-        <Stat icon="attack.png" label="Attacks" value={attack} />
-        <Stat icon="recruit.png" label="Recruits" value={recruit} />
-        <Stat icon="victory.png" label="VP" value={victoryPoints} onClick={onVictoryClick} />
+        <Stat icon="attack.png" label="Attacks" value={attack} delta={resourceDeltas?.attack} deltaEventId={resourceDeltaEventId} />
+        <Stat icon="recruit.png" label="Recruits" value={recruit} delta={resourceDeltas?.recruit} deltaEventId={resourceDeltaEventId} />
+        <Stat icon="victory.png" label="VP" value={victoryPoints} delta={resourceDeltas?.victory} deltaEventId={resourceDeltaEventId} onClick={onVictoryClick} />
       </div>
 
       <div className="stats-panel-extra">
@@ -108,19 +131,17 @@ export function StatsPanel({
       {showScheme &&
         createPortal(
           <div className="modal-overlay" onClick={closeScheme}>
-            <div className="modal-content zoom-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content zoom-content">
               <h3>{scheme.name}</h3>
-              <button className="close-button" onClick={closeScheme}>
-                ✕
-              </button>
               <div className="zoom-body">
                 {scheme.img && <img src={scheme.img} alt={scheme.name} className="zoom-image" />}
                 <div className="zoom-details">
                   {schemeText
                     ? schemeText.split('\n').map((line, i) => <p key={i}>{line}</p>)
-                    : <p>(brak opisu)</p>}
+                    : <p>(No description)</p>}
                 </div>
               </div>
+              <p className="dismiss-hint">Press anywhere to close</p>
             </div>
           </div>,
           document.body,

@@ -120,6 +120,29 @@ function GameScreen({
   const [historyOpen, setHistoryOpen] = useState(false)
   const [keywordsOpen, setKeywordsOpen] = useState(false)
   const loggedRef = useRef(false)
+  const previousResourcesRef = useRef<{ attack: number; recruit: number; victory: number } | null>(null)
+  const [resourceDeltas, setResourceDeltas] = useState<Partial<Record<'attack' | 'recruit' | 'victory', number>>>({})
+  const [resourceDeltaEventId, setResourceDeltaEventId] = useState(0)
+  const victoryPoints = sumVictoryPoints(state, victoryPile(state))
+
+  useEffect(() => {
+    const previous = previousResourcesRef.current
+    const current = { attack: state.attack, recruit: state.recruit, victory: victoryPoints }
+    previousResourcesRef.current = current
+    if (!previous) return
+
+    const next: Partial<Record<'attack' | 'recruit' | 'victory', number>> = {}
+    for (const key of ['attack', 'recruit', 'victory'] as const) {
+      const delta = current[key] - previous[key]
+      if (delta !== 0) next[key] = delta
+    }
+    if (Object.keys(next).length === 0) return
+
+    setResourceDeltaEventId((current) => current + 1)
+    setResourceDeltas(next)
+    const timeout = window.setTimeout(() => setResourceDeltas({}), 900)
+    return () => window.clearTimeout(timeout)
+  }, [state.attack, state.recruit, victoryPoints])
   
   const mastermindCaptives = state.captives[state.mastermind.instanceId]?.length ?? 0
   
@@ -175,7 +198,9 @@ function GameScreen({
         turn={state.turn}
         attack={state.attack}
         recruit={state.recruit}
-        victoryPoints={sumVictoryPoints(state, victoryPile(state))}
+        victoryPoints={victoryPoints}
+        resourceDeltas={resourceDeltas}
+        resourceDeltaEventId={resourceDeltaEventId}
         onVictoryClick={() => setViewingPile('victory')}
         scheme={scheme}
         twistsRevealed={state.twistsRevealed}

@@ -11,13 +11,12 @@ interface PilePromptProps {
 export function PilePrompt({ title, cards, cardsById, onClose }: PilePromptProps) {
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content">
         <h3>
           {title} ({cards.length})
         </h3>
-        <button className="close-button" onClick={onClose}>✕</button>
         {cards.length === 0 ? (
-          <p>Pusto.</p>
+          <p>Empty.</p>
         ) : (
           <div className="pile-grid">
             {cards.map((c) => (
@@ -25,6 +24,7 @@ export function PilePrompt({ title, cards, cardsById, onClose }: PilePromptProps
             ))}
           </div>
         )}
+        <p className="dismiss-hint">Press anywhere to close</p>
       </div>
     </div>
   )

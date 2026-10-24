@@ -1,4 +1,4 @@
-import type { GameModeDef, SetData, SetupChoices } from './types'
+import type { CardGroup, GameModeDef, HeroSelectionMode, SetData, SetupChoices } from './types'
 import { resolveRules } from './setupRules'
 
 export const EMPTY_CHOICES: SetupChoices = {
@@ -10,6 +10,7 @@ export const EMPTY_CHOICES: SetupChoices = {
   villainGroupIds: [],
   henchmenGroupIds: [],
   excludedBystanderGroupIds: [],
+  heroSelectionMode: 'full-random',
 }
 
 // rng można podmienić (np. na generator z ziarnem w trybie debug)
@@ -38,6 +39,50 @@ function fillIds(current: string[], pool: string[], count: number, required: str
     result.push(candidates.pop()!)
   }
   return result
+}
+
+function groupTags(group: CardGroup, key: 'team' | 'type'): string[] {
+  return [...new Set(group.cards.flatMap((entry) => entry.card[key] ?? []))]
+}
+
+function fillHeroes(
+  current: string[],
+  groups: CardGroup[],
+  count: number,
+  required: string[],
+  mode: HeroSelectionMode,
+  rng: Rng,
+): string[] {
+  const available = groups.filter((group) => !current.includes(group.id))
+  const requiredIds = required.filter((id) => groups.some((group) => group.id === id))
+  const kept = [...new Set([...requiredIds, ...current.filter((id) => groups.some((group) => group.id === id))])].slice(0, count)
+  if (kept.length >= count || mode === 'full-random') return fillIds(kept, groups.map((g) => g.id), count, required, rng)
+
+  const tagKey = mode.startsWith('team') ? 'team' : 'type'
+  const tagCounts = new Map<string, number>()
+  for (const group of available) {
+    for (const tag of groupTags(group, tagKey)) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1)
+  }
+  const tags = [...tagCounts.keys()]
+  if (tags.length === 0) return fillIds(kept, groups.map((g) => g.id), count, required, rng)
+  const bestCount = Math.max(...tags.map((tag) => tagCounts.get(tag) ?? 0))
+  const bestTags = tags.filter((tag) => tagCounts.get(tag) === bestCount)
+  const target = bestTags[Math.floor(rng() * bestTags.length)]
+  const matching = available.filter((group) => groupTags(group, tagKey).includes(target))
+  const preferredCount = mode.endsWith('full') ? count - kept.length : Math.ceil((count - kept.length) / 2)
+  const preferred = shuffled(matching, rng).slice(0, preferredCount).map((group) => group.id)
+  return fillIds([...kept, ...preferred], groups.map((g) => g.id), count, required, rng)
+}
+
+/** Losuje bohaterów od zera, z zachowaniem wybranego trybu dopasowania. */
+export function randomizeHeroIds(
+  groups: CardGroup[],
+  count: number,
+  required: string[] = [],
+  mode: HeroSelectionMode = 'full-random',
+  rng: Rng = Math.random,
+): string[] {
+  return fillHeroes([], groups, count, required, mode, rng)
 }
 
 /**
@@ -72,15 +117,18 @@ export function completeChoices(
       ? []
       : fillIds(partial.villainDeckHeroIds ?? [], heroPool, rules.villainDeckHeroes, rules.requiredVillainDeckHeroes, rng)
 
+  const heroSelectionMode = partial.heroSelectionMode ?? 'full-random'
+
   return {
     gameModeId: gameMode.id,
     schemeId: scheme.id,
     mastermindId: mastermind.card.id,
-    heroIds: fillIds(
+    heroIds: fillHeroes(
       partial.heroIds ?? [],
-      heroPool.filter((id) => !villainDeckHeroIds.includes(id)),
+      sets.flatMap((s) => s.heroes).filter((group) => !villainDeckHeroIds.includes(group.id)),
       rules.heroes,
       rules.requiredHeroes,
+      heroSelectionMode,
       rng,
     ),
     villainDeckHeroIds,
@@ -89,6 +137,7 @@ export function completeChoices(
     excludedBystanderGroupIds: (partial.excludedBystanderGroupIds ?? []).filter(
       (id) => bystanderPool.includes(id) && !rules.requiredBystanderGroups.includes(id),
     ),
+    heroSelectionMode,
   }
 }
 
@@ -107,5 +156,6 @@ export function pruneChoices(choices: SetupChoices, sets: SetData[], gameModes: 
     villainGroupIds: keep(sets.flatMap((s) => s.villainGroups), choices.villainGroupIds),
     henchmenGroupIds: keep(sets.flatMap((s) => s.henchmenGroups), choices.henchmenGroupIds),
     excludedBystanderGroupIds: keep(sets.flatMap((s) => s.bystanderGroups), choices.excludedBystanderGroupIds ?? []),
+    heroSelectionMode: choices.heroSelectionMode ?? 'full-random',
   }
 }
