@@ -106,7 +106,9 @@ export async function recruitHeroWithUi(state: GameState, instanceId: string, ui
 
   recruitHero(state, instanceId)
   const data = state.cards[instance.cardId]
-  if (!data.hero || !(data.keywords ?? []).includes('wall-crawl')) return
+  const hasWallCrawl =
+    (data.keywords ?? []).includes('wall-crawl') || getScheme(state).allHeroesHaveWallCrawl === true
+  if (!data.hero || !hasWallCrawl) return
 
   const recruited = [...state.hand, ...state.discard].find((card) => card.instanceId === instanceId)
   if (!recruited) return

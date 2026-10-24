@@ -607,7 +607,7 @@ registerTeleportHook('hero-nightcrawler-along-for-the-ride', async (state, ui, s
 // ---------- Professor X ----------
 
 registerCardAbility('hero-professor-x-class-dismissed', async (state, { ui }) => {
-  const options = state.hq.filter((c): c is CardInstance => !!c)
+  const options = state.hq.filter((c): c is CardInstance => !!c && state.cards[c.cardId].hero !== undefined)
   if (options.length > 0) {
     const chosen = await ui.choose(options, {
       prompt: 'Class Dismissed: możesz włożyć Bohatera z HQ pod spód talii Bohaterów',

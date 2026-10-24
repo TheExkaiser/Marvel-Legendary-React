@@ -12,9 +12,9 @@ import { CITY_NAMES } from './constants'
 import { drawCards } from './deckOps'
 import { asEnemyEffect } from './replacements'
 import { gainVillainAsHero } from './cardData'
+import { refillHq } from './recruit'
 import { getMastermindRule } from './mastermindRules'
 import { isCityDestroyed } from './cityLayout'
-import { koCard } from './keywords'
 
 /** Czy Recruit płaci za tę kartę jak Attack: God of Thunder (cała tura) albo Bribe (tylko ta karta). */
 function recruitPays(state: GameState, cardId: string): boolean {
@@ -134,7 +134,9 @@ async function resolveVillainFightEffects(
 ): Promise<boolean> {
   const data = state.cards[villain.cardId]
   const abilities = getVillainAbilities(villain.cardId)
-  if (!abilities?.onFight && !((data.keywords ?? []).includes('feast') && abilities?.onFeast)) return true
+  // Feast is a generic Fight effect. The card may have no additional onFeast
+  // hook (for example Demogoblin), but it must still KO the top card.
+  if (!abilities?.onFight && !(data.keywords ?? []).includes('feast')) return true
   if (await fightEffectCancelled(state, ui, villain)) return false
 
   await asEnemyEffect(state, async () => {
@@ -205,6 +207,8 @@ export async function defeatVillainFromDeck(
     state.defeated.push(villain)
   }
 
+  await scheme.afterVillainDefeated?.(state, villain, ui)
+
   logEvent(state, `Defeated from Villain Deck: ${state.cards[villain.cardId].name}`)
   await offerMindControl(state, villain, ui)
   return true
@@ -216,10 +220,15 @@ export async function fightVillain(
   ui: UiAdapter,
 ): Promise<void> {
   assertPlaying(state)
-  const index = state.city.findIndex((c) => c?.instanceId === instanceId)
-  if (index === -1) throw new Error(`Złoczyńcy ${instanceId} nie ma w mieście`)
+  const cityIndex = state.city.findIndex((c) => c?.instanceId === instanceId)
+  const hqIndex = state.hq.findIndex((c) => c?.instanceId === instanceId)
+  const scheme = getScheme(state)
+  const hqCard = hqIndex === -1 ? undefined : state.hq[hqIndex]
+  const isHqVillain = cityIndex === -1 && hqIndex !== -1 && scheme.canFightVillainsInHq === true &&
+    !!hqCard && (state.cards[hqCard.cardId].villainGroup !== undefined || state.cards[hqCard.cardId].henchman === true)
+  if (cityIndex === -1 && !isHqVillain) throw new Error(`Złoczyńcy ${instanceId} nie ma w mieście`)
 
-  const villain = state.city[index]!
+  const villain = isHqVillain ? state.hq[hqIndex]! : state.city[cityIndex]!
   if (!canDefeatVillain(state, villain.cardId)) {
     throw new Error('Nie możesz teraz pokonać tego złoczyńcy (niespełniony warunek)')
   }
@@ -241,7 +250,21 @@ export async function fightVillain(
     return
   }
 
-  await removeVillainFromCity(state, index, ui)
+  if (isHqVillain) {
+    state.hq[hqIndex] = null
+    const captives = state.captives[villain.instanceId] ?? []
+    const rescued = scheme.onCaptivesRescued?.(state, villain, captives) ?? captives
+    delete state.captives[villain.instanceId]
+    delete state.attachedCards[villain.instanceId]
+    if (scheme.onVillainDefeated) scheme.onVillainDefeated(state, villain)
+    else state.defeated.push(villain)
+    for (const card of rescued) await rescueCard(state, card, ui)
+    refillHq(state)
+    await scheme.afterVillainDefeated?.(state, villain, ui)
+  } else {
+    await removeVillainFromCity(state, cityIndex, ui)
+    await scheme.afterVillainDefeated?.(state, villain, ui)
+  }
   logEvent(state, `Defeated: ${state.cards[villain.cardId].name}`)
   await offerMindControl(state, villain, ui)
 }
@@ -256,6 +279,7 @@ export async function defeatVillainFree(state: GameState, instanceId: string, ui
   }
 
   await removeVillainFromCity(state, index, ui)
+  await getScheme(state).afterVillainDefeated?.(state, villain, ui)
   logEvent(state, `Defeated for free: ${state.cards[villain.cardId].name}`)
   await offerMindControl(state, villain, ui)
 }
@@ -266,7 +290,10 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
 
   await ui.showInfo(tactic, `Odkryto taktykę: ${state.cards[tactic.cardId].name}`)
 
-  const ability = getCardAbility(tactic.cardId)
+  const abilityId = state.mysterioTacticIds?.includes(tactic.instanceId)
+    ? 'mysterio-master-strike-tactic'
+    : tactic.cardId
+  const ability = getCardAbility(abilityId)
   if (ability && !(await fightEffectCancelled(state, ui, tactic))) {
     await asEnemyEffect(state, () => ability(state, { self: tactic, ui }))
   }

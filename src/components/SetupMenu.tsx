@@ -7,6 +7,8 @@ import { GAME_MODES } from '../data/gameModes'
 import { DEBUG_PRESET } from '../data/sets/setup'
 import { consumePendingSetupChoices, type GameLogMeta } from '../gameLog'
 import { GameHistoryMenu } from './GameHistoryMenu'
+import { SettingsMenu } from './SettingsMenu'
+import { useSettings } from '../useSettings'
 import { teamIcon, teamName } from '../data/teams'
 import { THEMATIC_SETUPS, type ThematicSetup } from '../data/thematicSetups'
 import './SetupMenu.css'
@@ -240,6 +242,7 @@ function Tile({ name, icon, team, checked, disabled, locked, onToggle }: TilePro
 // ---------- Menu ----------
 
 export function SetupMenu({ sets, onStart }: SetupMenuProps) {
+  const { settings, updateSetting } = useSettings()
   const [enabledSetIds, setEnabledSetIds] = useState<string[]>(() => sets.map((s) => s.id))
   const [choices, setChoices] = useState<SetupChoices>(() => {
     const pending = consumePendingSetupChoices()
@@ -247,6 +250,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
     return { ...base, gameModeId: base.gameModeId || GAME_MODES[0]?.id || '' }
   })
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [tabState, setTab] = useState<TabId>('mastermind')
   const [sortMode, setSortMode] = useState<SortMode>('alpha')
   const [query, setQuery] = useState('')
@@ -575,6 +579,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
         <div className="setup-header-actions">
           <button onClick={() => setThematicOpen(true)}>Thematic Setups</button>
           <button onClick={() => setHistoryOpen(true)}>Game History</button>
+          <button onClick={() => setSettingsOpen(true)}>Settings</button>
         </div>
       </header>
 
@@ -865,6 +870,14 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
             setChoices(pruneChoices(applied, setupSets, GAME_MODES))
             setHistoryOpen(false)
           }}
+        />
+      )}
+
+      {settingsOpen && (
+        <SettingsMenu
+          settings={settings}
+          onChange={updateSetting}
+          onClose={() => setSettingsOpen(false)}
         />
       )}
 

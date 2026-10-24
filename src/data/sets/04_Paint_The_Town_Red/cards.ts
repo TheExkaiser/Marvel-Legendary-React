@@ -1,4 +1,4 @@
-import type { DeckEntry } from '../../../engine/types'
+import type { DeckEntry, MastermindData } from '../../../engine/types'
 
 const img = (slug: string) => `/cards/paint-the-town-red/${slug}.webp`
 
@@ -78,3 +78,38 @@ export const SINISTER_SIX_CARDS: DeckEntry[] = [
   villainCard('shocker', 'Shocker', 'Sinister Six', 5, 3, 'Ambush: Each player reveals an Instinct Hero or discards a card.'),
   villainCard('vulture', 'Vulture', 'Sinister Six', 4, 2, 'Ambush: After Vulture enters the city, if there is a Villain on the Rooftops or Bridge, swap Vulture with one of those Villains. Escape: Each player reveals an Instinct Hero or gains a Wound.'),
 ].map((entry) => ({ ...entry, count: entry.card.id === 'villain-chameleon' || entry.card.id === 'villain-hobgoblin' || entry.card.id === 'villain-kraven-the-hunter' || entry.card.id === 'villain-sandman' ? 1 : 2 }))
+
+const mastermindImg = (slug: string) => `/cards/paint-the-town-red/mastermind-${slug}.webp`
+const tacticImg = (slug: string) => `/cards/paint-the-town-red/${slug}.webp`
+
+const MYSTERIO_MASTER_STRIKE_TACTIC: DeckEntry['card'] = {
+  id: 'mysterio-master-strike-tactic', name: 'Mysterio’s Master Strike', img: '/cards/core-set/masterstrike.webp', vp: 6,
+  text: 'Mastermind Tactic created by Mysterio’s Master Strike.',
+}
+
+export const CARNAGE: MastermindData = {
+  card: { id: 'mastermind-carnage', name: 'Carnage', img: mastermindImg('carnage'), strength: 9, vp: 6, text: 'Always Leads: Maximum Carnage. Each Villain gets +2 Attack for each Hero it has.' },
+  tactics: [
+    { id: 'carnage-drooling-jaws', name: 'Drooling Jaws', img: tacticImg('carnage-drooling-jaws'), vp: 6, text: 'Fight: Each player reveals the top card of their deck. Then Carnage feasts on the player of your choice.' },
+    { id: 'carnage-endless-hunger', name: 'Endless Hunger', img: tacticImg('carnage-endless-hunger'), vp: 6, text: 'Feast. If Carnage feasts on a 0-cost Hero this way, repeat this process.' },
+    { id: 'carnage-feed-me', name: 'Feed Me', img: tacticImg('carnage-feed-me'), vp: 6, text: 'Feast. You get +Recruit equal to the Cost of the card Carnage feasts on.' },
+    { id: 'carnage-om-nom-nom', name: 'Om Nom Nom', img: tacticImg('carnage-om-nom-nom'), vp: 6, text: 'Feast. If Carnage feasts on a 0-cost Hero this way, each other player KOs a Bystander from their Victory Pile.' },
+  ],
+  masterStrikeId: 'mastermind-carnage-master-strike',
+  masterStrikeText: 'Feast on each player. Whenever this Master Strike feasts on a player’s 0-cost Hero, that player gains a Wound.',
+  alwaysLeads: { villainGroupId: 'paint_red_maximum_carnage' },
+}
+
+export const MYSTERIO: MastermindData = {
+  card: { id: 'mastermind-mysterio', name: 'Mysterio', img: mastermindImg('mysterio'), strength: 8, vp: 6, text: 'Always Leads: Sinister Six.' },
+  tactics: [
+    { id: 'mysterio-blurring-images', name: 'Blurring Images', img: tacticImg('mysterio-blurring-images'), vp: 6, text: 'Fight: You get +1 Recruit for each Mastermind Tactic Mysterio has left after this one.' },
+    { id: 'mysterio-captive-audience', name: 'Captive Audience', img: tacticImg('mysterio-captive-audience'), vp: 6, text: 'Fight: Rescue a Bystander for each Mastermind Tactic Mysterio has left after this one.' },
+    { id: 'mysterio-master-of-illusions', name: 'Master of Illusions', img: tacticImg('mysterio-master-of-illusions'), vp: 6, text: 'Fight: If this is not the final Tactic, shuffle a Master Strike Tactic from each other player’s Victory Pile back into Mysterio’s Mastermind Tactics.' },
+    { id: 'mysterio-mists-of-deception', name: 'Mists of Deception', img: tacticImg('mysterio-mists-of-deception'), vp: 6, text: 'Fight: If this is not the final Tactic, reveal the top five cards of the Villain Deck. Play all the Master Strikes you revealed. Put the rest on the bottom of that deck in random order.' },
+  ],
+  extraCards: [MYSTERIO_MASTER_STRIKE_TACTIC],
+  masterStrikeId: 'mastermind-mysterio-master-strike',
+  masterStrikeText: 'Shuffle this Master Strike into Mysterio’s face-down Mastermind Tactics. That card becomes a Mastermind Tactic worth 6 VP.',
+  alwaysLeads: { villainGroupId: 'paint_red_sinister_six' },
+}

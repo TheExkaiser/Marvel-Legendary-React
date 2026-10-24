@@ -14,7 +14,7 @@ import { chooseOneCard } from '../../../engine/abilityHelpers'
 
 /** Bohaterowie w HQ (bez Bystanderów, którzy mogą tam leżeć w Save Humanity). */
 function hqHeroes(state: GameState): CardInstance[] {
-  return state.hq.filter((c): c is CardInstance => !!c && getCardData(state, c).kind !== 'bystander')
+  return state.hq.filter((c): c is CardInstance => !!c && getCardData(state, c).hero !== undefined)
 }
 
 async function captureBystanders(
@@ -62,7 +62,7 @@ registerVillainAbilities('villain-morg', {
       const card = state.hq[i]
       if (!card) continue
       const data = getCardData(state, card)
-      if (data.kind === 'bystander' || (data.type ?? []).includes('instinct')) continue
+      if (!data.hero || (data.type ?? []).includes('instinct')) continue
       state.hq[i] = null
       state.heroDeck.unshift(card) // spód talii = początek tablicy
     }

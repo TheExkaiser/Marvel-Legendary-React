@@ -31,6 +31,16 @@ export function SettingsMenu({ settings, onChange, onClose }: SettingsMenuProps)
             ))}
           </select>
         </label>
+        {THEMES.find((t) => t.id === settings.theme)?.backgroundImage && (
+          <label className="settings-row">
+            <input
+              type="checkbox"
+              checked={settings.useThemeImage}
+              onChange={(e) => onChange('useThemeImage', e.target.checked)}
+            />
+            Use background image
+          </label>
+        )}
       </div>
     </div>
   )

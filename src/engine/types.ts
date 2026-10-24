@@ -42,6 +42,7 @@ export interface MastermindData {
   masterStrikeId: string
   masterStrikeText?: string
   alwaysLeads?: { villainGroupId?: string; henchmenGroupId?: string } // id z CardGroup, np. 'darkcity_marauders'
+  extraCards?: CardData[] // karty używane przez zdolności, ale nie należące do początkowej talii Tactics
 }
 
 export type GameStatus = 'playing' | 'won' | 'lost'
@@ -90,6 +91,7 @@ export interface GameState {
   mastermind: CardInstance
   tactics: CardInstance[]
   stackedMasterStrikes?: CardInstance[] // Stryfe: Master Strike'i ułożone obok mastermina
+  mysterioTacticIds?: string[] // Master Strike'i zamienione przez Mysterio w Tactics
   masterStrikeId: string
     ledVillainGroup?: string // główna grupa złoczyńców tej gry (nazwa z villainGroup), np. dla taktyk Apocalypse'a zamiast "Four Horsemen"
 
@@ -182,6 +184,8 @@ export interface SchemeDef {
 
   setup?: (state: GameState) => void
   onTwist?: (state: GameState, twistNumber: number, ui: UiAdapter, twist: CardInstance) => void | Promise<void>
+  canFightVillainsInHq?: boolean
+  allHeroesHaveWallCrawl?: boolean
 
   // true: karta Twista NIE trafia automatycznie do KO. Scheme sam decyduje, gdzie ją położyć (dostaje ją jako 4. argument onTwist)
   keepsTwistCard?: boolean
@@ -201,6 +205,7 @@ export interface SchemeDef {
   onHeroKoedFromHq?: (state: GameState, hero: CardInstance, hqIndex: number) => void
 
   onVillainEntered?: (state: GameState, villain: CardInstance) => void
+  afterVillainDefeated?: (state: GameState, villain: CardInstance, ui: UiAdapter) => void | Promise<void>
   onVillainEscaped?: (state: GameState, villain: CardInstance, lostCaptives: CardInstance[]) => void
   checkLoss?: (state: GameState) => boolean
 
@@ -219,6 +224,7 @@ export interface SchemeDef {
   onVillainDefeated?: (state: GameState, villain: CardInstance) => void
 
   setupRules?: Partial<SetupRules>
+  mastermindTwistLabel?: string
 }
 
 /** Tryb rozgrywki (np. Dark City - Advanced Solo). Nadpisuje domyślne reguły setupu

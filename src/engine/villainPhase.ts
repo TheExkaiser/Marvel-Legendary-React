@@ -71,6 +71,7 @@ export async function resolveMasterStrike(
 
   const stacked =
     state.stackedMasterStrikes?.some((c) => c.instanceId === card.instanceId) ||
+    state.tactics.some((c) => c.instanceId === card.instanceId) ||
     state.cityDestroyed?.some((c) => c?.instanceId === card.instanceId) // Galactus: Master Strike leży na zniszczonym polu
   if (!stacked) state.ko.push(card)
 

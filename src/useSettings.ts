@@ -6,18 +6,29 @@ const STORAGE_KEY = 'legendary-settings'
 export interface Settings {
   showRevealPopups: boolean
   theme: string
+  useThemeImage: boolean
 }
 
 const DEFAULT_SETTINGS: Settings = {
   showRevealPopups: true,
   theme: DEFAULT_THEME_ID,
+  useThemeImage: false,
 }
 
 function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return DEFAULT_SETTINGS
-    const merged: Settings = { ...DEFAULT_SETTINGS, ...JSON.parse(raw) }
+    const stored = JSON.parse(raw) as Partial<Settings>
+    // Migracja wcześniejszych, osobnych motywów obrazkowych.
+    const legacyImageTheme = stored.theme === 'image' || stored.theme === 'image2'
+    const migratedTheme = stored.theme === 'image' ? 'classic' : stored.theme === 'image2' ? 'dark-city' : stored.theme
+    const merged: Settings = {
+      ...DEFAULT_SETTINGS,
+      ...stored,
+      theme: migratedTheme ?? DEFAULT_THEME_ID,
+      useThemeImage: legacyImageTheme || stored.useThemeImage === true,
+    }
     // zapisany motyw, którego już nie ma na liście, wraca do domyślnego
     if (!THEMES.some((t) => t.id === merged.theme)) merged.theme = DEFAULT_THEME_ID
     return merged
@@ -27,7 +38,8 @@ function loadSettings(): Settings {
 }
 
 // Motyw od razu przy starcie aplikacji (także na ekranie startowym, który nie woła useSettings)
-applyTheme(loadSettings().theme)
+const initialSettings = loadSettings()
+applyTheme(initialSettings.theme, initialSettings.useThemeImage)
 
 export function useSettings() {
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
@@ -41,8 +53,8 @@ export function useSettings() {
   }, [settings])
 
   useEffect(() => {
-    applyTheme(settings.theme)
-  }, [settings.theme])
+    applyTheme(settings.theme, settings.useThemeImage)
+  }, [settings.theme, settings.useThemeImage])
 
   function updateSetting<K extends keyof Settings>(key: K, value: Settings[K]) {
     setSettings((prev) => ({ ...prev, [key]: value }))

@@ -25,7 +25,8 @@ export const DARK_CITY_ADVANCED_SOLO: GameModeDef = {
   // Scheme Twist: wybierz bohatera (koszt <= 6) z HQ, na spód talii HQ, uzupełnij slot.
   onSchemeTwistResolved: async (state, ui) => {
     const candidates = state.hq.filter(
-      (c): c is CardInstance => !!c && (state.cards[c.cardId].cost ?? 0) <= 6,
+      (c): c is CardInstance =>
+        !!c && state.cards[c.cardId].hero !== undefined && (state.cards[c.cardId].cost ?? 0) <= 6,
     )
     if (candidates.length === 0) return
 

@@ -256,7 +256,7 @@ function GameScreen({
             capturedCards={getCapturedCards(state, state.mastermind.instanceId)}
           />
           {(state.mastermindSchemeTwists?.length ?? 0) > 0 && (
-            <div className="markers">Force Fields: {state.mastermindSchemeTwists!.length}</div>
+            <div className="markers">{scheme.mastermindTwistLabel ?? 'Mastermind Twists'}: {state.mastermindSchemeTwists!.length}</div>
           )}
           <StackedMasterStrikes
             cards={state.stackedMasterStrikes ?? []}
@@ -276,7 +276,12 @@ function GameScreen({
               {state.city.map((instance, i) => (
                 <div key={i}>
                   {state.cityDestroyed?.[i] ? (
-                    <CardView data={state.cards[state.cityDestroyed![i]!.cardId]} />
+                    <div className="destroyed-city-token" title="Destroyed City">
+                      <img
+                        src={`${import.meta.env.BASE_URL}tokens/destroyed_city_token.jpg`}
+                        alt="Destroyed City"
+                      />
+                    </div>
                   ) : instance ? (
                     <CardView
                       data={state.cards[instance.cardId]}
@@ -289,7 +294,6 @@ function GameScreen({
                   ) : (
                     <div className="slot-empty">{CITY_NAMES[i]}</div>
                   )}
-                  {state.cityDestroyed?.[i] && <div className="markers">Destroyed</div>}
                   {state.cityMarkers[i].length > 0 && (
                     <div className="markers">{state.cityMarkers[i].join(', ')}</div>
                   )}
@@ -326,6 +330,9 @@ function GameScreen({
         {state.hq.map((instance, i) => {
           const explosions = state.hqExplosions?.[i] ?? 0
           const destroyed = state.hqDestroyed?.[i] ?? false
+          const hqData = instance ? state.cards[instance.cardId] : undefined
+          const hqVillain = scheme.canFightVillainsInHq === true && !!hqData &&
+            (hqData.villainGroup !== undefined || hqData.henchman === true)
           return (
             <div key={instance?.instanceId ?? `hq-${i}`}>
               {instance ? (
@@ -333,16 +340,30 @@ function GameScreen({
                   data={state.cards[instance.cardId]}
                   flipId={instance.instanceId}
                   flipFrom="hero-deck"
-                  effectiveCost={hqCardCost(state, i)}
+                  effectiveStrength={hqVillain ? getEffectiveStrength(state, instance) : undefined}
+                  effectiveCost={hqVillain ? undefined : hqCardCost(state, i)}
                   costResource={negativeZoneActive ? 'attack' : 'recruit'}
-                  onClick={() => act((s, ui) => recruitHeroWithUi(s, instance.instanceId, ui))}
+                  strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
+                  onClick={() => act((s, ui) =>
+                    hqVillain
+                      ? fightVillain(s, instance.instanceId, ui)
+                      : recruitHeroWithUi(s, instance.instanceId, ui),
+                  )}
                 />
               ) : (
                 <div className={destroyed ? 'slot-empty slot-destroyed' : 'slot-empty'}>
                   {destroyed ? 'Destroyed' : ''}
                 </div>
               )}
-              {explosions > 0 && <div className="markers">💥 {explosions}</div>}
+              {explosions > 0 && (
+                <div className="helicarrier-explosion-marker" title={`Helicarrier explosions: ${explosions}`}>
+                  <img
+                    src={`${import.meta.env.BASE_URL}tokens/destoyed_helicarrier_token.jpg`}
+                    alt="Helicarrier explosion"
+                  />
+                  <span>{explosions}</span>
+                </div>
+              )}
             </div>
           )
         })}

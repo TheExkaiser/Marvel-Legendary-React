@@ -9,6 +9,9 @@ import {
 import { PAINT_THE_TOWN_RED_SCHEMES } from './schemes'
 import './heroAbilities'
 import './villainAbilities'
+import './masterStrikeAbilities'
+import './tacticAbilities'
+import './mastermindRules'
 
 // Szkielet dodatku Paint the Town Red. Kolejne moduły zdolności można
 // podłączać tutaj analogicznie do pozostałych setów.

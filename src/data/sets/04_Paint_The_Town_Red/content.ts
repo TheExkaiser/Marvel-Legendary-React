@@ -7,6 +7,8 @@ import {
   SYMBIOTE_SPIDER_MAN_CARDS,
   MAXIMUM_CARNAGE_CARDS,
   SINISTER_SIX_CARDS,
+  CARNAGE,
+  MYSTERIO,
 } from './cards'
 
 // TODO(Paint the Town Red): add hero and enemy card groups.
@@ -23,4 +25,4 @@ export const PAINT_THE_TOWN_RED_VILLAIN_GROUPS: CardGroup[] = [
 ]
 export const PAINT_THE_TOWN_RED_HENCHMEN_GROUPS: CardGroup[] = []
 export const PAINT_THE_TOWN_RED_BYSTANDER_GROUPS: CardGroup[] = []
-export const PAINT_THE_TOWN_RED_MASTERMINDS: MastermindData[] = []
+export const PAINT_THE_TOWN_RED_MASTERMINDS: MastermindData[] = [CARNAGE, MYSTERIO]

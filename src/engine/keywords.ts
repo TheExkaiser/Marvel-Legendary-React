@@ -221,9 +221,12 @@ export function getEffectiveStrength(
   const baseOverride = getScheme(state).villainBaseStrengthOverride?.(state, instance)
   if (baseOverride !== undefined) base = baseOverride
 
-  if (base === undefined) return undefined
+  const cardStrengthModifier = getStrengthModifier(instance.cardId)
+  // Dynamic Villains such as Doppelganger have no printed Strength. Their
+  // card-specific modifier supplies the complete current value.
+  if (base === undefined && !cardStrengthModifier) return undefined
 
-  let total = base
+  let total = base ?? 0
 
   if (instance.instanceId === state.mastermind.instanceId) {
     total += state.mastermindAttackModifierThisTurn
@@ -239,7 +242,7 @@ export function getEffectiveStrength(
 
   total += getScheme(state).villainStrengthModifier?.(state, instance) ?? 0
   total += getMastermindRule(state)?.villainStrengthModifier?.(state, instance) ?? 0
-  total += getStrengthModifier(instance.cardId)?.(state, instance) ?? 0
+  total += cardStrengthModifier?.(state, instance) ?? 0
   total -= cosmicThreatReduction(state, instance)
 
   return Math.max(0, total) // siła nie może zejść poniżej 0 (inaczej spendAttack by ją "zwracał")

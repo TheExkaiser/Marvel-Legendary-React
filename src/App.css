@@ -24,6 +24,8 @@
   --hot: #ff3d57;
   --text: #eaf1fb;
   --muted: #9fb3d1;
+  --cyan-rgb: 56, 225, 255;
+  --hot-rgb: 255, 61, 87;
 
   --font-display: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
   --font-body: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -33,6 +35,58 @@
 
   /* Prawy margines wewnątrz panelu planszy (padding 14 + ramka 1): talie stoją w jednej kolumnie */
   --board-inset: 15px;
+}
+
+/* Setowe warianty kolorystyczne. Motyw obrazkowy nie zmienia tokenów, tylko tło. */
+:root[data-theme='dark-city'] {
+  --base: #20242d;
+  --deep: #11151d;
+  --abyss: #080a0f;
+  --panel: rgba(32, 36, 45, 0.72);
+  --panel-solid: #292f3b;
+  --line: rgba(180, 190, 205, 0.24);
+  --cyan: #9aaecb;
+  --gold: #d5b36a;
+  --hot: #d84c59;
+  --text: #eef0f3;
+  --muted: #9ba4b2;
+  --cyan-rgb: 154, 174, 203;
+  --hot-rgb: 216, 76, 89;
+  --glow-cyan: 0 0 0 2px var(--cyan), 0 0 22px rgba(154, 174, 203, 0.45);
+}
+
+:root[data-theme='fantastic-four'] {
+  --base: #2a83b8;
+  --deep: #17608d;
+  --abyss: #0c2844;
+  --panel: rgba(47, 132, 185, 0.5);
+  --panel-solid: #3e9bd0;
+  --line: rgba(176, 229, 255, 0.35);
+  --cyan: #b8efff;
+  --gold: #ffe08a;
+  --hot: #ed5c75;
+  --text: #f1fbff;
+  --muted: #c2e3f1;
+  --cyan-rgb: 184, 239, 255;
+  --hot-rgb: 237, 92, 117;
+  --glow-cyan: 0 0 0 2px var(--cyan), 0 0 22px rgba(184, 239, 255, 0.55);
+}
+
+:root[data-theme='paint-the-town-red'] {
+  --base: #4a1219;
+  --deep: #210c12;
+  --abyss: #080609;
+  --panel: rgba(77, 16, 28, 0.68);
+  --panel-solid: #641c2a;
+  --line: rgba(255, 123, 135, 0.24);
+  --cyan: #ff6b72;
+  --gold: #f5c56d;
+  --hot: #f02e46;
+  --text: #fff0f0;
+  --muted: #cba8ad;
+  --cyan-rgb: 255, 107, 114;
+  --hot-rgb: 240, 46, 70;
+  --glow-cyan: 0 0 0 2px var(--cyan), 0 0 22px rgba(255, 107, 114, 0.5);
 }
 
 
@@ -55,8 +109,8 @@ body {
   font-family: var(--font-body);
   background-color: var(--abyss);
   background-image:
-    radial-gradient(1100px 700px at 12% -10%, rgba(56, 225, 255, 0.22), transparent 62%),
-    radial-gradient(900px 650px at 105% 105%, rgba(255, 61, 87, 0.2), transparent 60%),
+    radial-gradient(1100px 700px at 12% -10%, rgba(var(--cyan-rgb), 0.22), transparent 62%),
+    radial-gradient(900px 650px at 105% 105%, rgba(var(--hot-rgb), 0.2), transparent 60%),
     linear-gradient(170deg, var(--base) 0%, var(--deep) 55%, var(--abyss) 100%);
   background-attachment: fixed;
   overflow-x: hidden;
@@ -102,13 +156,11 @@ button,
 
 /* Motywy obrazkowe: grafika zamiast gradientu.
    Kod ustawia data-theme oraz zmienną --bg-image (ścieżka z BASE_URL). */
-:root[data-theme='image'] body,
-:root[data-theme='image2'] body {
+:root[data-theme-image='true'] body {
   background: none;
 }
 
-:root[data-theme='image']::before,
-:root[data-theme='image2']::before {
+:root[data-theme-image='true']::before {
   content: '';
   position: fixed;
   inset: 0;
@@ -244,6 +296,38 @@ button:disabled {
 .card-text {
   padding: 8px;
   font-size: 13px;
+}
+
+.destroyed-city-token {
+  width: 120px;
+  aspect-ratio: 5 / 7;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--deep);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+}
+
+.destroyed-city-token img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.helicarrier-explosion-marker {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  color: var(--gold);
+  font-weight: 800;
+}
+
+.helicarrier-explosion-marker img {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 4px;
 }
 
 /* Klikalna karta = neonowy obrys i uniesienie. To jest "sygnatura" całego UI. */
