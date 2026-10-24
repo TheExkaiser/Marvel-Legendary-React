@@ -131,6 +131,8 @@ export interface GameState {
   cosmicThreatReduction?: number // Cosmic Threat Galactusa: obniżenie jego siły na czas jednej walki (czyszczone po walce)
   newHandDiscardCount?: number // Force of Eternity: ile kart odrzucić po dobraniu nowej ręki na koniec tury
   hqRecruitBonuses?: Record<string, number> // Underground Riches: jednorazowa pula Recruit do wydania na Bohaterów w polu HQ pod daną lokacją (klucz: nazwa z CITY_NAMES, reset w endTurn)
+  schemeTwists?: CardInstance[] // Twisty odłożone obok Scheme'u
+  mastermindSchemeTwists?: CardInstance[] // Twisty odłożone obok Masterminda przez Scheme
   burrowingVillainId?: string // Burrow: instanceId Villaina, który po tej walce wraca do Streets zamiast do Victory Pile (ustawia onFight, czyta combat.ts)
   cancelFightEffectsThisTurn?: boolean // Ultimate Nullifier: do końca tury możesz anulować efekt Fight Villaina / taktyki (combat.ts)
   versatileBothThisTurn?: boolean // Against All Odds: do końca tury Versatile daje i Attack, i Recruit
@@ -144,6 +146,8 @@ export interface GameState {
   attackGainedThisTurn: number
   debugUsed: boolean // true, jeśli użyto czegokolwiek z Debug Panelu — taka gra nie trafia do logu
   masterStrikeAutoDrawUsedThisTurn: boolean // Dark City: wymuszone dobranie po Master Strike tylko raz na turę
+  enemiesCostRecruitThisTurn: boolean // Scheme rule: enemies are fought by spending Recruit
+  heroesCostAttackThisTurn: boolean // Scheme rule: Heroes are recruited by spending Attack
 }
 
 export interface GameSetup {
@@ -184,6 +188,9 @@ export interface SchemeDef {
   // Karta z talii złoczyńców, zanim silnik rozpatrzy ją domyślnie (wejście do miasta, jeniec itp.).
   // Zwraca true, jeśli scheme rozpatrzył ją sam (X-Cutioner's Song: Bohater z talii złoczyńców zostaje jeńcem).
   onVillainDeckCard?: (state: GameState, card: CardInstance, ui: UiAdapter) => boolean | Promise<boolean>
+  // Additional cost required before fighting the Mastermind (for example, Force Fields).
+  mastermindFightAdditionalCost?: (state: GameState) => number
+  beforeMastermindFight?: (state: GameState, ui: UiAdapter, mastermindStrength: number) => Promise<void>
 
   // Bohater skasowany z HQ (przez koFromHq). Gdy zdefiniowane, zastępuje domyślne trafienie karty do KO
   // (Detonate the Helicarrier: karta zostaje zakryta na miejscu HQ jako Eksplozja).

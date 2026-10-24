@@ -1064,10 +1064,28 @@ button:disabled {
   height: 62px;
 }
 
+.attack-modifier-badge.cost-resource-badge {
+  width: 48px;
+  height: 48px;
+  bottom: -6px;
+  right: -6px;
+}
+
+.cost-resource-badge .attack-modifier-value {
+  font-size: 19px;
+}
+
 .attack-modifier-icon {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+.attack-modifier-icon.cost-icon {
+  display: block;
+  width: 72%;
+  height: 72%;
+  margin: 14% auto;
 }
 
 .attack-modifier-value {
@@ -1389,6 +1407,13 @@ button:disabled {
     height: 24px;
     bottom: -3px;
     right: -3px;
+  }
+
+  .attack-modifier-badge.cost-resource-badge {
+    width: 20px;
+    height: 20px;
+    bottom: -2px;
+    right: -2px;
   }
 
   .attack-modifier-value {

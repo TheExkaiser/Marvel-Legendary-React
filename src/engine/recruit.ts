@@ -7,6 +7,14 @@ import { CITY_NAMES } from './constants'
 /** Save Humanity: za tyle Recruit ratujesz Bystandera z HQ. */
 const BYSTANDER_RESCUE_COST = 2
 
+function heroesCostAttack(state: GameState): boolean {
+  return (
+    state.heroesCostAttackThisTurn ||
+    (getScheme(state).id === 'fantasticfour_pull_reality_into_the_negative_zone' &&
+      [2, 4, 6].includes(state.twistsRevealed))
+  )
+}
+
 /** Uzupełnia puste sloty HQ z talii bohaterów (zniszczone miejsca, np. w Detonate the Helicarrier, zostają puste). */
 export function refillHq(state: GameState): void {
   for (let i = 0; i < state.hq.length; i++) {
@@ -66,11 +74,14 @@ export function recruitHero(state: GameState, instanceId: string): void {
   const isBystander = data.kind === 'bystander'
   const baseCost = data.cost ?? 0
   const cost = hqCardCost(state, index)
-  if (state.recruit < cost) {
-    throw new Error(`Za mało recruit: masz ${state.recruit}, koszt ${cost}`)
+  const payWithAttack = !!data.hero && heroesCostAttack(state)
+  const available = payWithAttack ? state.attack : state.recruit
+  if (available < cost) {
+    throw new Error(`Za mało ${payWithAttack ? 'attack' : 'recruit'}: masz ${available}, koszt ${cost}`)
   }
 
-  state.recruit -= cost
+  if (payWithAttack) state.attack -= cost
+  else state.recruit -= cost
   if (!isBystander && data.hero) {
     const location = CITY_NAMES[index]
     const remainingBonus = state.hqRecruitBonuses?.[location] ?? 0
@@ -89,13 +100,16 @@ export function recruitOfficer(state: GameState): void {
   assertPlaying(state)
   const data = state.cards[state.officerCardId]
   const cost = data.cost ?? 0
-  if (state.recruit < cost) {
-    throw new Error(`Za mało recruit: masz ${state.recruit}, koszt ${cost}`)
+  const payWithAttack = heroesCostAttack(state)
+  const available = payWithAttack ? state.attack : state.recruit
+  if (available < cost) {
+    throw new Error(`Za mało ${payWithAttack ? 'attack' : 'recruit'}: masz ${available}, koszt ${cost}`)
   }
 
   const instance = state.officerDeck.pop()
   if (!instance) throw new Error('Brak dostępnych oficerów')
 
-  state.recruit -= cost
+  if (payWithAttack) state.attack -= cost
+  else state.recruit -= cost
   placeRecruitedCard(state, instance)
 }

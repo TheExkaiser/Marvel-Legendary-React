@@ -25,6 +25,7 @@ export interface UiAdapter {
     prompt: string,
   ): Promise<string | null>
   showInfo(card: CardInstance, message: string): Promise<void>
+  showCards(cards: CardInstance[], title: string): Promise<void>
   revealCard(card: CardInstance, message: string): Promise<void>
   showCapture(capturer: CardInstance, bystander: CardInstance, message: string): Promise<void>
   showRescue(bystander: CardInstance, message: string): Promise<void>

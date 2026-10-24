@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { createGameState, startGame } from './engine/game'
+import { checkEndConditions } from './engine/villainPhase'
 import type { GameSetup, GameState, CardInstance } from './engine/types'
 import type { UiAdapter, ChoiceOptions, TextOption, AttackSplit } from './engine/ui'
 import type { Settings } from './useSettings'
@@ -17,6 +18,11 @@ interface OptionPromptState {
 interface InfoPromptState {
   card: CardInstance
   message: string
+}
+
+interface CardsPromptState {
+  cards: CardInstance[]
+  title: string
 }
 
 interface CapturePromptState {
@@ -51,6 +57,7 @@ export function useGame(setup: GameSetup, settings: Settings) {
   const [cardPrompt, setCardPrompt] = useState<CardPromptState | null>(null)
   const [optionPrompt, setOptionPrompt] = useState<OptionPromptState | null>(null)
   const [infoPrompt, setInfoPrompt] = useState<InfoPromptState | null>(null)
+  const [cardsPrompt, setCardsPrompt] = useState<CardsPromptState | null>(null)
   const [capturePrompt, setCapturePrompt] = useState<CapturePromptState | null>(null)
   const [rescuePrompt, setRescuePrompt] = useState<RescuePromptState | null>(null)
   const [attackSplitPrompt, setAttackSplitPrompt] = useState<AttackSplitPromptState | null>(null)
@@ -59,6 +66,7 @@ export function useGame(setup: GameSetup, settings: Settings) {
   const resolveCardRef = useRef<((choice: CardInstance | null) => void) | null>(null)
   const resolveOptionRef = useRef<((choice: string | null) => void) | null>(null)
   const resolveInfoRef = useRef<(() => void) | null>(null)
+  const resolveCardsRef = useRef<(() => void) | null>(null)
   const resolveCaptureRef = useRef<(() => void) | null>(null)
   const resolveRescueRef = useRef<(() => void) | null>(null)
   const resolveAttackSplitRef = useRef<((split: AttackSplit) => void) | null>(null)
@@ -88,6 +96,13 @@ export function useGame(setup: GameSetup, settings: Settings) {
       return new Promise((resolve) => {
         resolveInfoRef.current = resolve
         setInfoPrompt({ card, message })
+      })
+    },
+    showCards(cards, title) {
+      if (cards.length === 0 || !settings.showRevealPopups) return Promise.resolve()
+      return new Promise((resolve) => {
+        resolveCardsRef.current = resolve
+        setCardsPrompt({ cards, title })
       })
     },
     revealCard(card, message) {
@@ -158,6 +173,12 @@ export function useGame(setup: GameSetup, settings: Settings) {
     setInfoPrompt(null)
   }
 
+  function closeCardsPrompt() {
+    resolveCardsRef.current?.()
+    resolveCardsRef.current = null
+    setCardsPrompt(null)
+  }
+
   function closeCapturePrompt() {
     resolveCaptureRef.current?.()
     resolveCaptureRef.current = null
@@ -186,6 +207,7 @@ export function useGame(setup: GameSetup, settings: Settings) {
   async function act(action: (state: GameState, ui: UiAdapter) => void | Promise<void>) {
     try {
       await action(state, ui)
+      checkEndConditions(state)
     } catch (e) {
       alert((e as Error).message)
     }
@@ -208,6 +230,8 @@ function debugAct(action: (state: GameState, ui: UiAdapter) => void | Promise<vo
     answerOptionPrompt,
     infoPrompt,
     closeInfoPrompt,
+    cardsPrompt,
+    closeCardsPrompt,
     capturePrompt,
     closeCapturePrompt,
     rescuePrompt,

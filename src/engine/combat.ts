@@ -22,11 +22,25 @@ function recruitPays(state: GameState, cardId: string): boolean {
 
 const DEMON_GOBLIN_ATTACK = 2
 
+function enemiesCostRecruit(state: GameState): boolean {
+  return (
+    state.enemiesCostRecruitThisTurn ||
+    (getScheme(state).id === 'fantasticfour_pull_reality_into_the_negative_zone' &&
+      [2, 4, 6].includes(state.twistsRevealed))
+  )
+}
+
 function availableAttack(state: GameState, cardId: string): number {
+  if (enemiesCostRecruit(state)) return state.recruit
   return state.attack + (recruitPays(state, cardId) ? state.recruit : 0)
 }
 
 async function spendAttack(state: GameState, amount: number, ui: UiAdapter, cardId: string): Promise<void> {
+  if (enemiesCostRecruit(state)) {
+    state.recruit -= amount
+    return
+  }
+
   if (!recruitPays(state, cardId)) {
     state.attack -= amount
     return
@@ -242,10 +256,18 @@ export async function fightMastermind(state: GameState, ui: UiAdapter): Promise<
   try {
     const strength = getEffectiveStrength(state, state.mastermind) ?? 0
     const mmId = state.mastermind.cardId
-    if (availableAttack(state, mmId) < strength) {
+    const scheme = getScheme(state)
+    const additionalCost = scheme.mastermindFightAdditionalCost?.(state) ?? 0
+    const baseAttackAvailable = availableAttack(state, mmId)
+    const totalAttackOrRecruit = state.attack + state.recruit
+    const canPayBaseCost =
+      baseAttackAvailable >= strength &&
+      (additionalCost === 0 || totalAttackOrRecruit >= strength + additionalCost)
+    if (!canPayBaseCost) {
       throw new Error(`Za mało attack: masz ${availableAttack(state, mmId)}, siła ${strength}`)
     }
 
+    await scheme.beforeMastermindFight?.(state, ui, strength)
     await spendAttack(state, strength, ui, mmId)
     await claimTactic(state, ui)
     await resolveMastermindCaptives(state, ui)

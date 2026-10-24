@@ -77,6 +77,8 @@ function GameScreen({
     answerOptionPrompt,
     infoPrompt,
     closeInfoPrompt,
+    cardsPrompt,
+    closeCardsPrompt,
     capturePrompt,
     closeCapturePrompt,
     rescuePrompt,
@@ -109,6 +111,8 @@ function GameScreen({
 }, [state.status])
   
   const scheme = getScheme(state)
+  const negativeZoneActive =
+    scheme.id === 'fantasticfour_pull_reality_into_the_negative_zone' && [2, 4, 6].includes(state.twistsRevealed)
   const [viewingCaptivesOf, setViewingCaptivesOf] = useState<string | null>(null)
   
   const [viewingPile, setViewingPile] = useState<'victory' | 'ko' | 'discard' | 'teleport' | null>(null)
@@ -193,8 +197,12 @@ function GameScreen({
             data={state.cards[state.mastermind.cardId]}
             onClick={() => act(fightMastermind)}
             effectiveStrength={getEffectiveStrength(state, state.mastermind)}
+            strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
             capturedCards={getCapturedCards(state, state.mastermind.instanceId)}
           />
+          {(state.mastermindSchemeTwists?.length ?? 0) > 0 && (
+            <div className="markers">Force Fields: {state.mastermindSchemeTwists!.length}</div>
+          )}
           <StackedMasterStrikes
             cards={state.stackedMasterStrikes ?? []}
             cardIndex={state.cards}
@@ -220,6 +228,7 @@ function GameScreen({
                       flipId={instance.instanceId}
                       onClick={() => act((s, ui) => fightVillain(s, instance.instanceId, ui))}
                       effectiveStrength={getEffectiveStrength(state, instance)}
+                      strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
                       capturedCards={getCapturedCards(state, instance.instanceId)}
                     />
                   ) : (
@@ -269,6 +278,7 @@ function GameScreen({
                   flipId={instance.instanceId}
                   flipFrom="hero-deck"
                   effectiveCost={hqCardCost(state, i)}
+                  costResource={negativeZoneActive ? 'attack' : 'recruit'}
                   onClick={() => act((s) => recruitHero(s, instance.instanceId))}
                 />
               ) : (
@@ -401,6 +411,14 @@ function GameScreen({
       )}
       {infoPrompt && (
         <TacticPrompt state={state} card={infoPrompt.card} onClose={closeInfoPrompt} />
+      )}
+      {cardsPrompt && (
+        <PilePrompt
+          title={cardsPrompt.title}
+          cards={cardsPrompt.cards}
+          cardsById={state.cards}
+          onClose={closeCardsPrompt}
+        />
       )}
       {viewingPile && (
         <PilePrompt

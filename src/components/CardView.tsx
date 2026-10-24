@@ -12,8 +12,10 @@ interface CardViewProps {
   flipId?: string
   flipFrom?: string // id talii (data-deck-id), z której nowa karta ma przyjechać
   effectiveStrength?: number // aktualna siła (po ewentualnym modyfikatorze), liczona przez getEffectiveStrength
+  strengthResource?: 'attack' | 'recruit' // zasób wymagany do walki z tą kartą
   capturedCards?: CardData[] // złapani bystanderzy + ewentualna przypięta karta bohatera
   effectiveCost?: number // aktualny koszt karty w HQ (po modyfikatorze, np. Underground Riches)
+  costResource?: 'attack' | 'recruit' // zasób wymagany do rekrutacji tej karty
   focusButton?: { cost: number; onClick: () => void } // złoty przycisk Focus na karcie (tylko zagrane karty)
 }
 
@@ -35,7 +37,7 @@ function ConditionLine({ data }: { data: CardData }) {
 }
 
 // Mała odznaka na karcie (attack.png + wartość) pokazująca AKTUALNĄ siłę, gdy odbiega od bazowej.
-function AttackModifierBadge({ data, effectiveStrength }: { data: CardData; effectiveStrength?: number }) {
+function AttackModifierBadge({ data, effectiveStrength, strengthResource = 'attack' }: { data: CardData; effectiveStrength?: number; strengthResource?: 'attack' | 'recruit' }) {
   const baseStrength = data.strength
   let text: string
   let color: string
@@ -45,17 +47,19 @@ function AttackModifierBadge({ data, effectiveStrength }: { data: CardData; effe
     text = String(effectiveStrength)
     color = '#ffd93d'
   } else {
-    if (effectiveStrength === undefined || effectiveStrength === baseStrength) return null
+    if (effectiveStrength === undefined || (effectiveStrength === baseStrength && strengthResource === 'attack')) return null
     text = String(effectiveStrength)
-    color = effectiveStrength > baseStrength ? '#ff6b6b' : '#4ade80'
+    color = strengthResource === 'recruit' ? '#ffd93d' : effectiveStrength > baseStrength ? '#ff6b6b' : '#4ade80'
   }
 
+  const usesGenericCostIcon = strengthResource === 'recruit'
+
   return (
-    <div className="attack-modifier-badge">
+    <div className={`attack-modifier-badge${usesGenericCostIcon ? ' cost-resource-badge' : ''}`}>
       <img
-        className="attack-modifier-icon"
-        src={`${import.meta.env.BASE_URL}icons/attack.png`}
-        alt="Attack"
+        className={`attack-modifier-icon${usesGenericCostIcon ? ' cost-icon' : ''}`}
+        src={`${import.meta.env.BASE_URL}icons/${usesGenericCostIcon ? 'cost' : strengthResource}.png`}
+        alt={usesGenericCostIcon ? 'Cost' : 'Attack'}
       />
       <span className="attack-modifier-value" style={{ color }}>{text}</span>
     </div>
@@ -63,15 +67,15 @@ function AttackModifierBadge({ data, effectiveStrength }: { data: CardData; effe
 }
 
 // Odznaka z AKTUALNYM kosztem karty w HQ (recruit.png + wartość), gdy odbiega od bazowego: zielony = taniej, czerwony = drożej.
-function CostModifierBadge({ data, effectiveCost }: { data: CardData; effectiveCost?: number }) {
-  if (data.cost === undefined || effectiveCost === undefined || effectiveCost === data.cost) return null
-  const color = effectiveCost < data.cost ? '#4ade80' : '#ff6b6b'
+function CostModifierBadge({ data, effectiveCost, costResource = 'recruit' }: { data: CardData; effectiveCost?: number; costResource?: 'attack' | 'recruit' }) {
+  if (data.cost === undefined || effectiveCost === undefined || (effectiveCost === data.cost && costResource === 'recruit')) return null
+  const color = costResource === 'attack' ? '#ffd93d' : effectiveCost < data.cost ? '#4ade80' : '#ff6b6b'
   return (
     <div className="attack-modifier-badge">
       <img
         className="attack-modifier-icon"
-        src={`${import.meta.env.BASE_URL}icons/recruit.png`}
-        alt="Cost"
+        src={`${import.meta.env.BASE_URL}icons/${costResource}.png`}
+        alt={costResource === 'attack' ? 'Attack cost' : 'Recruit cost'}
       />
       <span className="attack-modifier-value" style={{ color }}>{effectiveCost}</span>
     </div>
@@ -179,7 +183,7 @@ function CapturedCardThumbnail({ data }: { data: CardData }) {
   )
 }
 
-export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, capturedCards, focusButton, effectiveCost }: CardViewProps) {
+export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, strengthResource, capturedCards, focusButton, effectiveCost, costResource }: CardViewProps) {
   const [zoomed, setZoomed] = useState(false)
   const capturedCount = capturedCards?.length ?? 0
 
@@ -203,8 +207,8 @@ export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, c
         </button>
 
         <CapturedBadge count={capturedCount} />
-        <AttackModifierBadge data={data} effectiveStrength={effectiveStrength} />
-        <CostModifierBadge data={data} effectiveCost={effectiveCost} />
+        <AttackModifierBadge data={data} effectiveStrength={effectiveStrength} strengthResource={strengthResource} />
+        <CostModifierBadge data={data} effectiveCost={effectiveCost} costResource={costResource} />
 
         {focusButton && (
           <button

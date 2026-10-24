@@ -128,6 +128,8 @@ export function createGameState(setup: GameSetup): GameState {
     status: 'playing',
     debugUsed: false,
     masterStrikeAutoDrawUsedThisTurn: false,
+    enemiesCostRecruitThisTurn: false,
+    heroesCostAttackThisTurn: false,
   }
 
   console.log('ledVillainGroup:', state.ledVillainGroup, villainCards.map((e) => [e.card.name, e.card.villainGroup]))
