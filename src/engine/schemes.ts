@@ -77,7 +77,7 @@ const ORGANIZED_CRIME_WAVE: SchemeDef = {
 
       state.city[i] = null
       state.escaped.push(goon)
-      logEvent(state, `Ucieka: ${state.cards[goon.cardId].name}`)
+      logEvent(state, `Escaped: ${state.cards[goon.cardId].name}`)
 
       const lost = state.captives[goon.instanceId] ?? []
       state.ko.push(...lost)

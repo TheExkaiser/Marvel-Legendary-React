@@ -16,6 +16,7 @@ export default defineConfig({
         start_url: '/Marvel-Legendary-React/',
         scope: '/Marvel-Legendary-React/',
         display: 'standalone',
+        orientation: 'landscape',
         theme_color: '#0d1b2a',
         background_color: '#0d1b2a',
         icons: [

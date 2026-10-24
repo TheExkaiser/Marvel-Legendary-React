@@ -255,8 +255,9 @@ function GameScreen({
       </div>
 
       {/* ===== Rekrutacja: oficer + HQ + talia bohaterów (po prawej) ===== */}
-      <h2>HQ</h2>
-      <div className="row recruit-row">
+      <section className="section-block section-block-hq">
+        <h2 className="section-heading">HQ</h2>
+        <div className="row recruit-row">
         <div className="officer-slot">
           {state.officerDeck.length > 0 && (
             <CardView
@@ -293,11 +294,13 @@ function GameScreen({
         <div className="deck-end">
           <DeckPile count={state.heroDeck.length} deckId="hero-deck" />
         </div>
-      </div>
+        </div>
+      </section>
 
       {/* ===== Zagrane karty + talia gracza (po prawej) ===== */}
-      <h2>Played ({state.played.length})</h2>
-      <div className="row-with-deck">
+      <section className="section-block section-block-played">
+        <h2 className="section-heading">Played ({state.played.length})</h2>
+        <div className="row-with-deck">
         <div className="row">
           {state.played.map((c) => {
             const data = getCardData(state, c)
@@ -336,7 +339,8 @@ function GameScreen({
             />
           )}
         </div>
-      </div>
+        </div>
+      </section>
 
       {/* ===== Ręka: wachlarz przyklejony do dołu ekranu ===== */}
       <div className="hand-dock">

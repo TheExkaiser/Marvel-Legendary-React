@@ -3,7 +3,7 @@ import type { UiAdapter } from './ui'
 import { getCardAbility } from './cardAbilities'
 import { canPlayCard } from './cardRequirements'
 import { HAND_SIZE } from './constants'
-import { assertPlaying } from './common'
+import { assertPlaying, logEvent } from './common'
 import { drawCards } from './deckOps'
 import { villainPhase } from './villainPhase'
 import { addRecruit, addAttack } from './resources'
@@ -30,6 +30,7 @@ export async function playCard(
 
   const [instance] = state.hand.splice(index, 1)
   state.played.push(instance)
+  logEvent(state, `Played: ${data.name}`)
   addAttack(state, data.attack ?? 0)
   addRecruit(state, data.recruit ?? 0)
 
@@ -97,6 +98,7 @@ export async function teleportCard(
 
   const [instance] = state.hand.splice(index, 1)
   state.teleported = [...(state.teleported ?? []), instance]
+  logEvent(state, `Teleported: ${state.cards[instance.cardId].name}`)
   await teleportHooks.get(instance.cardId)?.(state, ui, instance)
 }
 
@@ -124,6 +126,8 @@ async function discardAfterNewHand(state: GameState, ui: UiAdapter): Promise<voi
 /** Koniec tury: sprzątanie, nowa ręka, a potem faza złoczyńcy (chyba że jest dodatkowa tura). */
 export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   assertPlaying(state)
+
+  logEvent(state, `End of turn ${state.turn}`)
 
   state.discard.push(...state.hand, ...state.played)
   state.hand = []

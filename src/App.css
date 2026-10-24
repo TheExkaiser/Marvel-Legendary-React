@@ -60,6 +60,13 @@ body {
     linear-gradient(170deg, var(--base) 0%, var(--deep) 55%, var(--abyss) 100%);
   background-attachment: fixed;
   overflow-x: hidden;
+  overscroll-behavior: none;
+}
+
+button,
+.card,
+.clickable {
+  touch-action: manipulation;
 }
 
 /* Suwaki w kolorach gry (Firefox, Chrome 121+, Safari 18.2+). Dziedziczą się na wszystkie przewijane elementy. */
@@ -499,44 +506,85 @@ button:disabled {
    7. LOG
    ========================================================= */
 
-.log-bar {
+.log-shell {
+  --log-drawer-width: min(85vw, 320px);
   position: fixed;
+  top: 58px;
+  right: 0;
+  z-index: 60;
+  width: calc(var(--log-drawer-width) + 42px);
+  height: min(70vh, 620px);
+}
+
+.log-tab {
+  position: absolute;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 1000px;
-  max-width: calc(100vw - 80px);
-  z-index: 55;
-  margin-bottom: 0;
-  padding: 10px 16px;
+  right: 0;
+  z-index: 2;
+  padding: 14px 8px;
   border: 1px solid var(--line);
-  border-top: none;
-  border-radius: 0 0 14px 14px;
-  background: var(--panel);
-  backdrop-filter: blur(6px);
-  font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  background: var(--panel-solid);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 800;
+  writing-mode: vertical-rl;
   cursor: pointer;
-  transition: border-color 0.15s;
+  transition: filter 0.15s;
 }
 
-.log-bar:hover {
-  border-color: var(--cyan);
+.log-shell-clicked .log-tab {
+  right: var(--log-drawer-width);
 }
 
-.log-modal {
-  max-width: 900px;
-  width: 90vw;
+.log-tab:hover {
+  filter: brightness(1.2);
+  transform: none;
+}
+
+.log-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  width: var(--log-drawer-width);
+  max-width: 85vw;
+  max-height: min(70vh, 620px);
+  padding: 18px;
+  overflow-y: auto;
+  background: var(--panel-solid);
+  border-left: 1px solid var(--line);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.55);
+  transform: translateX(100%);
+  transition: transform 0.22s ease;
+}
+
+.log-drawer-open {
+  transform: translateX(0);
+}
+
+.log-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.log-drawer-header h3 {
+  margin: 0;
+}
+
+.log-close-button {
+  display: none;
 }
 
 .log-list {
-  max-height: 60vh;
-  overflow-y: auto;
-  margin-bottom: 12px;
   text-align: left;
-  font-size: 14px;
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .log-list div {
@@ -781,6 +829,21 @@ button:disabled {
   * {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* Android/mobile: avoid expensive fixed backgrounds and blur layers while scrolling. */
+@media (max-width: 900px) {
+  html,
+  body {
+    background-attachment: scroll;
+  }
+
+  .stats-panel,
+  .piles-panel,
+  .log-bar,
+  .drawer-panel {
+    backdrop-filter: none;
   }
 }
 /* =========================================================
@@ -1429,10 +1492,25 @@ button:disabled {
     font-size: 6px;
   }
 
-  .log-bar {
-    max-width: calc(60vw - 16px);
+  .log-tab {
     font-size: 10px;
-    padding: 4px 7px;
+    padding: 10px 5px;
+  }
+
+  .log-shell {
+    --log-drawer-width: min(85vw, 280px);
+    top: 48px;
+    height: 72vh;
+  }
+
+  .log-drawer {
+    width: var(--log-drawer-width);
+    max-height: 72vh;
+    padding: 12px;
+  }
+
+  .log-close-button {
+    display: inline-flex;
   }
     .zone-title {
     min-height: 20px;
@@ -1494,6 +1572,131 @@ button:disabled {
   }
 
   .city-row .deck-pile {
+    margin-left: 6px;
+  }
+}
+
+/* Android phones in landscape: keep the board horizontal instead of stacking every zone. */
+@media (min-width: 601px) and (max-height: 500px) and (orientation: landscape) {
+  .app {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 18px 8px 96px;
+  }
+
+  .board-top {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+    gap: 10px;
+    padding: 8px;
+  }
+
+  .board-top,
+  .recruit-row {
+    justify-content: center;
+  }
+
+  .city-slot {
+    flex: 0 1 auto;
+  }
+
+  .city-row,
+  .recruit-row {
+    justify-content: center;
+  }
+
+  .section-block {
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
+  .section-block-hq {
+    width: fit-content;
+  }
+
+  .section-block-played {
+    width: min(100%, 720px);
+  }
+
+  .section-heading {
+    width: 100%;
+    margin-inline: 0;
+  }
+
+  .section-block-hq .recruit-row {
+    width: fit-content;
+    margin-inline: 0;
+  }
+
+  .city-slot .zone-title {
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .city-slot .zone-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    margin-left: 8px;
+    background: linear-gradient(90deg, var(--line), transparent);
+  }
+
+  .city-row,
+  .recruit-row,
+  .row-with-deck,
+  .city-row .row,
+  .row-with-deck .row {
+    flex-wrap: nowrap;
+  }
+
+  .row-with-deck {
+    width: min(100%, 720px);
+    max-width: 100%;
+    margin-inline: auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .row-with-deck .row {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .row-with-deck .deck-group {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  .card,
+  .slot-empty,
+  .deck-pile {
+    width: clamp(52px, 14vh, 68px);
+  }
+
+  .row {
+    gap: 4px;
+    min-height: 0;
+  }
+
+  h2 {
+    margin: 10px 0 5px;
+    font-size: 20px;
+  }
+
+  .board-top {
+    margin-bottom: 0;
+  }
+
+  .city-row .deck-pile,
+  .deck-end {
     margin-left: 6px;
   }
 }

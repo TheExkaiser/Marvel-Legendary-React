@@ -5,7 +5,7 @@ import { getVillainAbilities } from './villainAbilities'
 import { canDefeatVillain } from './villainRequirements'
 import { getEffectiveStrength } from './keywords'
 import { getScheme } from './schemeRegistry'
-import { assertPlaying } from './common'
+import { assertPlaying, logEvent } from './common'
 import { rescueBystander, rescueCard } from './wounds'
 import { addRecruit } from './resources'
 import { CITY_NAMES } from './constants'
@@ -168,6 +168,7 @@ export async function defeatVillainFromDeck(
     state.defeated.push(villain)
   }
 
+  logEvent(state, `Defeated from Villain Deck: ${state.cards[villain.cardId].name}`)
   await offerMindControl(state, villain, ui)
   return true
 }
@@ -199,6 +200,7 @@ export async function fightVillain(
   }
 
   await removeVillainFromCity(state, index, ui)
+  logEvent(state, `Defeated: ${state.cards[villain.cardId].name}`)
   await offerMindControl(state, villain, ui)
 }
 
@@ -212,6 +214,7 @@ export async function defeatVillainFree(state: GameState, instanceId: string, ui
   }
 
   await removeVillainFromCity(state, index, ui)
+  logEvent(state, `Defeated for free: ${state.cards[villain.cardId].name}`)
   await offerMindControl(state, villain, ui)
 }
 
@@ -228,6 +231,8 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
 
   const returned = state.tactics.some((t) => t.instanceId === tactic.instanceId)
   if (!returned) state.defeated.push(tactic)
+
+  logEvent(state, `Tactic claimed: ${state.cards[tactic.cardId].name}`)
 
   addRecruit(state, state.defeatRecruitBonus ?? 0)
   for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) await rescueBystander(state, ui)
@@ -293,6 +298,7 @@ export async function fightDemonGoblin(state: GameState, ui: UiAdapter): Promise
 
   await spendAttack(state, DEMON_GOBLIN_ATTACK, ui, goblin.cardId)
   stack.pop()
+  logEvent(state, `Defeated: ${state.cards[goblin.cardId].name}`)
 
   // Demon Goblin jest Villainem, więc działają bonusy "za pokonanie Villaina" (bez lokacji, bo stoi poza miastem)
   addRecruit(state, state.defeatRecruitBonus ?? 0)

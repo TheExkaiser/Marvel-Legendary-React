@@ -18,10 +18,8 @@ export async function resolveVillainDeckCard(
   card: CardInstance,
   ui: UiAdapter,
 ): Promise<void> {
-  console.log('resolveVillainDeckCard:', state.cards[card.cardId].name, new Error().stack?.split('\n').slice(2, 6).join(' | '))
-  
   const data = state.cards[card.cardId]
-  logEvent(state, `Tura ${state.turn}: odkryto ${data.name}`)
+  logEvent(state, `Turn ${state.turn}: Drawn from Villain Deck — ${data.name}`)
 
   // Scheme może rozpatrzyć kartę sam (X-Cutioner's Song: Bohater z talii złoczyńców zostaje jeńcem, nie wchodzi do miasta)
   if (await getScheme(state).onVillainDeckCard?.(state, card, ui)) return
@@ -82,7 +80,7 @@ export async function resolveMasterStrike(
 /** Ucieczka złoczyńcy: karta idzie do "escaped", jeńcy tracą (KO), odpalają się efekt scheme'u i zdolność onEscape. */
 export async function escapeVillain(state: GameState, villain: CardInstance, ui: UiAdapter): Promise<void> {
   state.escaped.push(villain)
-  logEvent(state, `Ucieka: ${state.cards[villain.cardId].name}`)
+  logEvent(state, `Escaped: ${state.cards[villain.cardId].name}`)
 
   const lost = state.captives[villain.instanceId] ?? []
   for (const c of lost) {

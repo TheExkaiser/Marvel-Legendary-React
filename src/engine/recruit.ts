@@ -1,5 +1,5 @@
 import type { GameState, CardInstance } from './types'
-import { assertPlaying } from './common'
+import { assertPlaying, logEvent } from './common'
 import { getScheme } from './schemeRegistry'
 import { rescueCard } from './wounds'
 import { CITY_NAMES } from './constants'
@@ -92,6 +92,7 @@ export function recruitHero(state: GameState, instanceId: string): void {
   state.hq[index] = null
   if (isBystander) rescueCard(state, instance)
   else placeRecruitedCard(state, instance)
+  logEvent(state, isBystander ? `Rescued: ${data.name}` : `Recruited: ${data.name}`)
   refillHq(state)
 }
 
@@ -112,4 +113,5 @@ export function recruitOfficer(state: GameState): void {
   if (payWithAttack) state.attack -= cost
   else state.recruit -= cost
   placeRecruitedCard(state, instance)
+  logEvent(state, `Recruited: ${data.name}`)
 }
