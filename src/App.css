@@ -349,7 +349,6 @@ button:disabled {
 /* Klikalna karta = neonowy obrys i uniesienie. To jest "sygnatura" całego UI. */
 .clickable {
   cursor: pointer;
-  box-shadow: var(--glow-cyan);
 }
 
 .clickable:hover {
@@ -410,11 +409,6 @@ button:disabled {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-/* Mastermind: czerwona poświata, bo to boss */
-.mastermind-slot .card {
-  box-shadow: 0 0 0 2px var(--hot), 0 0 28px rgba(255, 61, 87, 0.55);
 }
 
 .zone-title {
