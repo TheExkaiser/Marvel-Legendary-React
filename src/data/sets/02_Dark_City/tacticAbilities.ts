@@ -135,10 +135,10 @@ registerCardAbility('kingpin-mob-war', async (state, { ui }) => {
   await resolveVillainDeckCard(state, chosen, ui)
 })
 
-registerCardAbility('apocalypse-immortal-and-undefeated', async (state, { self }) => {
+registerCardAbility('apocalypse-immortal-and-undefeated', async (state, { self, ui }) => {
   if (state.tactics.length === 0) return // to była ostatnia Taktyka
 
-  for (let i = 0; i < 6; i++) rescueBystander(state)
+  for (let i = 0; i < 6; i++) rescueBystander(state, ui)
   state.tactics.push(self)
   state.tactics = shuffle(state.tactics)
 })
