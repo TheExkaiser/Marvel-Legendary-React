@@ -1,0 +1,87 @@
+/* Wysuwane panele Info i Debug (wydzielone z App.css) */
+
+@media (max-width: 900px) {
+  .drawer-panel {
+    backdrop-filter: none;
+  }
+}
+
+.drawer-tab {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 56;
+  padding: 14px 8px;
+  writing-mode: vertical-rl;
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  background: var(--panel-solid);
+  border: 1px solid var(--line);
+  cursor: default;
+  user-select: none;
+  transition: filter 0.15s;
+}
+
+.drawer-tab:hover {
+  filter: brightness(1.2);
+}
+
+.drawer-tab-left {
+  left: 0;
+  border-radius: 0 10px 10px 0;
+  border-left: none;
+}
+
+.drawer-tab-right {
+  right: 0;
+  border-radius: 10px 0 0 10px;
+  border-right: none;
+}
+
+.drawer-panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: 54;
+  width: 280px;
+  max-width: 85vw;
+  padding: 70px 18px 18px;
+  overflow-y: auto;
+  background: var(--panel-solid);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.55);
+  transition: transform 0.22s ease;
+}
+
+.drawer-panel-left {
+  left: 0;
+  border-right: 1px solid var(--line);
+  transform: translateX(-100%);
+}
+
+.drawer-panel-right {
+  right: 0;
+  border-left: 1px solid var(--line);
+  transform: translateX(100%);
+}
+
+.drawer-panel-open {
+  transform: translateX(0);
+}
+
+.drawer-panel h3 {
+  margin-top: 0;
+}
+
+.drawer-panel p {
+  margin: 6px 0;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .drawer-panel {
+    backdrop-filter: none;
+  }
+}

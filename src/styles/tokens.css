@@ -1,0 +1,78 @@
+/* Tokeny: kolory, fonty i motywy setów (wydzielone z App.css) */
+
+:root {
+  --base: #183561;
+  --deep: #111f3f;
+  --abyss: #090f26;
+  --panel: rgba(24, 53, 97, 0.62);
+  --panel-solid: #1f4172;
+  --line: rgba(150, 185, 255, 0.2);
+  --cyan: #38e1ff;
+  --gold: #ffc145;
+  --hot: #ff3d57;
+  --text: #eaf1fb;
+  --muted: #9fb3d1;
+  --cyan-rgb: 56, 225, 255;
+  --hot-rgb: 255, 61, 87;
+
+  --font-display: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
+  --font-body: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --radius: 6px;
+  --glow-cyan: 0 0 0 2px var(--cyan), 0 0 22px rgba(56, 225, 255, 0.55);
+
+  /* Prawy margines wewnątrz panelu planszy (padding 14 + ramka 1): talie stoją w jednej kolumnie */
+  --board-inset: 15px;
+}
+
+/* Setowe warianty kolorystyczne. Motyw obrazkowy nie zmienia tokenów, tylko tło. */
+:root[data-theme='dark-city'] {
+  --base: #20242d;
+  --deep: #11151d;
+  --abyss: #080a0f;
+  --panel: rgba(32, 36, 45, 0.72);
+  --panel-solid: #292f3b;
+  --line: rgba(180, 190, 205, 0.24);
+  --cyan: #9aaecb;
+  --gold: #d5b36a;
+  --hot: #d84c59;
+  --text: #eef0f3;
+  --muted: #9ba4b2;
+  --cyan-rgb: 154, 174, 203;
+  --hot-rgb: 216, 76, 89;
+  --glow-cyan: 0 0 0 2px var(--cyan), 0 0 22px rgba(154, 174, 203, 0.45);
+}
+
+:root[data-theme='fantastic-four'] {
+  --base: #2a83b8;
+  --deep: #17608d;
+  --abyss: #0c2844;
+  --panel: rgba(47, 132, 185, 0.5);
+  --panel-solid: #3e9bd0;
+  --line: rgba(176, 229, 255, 0.35);
+  --cyan: #b8efff;
+  --gold: #ffe08a;
+  --hot: #ed5c75;
+  --text: #f1fbff;
+  --muted: #c2e3f1;
+  --cyan-rgb: 184, 239, 255;
+  --hot-rgb: 237, 92, 117;
+  --glow-cyan: 0 0 0 2px var(--cyan), 0 0 22px rgba(184, 239, 255, 0.55);
+}
+
+:root[data-theme='paint-the-town-red'] {
+  --base: #4a1219;
+  --deep: #210c12;
+  --abyss: #080609;
+  --panel: rgba(77, 16, 28, 0.68);
+  --panel-solid: #641c2a;
+  --line: rgba(255, 123, 135, 0.24);
+  --cyan: #ff6b72;
+  --gold: #f5c56d;
+  --hot: #f02e46;
+  --text: #fff0f0;
+  --muted: #cba8ad;
+  --cyan-rgb: 255, 107, 114;
+  --hot-rgb: 240, 46, 70;
+  --glow-cyan: 0 0 0 2px var(--cyan), 0 0 22px rgba(255, 107, 114, 0.5);
+}

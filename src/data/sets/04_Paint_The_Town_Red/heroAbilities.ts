@@ -2,22 +2,17 @@ import { registerCardAbility } from '../../../engine/cardAbilities'
 import { registerPlayRequirement } from '../../../engine/cardRequirements'
 import { addAttack, addRecruit, drawCards, recruitHero } from '../../../engine/game'
 import { countPlayedThisTurn } from '../../../engine/keywords'
-import { drawRevealed, takeTopCards } from '../../../engine/deckOps'
+import {
+  discardTopCard,
+  drawRevealed,
+  putCardsOnTop,
+  revealTopAndDrawIf,
+  revealTopCard,
+  takeTopCards,
+} from '../../../engine/deckOps'
 import { CITY_NAMES } from '../../../engine/constants'
 import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
-
-const topCard = (state: GameState): CardInstance | undefined => state.deck[state.deck.length - 1]
-
-async function revealTop(state: GameState, ui: UiAdapter, message: string): Promise<CardInstance | undefined> {
-  const card = topCard(state)
-  if (card) await ui.showInfo(card, message)
-  return card
-}
-
-function putBackOnTop(state: GameState, cards: CardInstance[]): void {
-  for (let i = cards.length - 1; i >= 0; i--) state.deck.push(cards[i])
-}
 
 async function putCardsFromHandOnTop(state: GameState, ui: UiAdapter, count: number, prompt: string): Promise<void> {
   for (let i = 0; i < count; i++) {
@@ -25,7 +20,7 @@ async function putCardsFromHandOnTop(state: GameState, ui: UiAdapter, count: num
     if (!chosen) return
     const index = state.hand.findIndex((card) => card.instanceId === chosen.instanceId)
     if (index === -1) return
-    state.deck.push(state.hand.splice(index, 1)[0])
+    putCardsOnTop(state, state.hand.splice(index, 1))
   }
 }
 
@@ -40,18 +35,15 @@ registerCardAbility('hero-black-cat-casual-bank-robbery', async (state) => {
 })
 
 registerCardAbility('hero-black-cat-pickpocket', async (state, { ui }) => {
-  const card = await revealTop(state, ui, 'Pickpocket: revealed the top card of your deck')
+  const card = await revealTopCard(state, ui, 'Pickpocket: revealed the top card of your deck')
   if (card) addAttack(state, (state.cards[card.cardId].attack ?? 0) + (state.cards[card.cardId].recruit ?? 0))
 })
 
 registerCardAbility('hero-black-cat-jinx', async (state, { ui }) => {
-  const card = await revealTop(state, ui, 'Jinx: revealed the top card of your deck')
+  const card = await revealTopCard(state, ui, 'Jinx: revealed the top card of your deck')
   if (!card) return
   const chosen = await ui.choose([card], { prompt: 'Jinx: discard the revealed card?', optional: true })
-  if (chosen) {
-    state.deck.pop()
-    state.discard.push(card)
-  }
+  if (chosen) discardTopCard(state)
 })
 
 registerCardAbility('hero-black-cat-cat-burglar', async (state) => {
@@ -69,12 +61,15 @@ registerCardAbility('hero-moon-knight-lunar-communion', async (state) => {
 })
 
 registerCardAbility('hero-moon-knight-crescent-moon-darts', async (state, { ui }) => {
-  const card = await revealTop(state, ui, 'Crescent Moon Darts: revealed the top card of your deck')
-  if (!card) return
-  const data = state.cards[card.cardId]
-  if (data.hero && (data.type ?? []).some((type) => type === 'instinct' || type === 'tech')) {
-    drawRevealed(state, takeTopCards(state, 1))
-  }
+  await revealTopAndDrawIf(
+    state,
+    ui,
+    (card) => {
+      const data = state.cards[card.cardId]
+      return !!data.hero && (data.type ?? []).some((type) => type === 'instinct' || type === 'tech')
+    },
+    'Crescent Moon Darts: revealed the top card of your deck',
+  )
 })
 
 registerCardAbility('hero-moon-knight-golden-ankh-of-khonshu', async (state, { ui }) => {
@@ -109,13 +104,8 @@ registerCardAbility('hero-scarlet-spider-sting-of-the-spider', async () => undef
 
 // ---------- Spider-Woman ----------
 
-async function drawTopIf(state: GameState, ui: UiAdapter, predicate: (card: CardInstance) => boolean, message: string): Promise<void> {
-  const card = await revealTop(state, ui, message)
-  if (card && predicate(card)) drawRevealed(state, takeTopCards(state, 1))
-}
-
 registerCardAbility('hero-spider-woman-bioelectric-shock', async (state, { ui }) => {
-  await drawTopIf(state, ui, (card) => (state.cards[card.cardId].attack ?? 0) > 0, 'Bioelectric Shock: revealed the top card of your deck')
+  await revealTopAndDrawIf(state, ui, (card) => (state.cards[card.cardId].attack ?? 0) > 0, 'Bioelectric Shock: revealed the top card of your deck')
 })
 
 registerCardAbility('hero-spider-woman-radioactive-spider', async (state, { ui }) => {
@@ -123,7 +113,7 @@ registerCardAbility('hero-spider-woman-radioactive-spider', async (state, { ui }
 })
 
 registerCardAbility('hero-spider-woman-venom-blast', async (state, { ui }) => {
-  await drawTopIf(state, ui, (card) => (state.cards[card.cardId].recruit ?? 0) > 0, 'Venom Blast: revealed the top card of your deck')
+  await revealTopAndDrawIf(state, ui, (card) => (state.cards[card.cardId].recruit ?? 0) > 0, 'Venom Blast: revealed the top card of your deck')
 })
 
 registerCardAbility('hero-spider-woman-arachno-pheromones', async (state, { ui }) => {
@@ -143,7 +133,7 @@ registerCardAbility('hero-spider-woman-arachno-pheromones', async (state, { ui }
     const recruited = state.discard.find((card) => card.cardId === chosen.cardId)
     if (recruited) {
       state.discard = state.discard.filter((card) => card.instanceId !== recruited.instanceId)
-      state.deck.push(recruited)
+      putCardsOnTop(state, [recruited])
     }
   }
 })
@@ -151,7 +141,7 @@ registerCardAbility('hero-spider-woman-arachno-pheromones', async (state, { ui }
 // ---------- Symbiote Spider-Man ----------
 
 registerCardAbility('hero-symbiote-spider-man-dark-strength', async (state, { ui }) => {
-  const card = await revealTop(state, ui, 'Dark Strength: revealed the top card of your deck')
+  const card = await revealTopCard(state, ui, 'Dark Strength: revealed the top card of your deck')
   if (card && [1, 2].includes(state.cards[card.cardId].cost ?? -1)) addAttack(state, 2)
 })
 
@@ -161,7 +151,7 @@ registerCardAbility('hero-symbiote-spider-man-spider-sense-tingling', async (sta
   const keep = cards.filter((card) => (state.cards[card.cardId].cost ?? 0) <= 2)
   const rest = cards.filter((card) => !keep.includes(card))
   drawRevealed(state, keep)
-  putBackOnTop(state, rest)
+  putCardsOnTop(state, rest)
 })
 
 registerCardAbility('hero-symbiote-spider-man-shadowed-spider', async (state) => {

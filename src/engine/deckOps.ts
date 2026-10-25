@@ -1,4 +1,5 @@
 import type { GameState, CardInstance } from './types'
+import type { UiAdapter } from './ui'
 import { shuffle } from './random'
 import { logEvent } from './common'
 
@@ -43,4 +44,38 @@ export function peekTopCard(state: GameState): CardInstance | undefined {
 export function drawRevealed(state: GameState, cards: CardInstance[]): void {
   state.hand.push(...cards)
   state.cardsDrawnThisTurn += cards.length
+}
+
+/** Odkrywa wierzchnią kartę talii (tasując discard, jeśli talia jest pusta) i pokazuje ją graczowi. Karta zostaje na talii. */
+export async function revealTopCard(
+  state: GameState,
+  ui: UiAdapter,
+  message: string,
+): Promise<CardInstance | undefined> {
+  const card = peekTopCard(state)
+  if (card) await ui.showInfo(card, message)
+  return card
+}
+
+/** Odkrywa wierzchnią kartę talii i dobiera ją do ręki, jeśli spełnia warunek. */
+export async function revealTopAndDrawIf(
+  state: GameState,
+  ui: UiAdapter,
+  predicate: (card: CardInstance) => boolean,
+  message: string,
+): Promise<void> {
+  const card = await revealTopCard(state, ui, message)
+  if (card && predicate(card)) drawRevealed(state, takeTopCards(state, 1))
+}
+
+/** Odrzuca wierzchnią kartę talii (tasując discard, jeśli talia jest pusta). Zwraca odrzuconą kartę. */
+export function discardTopCard(state: GameState): CardInstance | undefined {
+  const [card] = takeTopCards(state, 1)
+  if (card) state.discard.push(card)
+  return card
+}
+
+/** Kładzie karty na wierzch talii. Pierwsza karta z listy trafia na samą górę (odwrotność kolejności z takeTopCards). */
+export function putCardsOnTop(state: GameState, cards: CardInstance[]): void {
+  for (let i = cards.length - 1; i >= 0; i--) state.deck.push(cards[i])
 }

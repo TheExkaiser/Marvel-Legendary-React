@@ -1,0 +1,48 @@
+/* Ręka gracza (wydzielone z App.css) */
+
+.hand-dock {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  z-index: 50;
+  pointer-events: none; /* pusty obszar nie blokuje klikania w planszę */
+}
+
+.hand-fan {
+  display: flex;
+  justify-content: center;
+  padding: 0 40px 6px;
+}
+
+.hand-slot {
+  pointer-events: auto; /* same karty są klikalne */
+  margin-left: -34px; /* nakładanie kart */
+  transform-origin: 50% 130%;
+  transform: translateY(var(--drop)) rotate(var(--rot));
+  transition: transform 0.18s;
+}
+
+.hand-slot:first-child {
+  margin-left: 0;
+}
+
+.hand-slot:hover {
+  z-index: 20;
+  transform: translateY(-36px) rotate(0deg) scale(1.12);
+}
+
+/* uniesieniem zajmuje się teraz .hand-slot, więc wyłączamy podwójny efekt */
+.hand-slot .clickable:hover {
+  transform: none;
+}
+
+@media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
+  .hand-fan {
+    padding: 0 6px 3px;
+  }
+
+  .hand-slot {
+    margin-left: -13px;
+  }
+}

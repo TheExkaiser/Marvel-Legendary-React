@@ -1,0 +1,28 @@
+/* Panel Debug (wydzielone z App.css) */
+
+.debug {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px dashed rgba(255, 193, 69, 0.5);
+  border-radius: var(--radius);
+  background: rgba(1, 18, 26, 0.5);
+}
+
+.debug-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.debug input[type='number'] {
+  width: 56px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--abyss);
+  color: var(--text);
+}

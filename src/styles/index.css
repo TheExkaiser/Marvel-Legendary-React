@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Manrope:wght@400;600;800&display=swap');
+
+/* Kolejność importów ma znaczenie dla kaskady: nie zmieniaj jej bez potrzeby. */
+@import './tokens.css';
+@import './base.css';
+@import './buttons.css';
+@import '../components/Card.css';
+@import './Board.css';
+@import '../components/DebugPanel.css';
+@import '../components/Modal.css';
+@import '../components/LogPanel.css';
+@import '../components/StatsPanel.css';
+@import '../components/Piles.css';
+@import './EndTurnButton.css';
+@import '../components/StackedMasterStrikes.css';
+@import '../components/SchemeToken.css';
+@import '../components/Prompts.css';
+@import '../components/SlideDrawer.css';
+@import './HandDock.css';
+@import '../components/DeckPile.css';
+@import '../components/HamburgerMenu.css';
+@import '../components/SettingsMenu.css';
+@import '../components/GameHistoryMenu.css';
+@import '../components/GameToast.css';

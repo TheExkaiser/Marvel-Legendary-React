@@ -1,0 +1,221 @@
+/* Stats Panel (lewy górny róg) (wydzielone z App.css) */
+
+/* --- Statystyki: lewy górny róg --- */
+.stats-panel {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 57;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+.stat-turn {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--gold);
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.stat-info-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--cyan);
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 900;
+  font-size: 14px;
+  color: var(--cyan);
+}
+
+/* Dodatkowe dane rozgrywki: ukryte, wysuwają się po najechaniu na cały .stats-panel */
+.stats-panel-extra {
+  width: 220px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.25s ease, opacity 0.2s ease;
+}
+
+.stats-panel:hover .stats-panel-extra {
+  max-height: 420px;
+  opacity: 1;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.stats-panel-extra p {
+  margin: 4px 0;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.stat {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.stat-label {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.stat-delta {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin: 3px 0 0;
+  font-size: 19px;
+  line-height: 1;
+  font-weight: 900;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 4;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.95), 0 0 8px currentColor;
+  animation: stat-delta-float 1s ease-out forwards;
+}
+
+.stat-delta.positive {
+  color: #4ade80;
+}
+
+.stat-delta.negative {
+  color: #ff6b6b;
+}
+
+.stat-delta img {
+  width: 19px;
+  height: 19px;
+  object-fit: contain;
+}
+
+@keyframes stat-delta-float {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 4px) scale(1.08);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -34px) scale(1);
+  }
+}
+
+@media (max-width: 1100px) {
+  .stats-panel {
+    padding: 8px 10px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 900px) {
+  .stats-panel {
+    backdrop-filter: none;
+  }
+}
+
+.stat-clickable {
+  cursor: pointer;
+}
+
+.stat-clickable:hover {
+  opacity: 0.8;
+}
+
+.info-scheme-button {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  text-align: left;
+  white-space: normal;
+}
+
+@media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
+  .stats-panel {
+    top: 4px;
+    left: 4px;
+    padding: 4px 6px;
+    gap: 3px;
+  }
+
+  .stat-row {
+    gap: 6px;
+  }
+
+  .stat-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .stat-value {
+    font-size: 11px;
+  }
+
+  .stats-panel-extra {
+    width: 120px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .stats-panel {
+    backdrop-filter: none;
+  }
+}
+
+@media (max-height: 500px) {
+  /* Stats Panel */
+  .stats-panel:hover .stats-panel-extra {
+    max-height: calc(100dvh - 60px);
+    overflow-y: auto;
+  }
+
+  .stats-panel-extra p {
+    font-size: 11px;
+  }
+
+  .info-scheme-button {
+    margin-bottom: 6px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    line-height: 1.2;
+  }
+}

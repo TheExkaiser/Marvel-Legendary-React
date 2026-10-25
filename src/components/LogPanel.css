@@ -1,0 +1,119 @@
+/* Panel Game Log (wydzielone z App.css) */
+
+.log-shell {
+  --log-drawer-width: min(85vw, 320px);
+  pointer-events: none;
+  position: fixed;
+  top: 58px;
+  right: 0;
+  z-index: 60;
+  width: calc(var(--log-drawer-width) + 42px);
+  height: min(70vh, 620px);
+}
+
+.log-tab {
+  position: absolute;
+  pointer-events: auto;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  padding: 14px 8px;
+  border: 1px solid var(--line);
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  background: var(--panel-solid);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 800;
+  writing-mode: vertical-rl;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.log-shell-clicked .log-tab {
+  right: var(--log-drawer-width);
+}
+
+.log-tab:hover {
+  filter: brightness(1.2);
+  transform: none;
+}
+
+.log-drawer {
+  position: absolute;
+  pointer-events: auto;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  width: var(--log-drawer-width);
+  max-width: 85vw;
+  max-height: min(70vh, 620px);
+  padding: 18px;
+  overflow-y: auto;
+  background: var(--panel-solid);
+  border-left: 1px solid var(--line);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.55);
+  transform: translateX(100%);
+  transition: transform 0.22s ease;
+}
+
+.log-drawer-open {
+  transform: translateX(0);
+}
+
+.log-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.log-drawer-header h3 {
+  margin: 0;
+}
+
+.log-close-button {
+  display: none;
+}
+
+.log-list {
+  text-align: left;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.log-list div {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+@media (max-width: 900px) {
+  .log-bar {
+    backdrop-filter: none;
+  }
+}
+
+@media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
+  .log-tab {
+    font-size: 10px;
+    padding: 10px 5px;
+  }
+
+  .log-shell {
+    --log-drawer-width: min(85vw, 280px);
+    top: 48px;
+    height: 72vh;
+  }
+
+  .log-drawer {
+    width: var(--log-drawer-width);
+    max-height: 72vh;
+    padding: 12px;
+  }
+
+  .log-close-button {
+    display: inline-flex;
+  }
+}

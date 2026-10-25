@@ -1,0 +1,252 @@
+/* Plansza: Mastermind, miasto, HQ, sekcje (wydzielone z App.css) */
+
+.board-top {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(56, 225, 255, 0.07), rgba(255, 61, 87, 0.06));
+}
+
+.mastermind-slot {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.zone-title {
+  min-height: 44px; /* wspólna wysokość, żeby karty były na tym samym poziomie */
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.officer-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-right: 14px;
+  margin-right: 8px;
+  border-right: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* Miasto zajmuje resztę szerokości panelu; talia villainów jest dosunięta do prawej */
+.city-slot {
+  flex: 1;
+  min-width: 0;
+}
+
+.city-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.city-row .row {
+  flex: 0 0 auto;
+}
+
+.city-row .deck-pile {
+  margin-left: auto;
+}
+
+/* Rekrutacja: prawa krawędź talii bohaterów = krawędź talii villainów */
+.recruit-row {
+  padding-right: var(--board-inset);
+}
+
+/* Zagrane karty + talia gracza */
+.row-with-deck {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding-right: var(--board-inset);
+}
+
+.row-with-deck .row {
+  flex: 1;
+}
+
+@media (max-width: 700px) {
+  .board-top {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
+  .board-top,
+  .city-row,
+  .recruit-row,
+  .row-with-deck {
+    width: 100%;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .recruit-row,
+  .row-with-deck {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .zone-title {
+    min-height: 20px;
+    margin-bottom: 4px;
+    font-size: 10px;
+  }
+
+  .officer-slot {
+    padding-right: 6px;
+    margin-right: 4px;
+    font-size: 8px;
+  }
+
+  .board-top,
+  .city-row,
+  .recruit-row,
+  .row-with-deck {
+    flex-wrap: wrap;
+  }
+
+  .city-slot,
+  .mastermind-slot {
+    min-width: 0;
+  }
+
+  .city-slot {
+    flex: 0 1 auto;
+  }
+
+  .row-with-deck .row {
+    flex: 0 1 auto;
+  }
+
+  .city-row .deck-pile {
+    margin-left: 0;
+  }
+
+  .board-top,
+  .row-with-deck {
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .recruit-row {
+    padding-left: 6px;
+  }
+
+  .row-with-deck {
+    padding-left: 6px;
+  }
+
+  .city-row .deck-pile {
+    margin-left: 6px;
+  }
+}
+
+@media (min-width: 601px) and (max-height: 500px) and (orientation: landscape) {
+  .board-top {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+    gap: 10px;
+    padding: 8px;
+  }
+
+  .board-top,
+  .recruit-row {
+    justify-content: center;
+  }
+
+  .city-slot {
+    flex: 0 1 auto;
+  }
+
+  .city-row,
+  .recruit-row {
+    justify-content: center;
+  }
+
+  .section-block {
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
+  .section-block-hq {
+    width: fit-content;
+  }
+
+  .section-block-played {
+    width: min(100%, 720px);
+  }
+
+  .section-heading {
+    width: 100%;
+    margin-inline: 0;
+  }
+
+  .section-block-hq .recruit-row {
+    width: fit-content;
+    margin-inline: 0;
+  }
+
+  .city-slot .zone-title {
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .city-slot .zone-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    margin-left: 8px;
+    background: linear-gradient(90deg, var(--line), transparent);
+  }
+
+  .city-row,
+  .recruit-row,
+  .row-with-deck,
+  .city-row .row {
+    flex-wrap: nowrap;
+  }
+
+  .row-with-deck {
+    width: min(100%, 720px);
+    max-width: 100%;
+    margin-inline: auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .row-with-deck .row {
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow: visible;
+  }
+
+  .row-with-deck .deck-group {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  .board-top {
+    margin-bottom: 0;
+  }
+
+  .city-row .deck-pile {
+    margin-left: 6px;
+  }
+}

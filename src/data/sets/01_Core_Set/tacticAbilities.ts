@@ -175,10 +175,10 @@ registerCardAbility('magneto-electromagnetic-bubble', async (state, { ui }) => {
   state.extraCardToHand = chosen.instanceId
 })
 
-registerCardAbility('magneto-xaviers-nemesis', async (state) => {
+registerCardAbility('magneto-xaviers-nemesis', async (state, { ui }) => {
   const xmenHeroes = haveCards(state, { team: 'x-men' })
   for (let i = 0; i < xmenHeroes.length; i++) {
-    await rescueBystander(state)
+    await rescueBystander(state, ui)
   }
 })
 

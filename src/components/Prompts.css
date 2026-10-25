@@ -1,0 +1,71 @@
+/* Okna: capture, rescue, wybór liczby, podział Attack/Recruit (wydzielone z App.css) */
+
+.rescue-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.rescue-effect {
+  max-width: 260px;
+  margin: 0;
+  text-align: center;
+}
+
+.capture-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.capture-arrow {
+  font-size: 1.5rem;
+}
+
+.split-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* --- Wybór liczby (Daredevil) --- */
+.number-prompt {
+  min-width: 260px;
+  text-align: center;
+}
+
+.number-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.number-row button {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.number-row input {
+  width: 90px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--abyss);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.number-confirm {
+  min-width: 120px;
+}

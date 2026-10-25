@@ -1,0 +1,43 @@
+/* Komunikaty o błędach w grze (wydzielone z App.css) */
+
+/* Komunikat o błędzie w grze: czerwony napis, który sam znika (czas 2.2s = timer w useGame.ts) */
+.game-toast {
+  position: fixed;
+  left: 50%;
+  top: 34%;
+  z-index: 120;
+  max-width: min(90vw, 560px);
+  padding: 6px 16px;
+  transform: translateX(-50%);
+  color: #ff4d5e;
+  font-family: var(--font-display);
+  font-size: clamp(16px, 3vw, 26px);
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-align: center;
+  text-shadow: 0 2px 0 #000, 0 0 10px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  animation: game-toast 2.2s ease-out forwards;
+}
+
+@keyframes game-toast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 8px) scale(0.9);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1.05);
+  }
+  18% {
+    transform: translate(-50%, 0) scale(1);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -18px);
+  }
+}

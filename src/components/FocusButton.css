@@ -53,3 +53,11 @@
     letter-spacing: 0;
   }
 }
+
+/* Urządzenia dotykowe (wydzielone z App.css) */
+@media (hover: none) and (pointer: coarse) {
+  .focus-button {
+    animation: none;
+    box-shadow: 0 0 0 2px #ffd04d;
+  }
+}
