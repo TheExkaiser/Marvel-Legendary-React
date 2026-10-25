@@ -1,10 +1,25 @@
 import { registerMastermindRule } from '../../../engine/mastermindRules'
+import type { GameState } from '../../../engine/types'
 import { revealCards, getEffectiveStrength } from '../../../engine/keywords'
 import { HERO_CLASSES, heroClassLabel } from '../../../engine/heroClasses'
 import { isLedGroupVillain } from '../../../engine/ledGroup'
 import { isCityDestroyed } from '../../../engine/cityLayout'
 
 const COSMIC_THREAT_REDUCTION = 3
+
+// Opcje Cosmic Threat: dla każdej klasy siła Galactusa po obniżce i informacja, czy gracza na nią stać.
+// Wspólne dla beforeFight (wybór w oknie) i fightStrengthOptions (podświetlanie w UI), żeby oba mówiły to samo.
+function cosmicThreatOptions(state: GameState) {
+  const available = state.attack + (state.recruitCountsAsAttackThisTurn ? state.recruit : 0)
+  const baseStrength = getEffectiveStrength(state, state.mastermind) ?? 0
+
+  const options = HERO_CLASSES.map((type) => {
+    const count = revealCards(state, { type }).length
+    return { type, count, strength: Math.max(0, baseStrength - COSMIC_THREAT_REDUCTION * count) }
+  })
+
+  return { available, options, affordable: options.filter((o) => o.strength <= available) }
+}
 
 // Galactus, Cosmic Threat (wszystkie 5 klas): raz na turę gracz wybiera klasę. Za każdą odkrytą kartę tej klasy
 // (ręka + zagrane) Galactus ma -3 Attack w JEDNEJ walce. Wybór pada po kliknięciu w Galactusa, z podglądem
@@ -16,15 +31,7 @@ registerMastermindRule('mastermind-galactus', {
   beforeFight: async (state, ui) => {
     if (state.cosmicThreatUsedThisTurn) return true
 
-    const available = state.attack + (state.recruitCountsAsAttackThisTurn ? state.recruit : 0)
-    const baseStrength = getEffectiveStrength(state, state.mastermind) ?? 0
-
-    const options = HERO_CLASSES.map((type) => {
-      const count = revealCards(state, { type }).length
-      return { type, count, strength: Math.max(0, baseStrength - COSMIC_THREAT_REDUCTION * count) }
-    })
-
-    const affordable = options.filter((o) => o.strength <= available)
+    const { available, options, affordable } = cosmicThreatOptions(state)
     if (affordable.length === 0) {
       const best = Math.min(...options.map((o) => o.strength))
       await ui.showInfo(
@@ -53,6 +60,12 @@ registerMastermindRule('mastermind-galactus', {
     state.cosmicThreatReduction = COSMIC_THREAT_REDUCTION * picked.count
     state.cosmicThreatUsedThisTurn = true
     return true
+  },
+
+  // Podświetlanie w UI: jeśli Cosmic Threat jest już zużyty, liczy się pełna siła, inaczej każda opcja, na którą nas stać
+  fightStrengthOptions: (state) => {
+    if (state.cosmicThreatUsedThisTurn) return [getEffectiveStrength(state, state.mastermind) ?? 0]
+    return cosmicThreatOptions(state).affordable.map((o) => o.strength)
   },
 
   // Galactus Wins: gdy całe miasto jest zniszczone

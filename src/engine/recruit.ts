@@ -63,6 +63,24 @@ export function hqCardCost(state: GameState, index: number): number {
   return Math.max(0, (data.cost ?? 0) - bonus)
 }
 
+/** Czy gracza stać na kartę w polu HQ o danym indeksie. Te same warunki co w recruitHero, ale bez wykonywania akcji (podświetlanie w UI). */
+export function canAffordHqCard(state: GameState, index: number): boolean {
+  const instance = state.hq[index]
+  if (!instance || state.status !== 'playing') return false
+  const data = state.cards[instance.cardId]
+  const payWithAttack = !!data.hero && heroesCostAttack(state)
+  const available = payWithAttack ? state.attack : state.recruit
+  return available >= hqCardCost(state, index)
+}
+
+/** Czy gracza stać na S.H.I.E.L.D. Officera. Te same warunki co w recruitOfficer. */
+export function canAffordOfficer(state: GameState): boolean {
+  if (state.status !== 'playing' || state.officerDeck.length === 0) return false
+  const cost = state.cards[state.officerCardId].cost ?? 0
+  const available = heroesCostAttack(state) ? state.attack : state.recruit
+  return available >= cost
+}
+
 /** Kupuje bohatera z HQ (płaci recruit), karta trafia do stosu odrzuconych.
  * Bystander w HQ (Save Humanity) kosztuje 2 Recruit i jest ratowany do Victory Pool. */
 export function recruitHero(state: GameState, instanceId: string): void {

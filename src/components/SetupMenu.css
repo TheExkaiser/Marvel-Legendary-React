@@ -779,6 +779,23 @@
     padding: 6px 22px;
     font-size: 16px;
   }
+  .setup-main {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tile-scroll {
+    flex: none;
+    overflow: visible;
+    padding-bottom: 8px;
+  }
+  .team-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  .team-filters .setup-pill {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
 }
 
 /* ===== Telefon pionowo: jedna kolumna, przewija się całość ===== */

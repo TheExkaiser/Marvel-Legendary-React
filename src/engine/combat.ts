@@ -3,7 +3,7 @@ import type { UiAdapter } from './ui'
 import { getCardAbility } from './cardAbilities'
 import { getVillainAbilities } from './villainAbilities'
 import { canDefeatVillain } from './villainRequirements'
-import { getEffectiveStrength } from './keywords'
+import { getEffectiveStrength, koCard } from './keywords'
 import { getScheme } from './schemeRegistry'
 import { assertPlaying, logEvent } from './common'
 import { rescueBystander, rescueCard } from './wounds'
@@ -34,6 +34,38 @@ function enemiesCostRecruit(state: GameState): boolean {
 function availableAttack(state: GameState, cardId: string): number {
   if (enemiesCostRecruit(state)) return state.recruit
   return state.attack + (recruitPays(state, cardId) ? state.recruit : 0)
+}
+
+/** Czy gracza stać na walkę z tym Villainem. Te same warunki co w fightVillain, ale bez wykonywania akcji (podświetlanie w UI). */
+export function canAffordVillain(state: GameState, villain: CardInstance): boolean {
+  if (state.status !== 'playing') return false
+  if (!canDefeatVillain(state, villain.cardId)) return false
+  const strength = getEffectiveStrength(state, villain) ?? 0
+  return availableAttack(state, villain.cardId) >= strength
+}
+
+/** Czy gracza stać na walkę z Mastermindem. Te same warunki co w fightMastermind, ale bez wykonywania akcji (podświetlanie w UI).
+ * Gdy reguła Mastermina podaje kilka możliwych sił (Galactus: Cosmic Threat), wystarczy, że stać nas na którąkolwiek. */
+export function canAffordMastermind(state: GameState): boolean {
+  if (state.status !== 'playing') return false
+  const mmId = state.mastermind.cardId
+  const strengths =
+    getMastermindRule(state)?.fightStrengthOptions?.(state) ?? [getEffectiveStrength(state, state.mastermind) ?? 0]
+  const additionalCost = getScheme(state).mastermindFightAdditionalCost?.(state) ?? 0
+  const totalAttackOrRecruit = state.attack + state.recruit
+  return strengths.some(
+    (strength) =>
+      availableAttack(state, mmId) >= strength &&
+      (additionalCost === 0 || totalAttackOrRecruit >= strength + additionalCost),
+  )
+}
+
+/** Czy gracza stać na Demon Goblina (te same warunki co w fightDemonGoblin). */
+export function canAffordDemonGoblin(state: GameState): boolean {
+  if (state.status !== 'playing') return false
+  const stack = state.demonGoblins ?? []
+  const goblin = stack[stack.length - 1]
+  return !!goblin && availableAttack(state, goblin.cardId) >= DEMON_GOBLIN_ATTACK
 }
 
 async function spendAttack(state: GameState, amount: number, ui: UiAdapter, cardId: string): Promise<void> {

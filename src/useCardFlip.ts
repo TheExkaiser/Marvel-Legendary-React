@@ -5,10 +5,13 @@ import { useLayoutEffect, useRef } from 'react'
 // i gdzie jest teraz, a potem odpalamy krótkie przesunięcie ze starej pozycji do nowej.
 // Karty biorące udział w animacji mają atrybut data-flip-id (patrz CardView, prop flipId).
 
-const DURATION = 500 // ms — spokojniejszy, bardziej czytelny lot kart
+const COARSE = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+
+const DURATION = COARSE ? 320 : 500 // ms — na dotyku krócej, bo mniej klatek do narysowania
 const EASING = 'cubic-bezier(0.2, 0.8, 0.2, 1)'
 const MIN_MOVE = 2 // px: mniejsze przesunięcia ignorujemy
 const FLYING_Z_INDEX = '60' // nad ręką (50), pod oknami modalnymi (100)
+const MAX_GHOSTS = COARSE ? 6 : 24 // ile kart naraz "odlatuje" na discard (reszta po prostu znika)
 
 interface Snapshot {
   x: number // środek karty, współrzędne okna przeglądarki
@@ -25,8 +28,25 @@ interface Frame {
   scrollY: number
 }
 
+interface PlannedFlight {
+  el: HTMLElement
+  id: string
+  after: Snapshot
+  dx: number
+  dy: number
+}
+
+interface PlannedGhost {
+  before: Snapshot
+  startX: number
+  startY: number
+}
+
 export function useCardFlip(discardIds: ReadonlySet<string>): void {
   const previous = useRef<Frame>({ cards: new Map(), scrollX: 0, scrollY: 0 })
+  // Karty, które aktualnie lecą. Własny rejestr zamiast el.getAnimations(), bo getAnimations()
+  // wymusza przeliczenie stylów przy każdym wywołaniu (a wołaliśmy je dla każdej karty po kilka razy).
+  const flying = useRef(new WeakSet<HTMLElement>())
 
   // Bez tablicy zależności: odpala się po każdym renderze, zanim przeglądarka narysuje klatkę
   useLayoutEffect(() => {
@@ -37,9 +57,8 @@ export function useCardFlip(discardIds: ReadonlySet<string>): void {
     const current = new Map<string, Snapshot>()
     for (const el of elements) {
       const id = el.dataset.flipId!
-      const active = el.getAnimations().some((animation) => animation.id === 'flip')
       const previousSnapshot = previous.current.cards.get(id)
-      if (active && previousSnapshot) {
+      if (flying.current.has(el) && previousSnapshot) {
         // Nie zapisuj pozycji z połowy lotu jako nowego stanu bazowego.
         current.set(id, previousSnapshot)
         continue
@@ -53,17 +72,19 @@ export function useCardFlip(discardIds: ReadonlySet<string>): void {
         fixed: el.closest('.hand-dock') !== null,
         el,
       })
-    } // <-- tej klamry brakowało
+    }
 
-    // 3. Dla kart, które się przesunęły, odpal animację od starej pozycji do nowej
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (!reduceMotion) {
       const scrolledX = window.scrollX - previous.current.scrollX
       const scrolledY = window.scrollY - previous.current.scrollY
 
+      // 2. Same ODCZYTY: zaplanuj loty kart i duchów. Żadnych zapisów do DOM w tej fazie,
+      // żeby przeglądarka nie przeliczała układu strony wielokrotnie.
+      const flights: PlannedFlight[] = []
       for (const el of elements) {
         // Karta już leci — zostawiamy jej bieżącą animację do końca.
-        if (el.getAnimations().some((animation) => animation.id === 'flip')) continue
+        if (flying.current.has(el)) continue
 
         const id = el.dataset.flipId!
         const after = current.get(id)!
@@ -94,7 +115,34 @@ export function useCardFlip(discardIds: ReadonlySet<string>): void {
         const dy = beforeY - after.y
         if (Math.abs(dx) < MIN_MOVE && Math.abs(dy) < MIN_MOVE) continue
 
+        flights.push({ el, id, after, dx, dy })
+      }
+
+      // Karty, które zniknęły z ekranu i wylądowały na discardzie: "duch" (kopia) poleci na stos
+      const ghosts: PlannedGhost[] = []
+      let targetX = 0
+      let targetY = 0
+      const pile = document.querySelector<HTMLElement>('[data-deck-id="discard"]')
+      if (pile) {
+        const target = pile.getBoundingClientRect()
+        targetX = target.left + target.width / 2
+        targetY = target.top + target.height / 2
+
+        for (const [id, before] of previous.current.cards) {
+          if (current.has(id) || !discardIds.has(id)) continue
+          if (ghosts.length >= MAX_GHOSTS) break // nadmiarowe karty znikają bez animacji
+          ghosts.push({
+            before,
+            startX: before.fixed ? before.x : before.x - scrolledX,
+            startY: before.fixed ? before.y : before.y - scrolledY,
+          })
+        }
+      }
+
+      // 3. Same ZAPISY: odpal zaplanowane animacje
+      for (const { el, id, after, dx, dy } of flights) {
         el.style.zIndex = FLYING_Z_INDEX
+        flying.current.add(el)
         const animation = el.animate(
           [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'translate(0, 0)' }],
           { duration: DURATION, easing: EASING },
@@ -102,58 +150,45 @@ export function useCardFlip(discardIds: ReadonlySet<string>): void {
         animation.id = 'flip'
 
         const cleanup = () => {
-          // Nie zdejmuj z-index, jeśli w międzyczasie ruszyła już nowa animacja tej karty
-          const stillFlying = el.getAnimations().some((a) => a.id === 'flip')
-          if (!stillFlying) {
-            el.style.zIndex = ''
-            // Po zakończeniu lotu zapamiętaj cel, żeby kolejny render nie
-            // uruchamiał tej samej animacji ponownie od starej pozycji.
-            previous.current.cards.set(id, after)
-          }
+          flying.current.delete(el)
+          el.style.zIndex = ''
+          // Po zakończeniu lotu zapamiętaj cel, żeby kolejny render nie
+          // uruchamiał tej samej animacji ponownie od starej pozycji.
+          previous.current.cards.set(id, after)
         }
         animation.onfinish = cleanup
         animation.oncancel = cleanup
       }
 
-      // 3b. Karty, które zniknęły z ekranu i wylądowały na discardzie:
-      // "duch" (kopia) leci ze starej pozycji na stos i sam znika
-      const pile = document.querySelector<HTMLElement>('[data-deck-id="discard"]')
-      if (pile) {
-        const target = pile.getBoundingClientRect()
-        const targetX = target.left + target.width / 2
-        const targetY = target.top + target.height / 2
+      for (const { before, startX, startY } of ghosts) {
+        const ghost = before.el.cloneNode(true) as HTMLElement
+        ghost.removeAttribute('data-flip-id') // żeby hook nie brał kopii za prawdziwą kartę
+        ghost.removeAttribute('data-flip-from')
+        Object.assign(ghost.style, {
+          position: 'fixed',
+          left: `${startX - before.width / 2}px`,
+          top: `${startY - before.height / 2}px`,
+          width: `${before.width}px`,
+          height: `${before.height}px`,
+          margin: '0',
+          zIndex: FLYING_Z_INDEX,
+          pointerEvents: 'none',
+          // Kopia leci bez poświaty: duże rozmyte cienie na każdej leżącej w powietrzu karcie to najdroższa część animacji
+          boxShadow: 'none',
+          filter: 'none',
+          transition: 'none',
+        })
+        document.body.appendChild(ghost)
 
-        for (const [id, before] of previous.current.cards) {
-          if (current.has(id) || !discardIds.has(id)) continue
-
-          const startX = before.fixed ? before.x : before.x - scrolledX
-          const startY = before.fixed ? before.y : before.y - scrolledY
-
-          const ghost = before.el.cloneNode(true) as HTMLElement
-          ghost.removeAttribute('data-flip-id') // żeby hook nie brał kopii za prawdziwą kartę
-          ghost.removeAttribute('data-flip-from')
-          Object.assign(ghost.style, {
-            position: 'fixed',
-            left: `${startX - before.width / 2}px`,
-            top: `${startY - before.height / 2}px`,
-            width: `${before.width}px`,
-            height: `${before.height}px`,
-            margin: '0',
-            zIndex: FLYING_Z_INDEX,
-            pointerEvents: 'none',
-          })
-          document.body.appendChild(ghost)
-
-          const flight = ghost.animate(
-            [
-              { transform: 'translate(0, 0)' },
-              { transform: `translate(${targetX - startX}px, ${targetY - startY}px) scale(0.9)` },
-            ],
-            { duration: DURATION, easing: EASING, fill: 'forwards' },
-          )
-          flight.onfinish = () => ghost.remove()
-          flight.oncancel = () => ghost.remove()
-        }
+        const flight = ghost.animate(
+          [
+            { transform: 'translate(0, 0)' },
+            { transform: `translate(${targetX - startX}px, ${targetY - startY}px) scale(0.9)` },
+          ],
+          { duration: DURATION, easing: EASING, fill: 'forwards' },
+        )
+        flight.onfinish = () => ghost.remove()
+        flight.oncancel = () => ghost.remove()
       }
     }
 

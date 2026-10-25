@@ -6,6 +6,9 @@ export interface MastermindRule {
   villainStrengthModifier?: (state: GameState, instance: CardInstance) => number
   // Wywoływany po kliknięciu w Mastermina, przed policzeniem siły (Galactus: Cosmic Threat). false = walka anulowana
   beforeFight?: (state: GameState, ui: UiAdapter) => Promise<boolean>
+  // Siły Mastermina, przy których walka jest do wykonania (UI podświetla Mastermina, gdy którakolwiek jest w zasięgu).
+  // Bez tego pola liczy się bieżąca siła. Galactus: siły po Cosmic Threat dla każdej wybieralnej klasy.
+  fightStrengthOptions?: (state: GameState) => number[]
   woundsToDeckTop?: boolean // Mephisto: zdobyte Rany trafiają na wierzch talii zamiast do odrzuconych
 }
 

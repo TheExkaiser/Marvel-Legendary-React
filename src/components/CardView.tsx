@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { CardData } from '../engine/types'
 import { CardImage } from './CardImage'
@@ -17,6 +17,7 @@ interface CardViewProps {
   effectiveCost?: number // aktualny koszt karty w HQ (po modyfikatorze, np. Underground Riches)
   costResource?: 'attack' | 'recruit' // zasób wymagany do rekrutacji tej karty
   focusButton?: { cost: number; onClick: () => void } // złoty przycisk Focus na karcie (tylko zagrane karty)
+  highlight?: 'buy' | 'attack' // obrys: złoty = stać nas na kupno, czerwony = stać nas na atak
 }
 
 function ConditionLine({ data }: { data: CardData }) {
@@ -183,18 +184,69 @@ function CapturedCardThumbnail({ data }: { data: CardData }) {
   )
 }
 
-export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, strengthResource, capturedCards, focusButton, effectiveCost, costResource }: CardViewProps) {
+const HOLD_MS = 450 // jak długo trzymać kartę, żeby otworzyć zoom
+const HOLD_MOVE_TOLERANCE = 10 // px; większy ruch palca = to scroll, nie hold
+
+export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, strengthResource, capturedCards, focusButton, effectiveCost, costResource, highlight }: CardViewProps) {
   const [zoomed, setZoomed] = useState(false)
   const capturedCount = capturedCards?.length ?? 0
+
+  const holdTimer = useRef<number | null>(null)
+  const holdStart = useRef<{ x: number; y: number } | null>(null)
+  const heldRef = useRef(false) // true, jeśli hold właśnie otworzył zoom (wtedy pomijamy kliknięcie karty)
+  const touchRef = useRef(false) // czy ostatni dotyk na karcie był palcem
+
+  const clearHold = () => {
+    if (holdTimer.current !== null) {
+      window.clearTimeout(holdTimer.current)
+      holdTimer.current = null
+    }
+    holdStart.current = null
+  }
+
+  const handleClick = () => {
+    if (heldRef.current) {
+      heldRef.current = false
+      return
+    }
+    onClick?.()
+  }
 
   return (
     <>
       <div
-        className={onClick ? 'card clickable' : 'card'}
-        onClick={onClick}
+        className={['card', onClick ? 'clickable' : '', highlight ? `highlight-${highlight}` : ''].filter(Boolean).join(' ')}
+        onClick={onClick ? handleClick : undefined}
         title={data.name}
         data-flip-id={flipId}
         data-flip-from={flipFrom}
+        onPointerDown={(e) => {
+          touchRef.current = e.pointerType === 'touch'
+          heldRef.current = false
+          clearHold()
+          if (!touchRef.current) return
+          holdStart.current = { x: e.clientX, y: e.clientY }
+          holdTimer.current = window.setTimeout(() => {
+            holdTimer.current = null
+            heldRef.current = true
+            setZoomed(true)
+          }, HOLD_MS)
+        }}
+        onPointerMove={(e) => {
+          const s = holdStart.current
+          if (s && Math.hypot(e.clientX - s.x, e.clientY - s.y) > HOLD_MOVE_TOLERANCE) clearHold()
+        }}
+        onPointerUp={clearHold}
+        onPointerCancel={clearHold}
+        onContextMenu={(e) => {
+          // Android wysyła contextmenu przy długim przytrzymaniu: drugi, niezależny od licznika sposób na hold.
+          // Blokujemy też systemowe menu / zaznaczanie / wyszukiwanie obrazem.
+          if (!touchRef.current) return
+          e.preventDefault()
+          clearHold()
+          heldRef.current = true
+          setZoomed(true)
+        }}
       >
         <button
           className="zoom-button"

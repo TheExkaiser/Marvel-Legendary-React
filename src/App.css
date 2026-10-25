@@ -8,6 +8,22 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Manrope:wght@400;600;800&display=swap');
 
+
+/* Brak zaznaczania tekstu i systemowego menu przytrzymania w całej grze */
+* {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Pola tekstowe (np. wyszukiwarka w setup menu, ustawienia) zostają edytowalne, także na desktopie */
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 /* =========================================================
    0. TOKENY
    ========================================================= */
@@ -640,6 +656,7 @@ button:disabled {
 
 .log-shell {
   --log-drawer-width: min(85vw, 320px);
+  pointer-events: none;
   position: fixed;
   top: 58px;
   right: 0;
@@ -650,6 +667,7 @@ button:disabled {
 
 .log-tab {
   position: absolute;
+  pointer-events: auto;
   top: 0;
   right: 0;
   z-index: 2;
@@ -678,6 +696,7 @@ button:disabled {
 
 .log-drawer {
   position: absolute;
+  pointer-events: auto;
   top: 0;
   right: 0;
   z-index: 1;
@@ -735,7 +754,7 @@ button:disabled {
   position: fixed;
   top: 12px;
   left: 12px;
-  z-index: 50;
+  z-index: 57;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1538,6 +1557,48 @@ button:disabled {
   white-space: nowrap;
 }
 
+/* Komunikat o błędzie w grze: czerwony napis, który sam znika (czas 2.2s = timer w useGame.ts) */
+.game-toast {
+  position: fixed;
+  left: 50%;
+  top: 34%;
+  z-index: 120;
+  max-width: min(90vw, 560px);
+  padding: 6px 16px;
+  transform: translateX(-50%);
+  color: #ff4d5e;
+  font-family: var(--font-display);
+  font-size: clamp(16px, 3vw, 26px);
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-align: center;
+  text-shadow: 0 2px 0 #000, 0 0 10px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  animation: game-toast 2.2s ease-out forwards;
+}
+
+@keyframes game-toast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 8px) scale(0.9);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1.05);
+  }
+  18% {
+    transform: translate(-50%, 0) scale(1);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -18px);
+  }
+}
+
 /* =========================================================
    12. WĄSKIE EKRANY (TELEFONY)
    ========================================================= */
@@ -1547,9 +1608,14 @@ button:disabled {
     padding: 40px 8px 150px;
   }
 
+  .card {
+    border-radius: 1px;
+  }
+
   .card,
   .slot-empty,
-  .deck-pile {
+  .deck-pile,
+  .destroyed-city-token {
     width: 80px;
   }
 
@@ -1623,9 +1689,9 @@ button:disabled {
 
   .end-turn-button {
     bottom: 30px;
-    right: 80px;
-    padding: 7px 11px;
-    font-size: 10px;
+    right: 30px;
+    padding: 12px 22px;
+    font-size: 16px;
   }
 
   .zoom-image {
@@ -1825,8 +1891,7 @@ button:disabled {
   .city-row,
   .recruit-row,
   .row-with-deck,
-  .city-row .row,
-  .row-with-deck .row {
+  .city-row .row {
     flex-wrap: nowrap;
   }
 
@@ -1841,9 +1906,9 @@ button:disabled {
   .row-with-deck .row {
     flex: 1 1 auto;
     min-width: 0;
+    flex-wrap: wrap;
     justify-content: center;
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: visible;
   }
 
   .row-with-deck .deck-group {
@@ -1853,7 +1918,8 @@ button:disabled {
 
   .card,
   .slot-empty,
-  .deck-pile {
+  .deck-pile,
+  .destroyed-city-token {
     width: clamp(52px, 14vh, 68px);
   }
 
@@ -1876,3 +1942,126 @@ button:disabled {
     margin-left: 6px;
   }
 }
+/* Urządzenia dotykowe: zoom przez przytrzymanie karty, bez przycisku lupki */
+@media (hover: none) and (pointer: coarse) {
+  :root {
+    --card-ring: 1px;
+  }
+
+  .zoom-button {
+    display: none;
+  }
+
+  .card img {
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+
+  .clickable:hover {
+    transform: none;
+    filter: none;
+  }
+
+  /* Cienki obrys bez poświaty */
+  .card.highlight-buy {
+    box-shadow: 0 0 0 var(--card-ring) var(--gold);
+  }
+
+  .card.highlight-attack {
+    box-shadow: 0 0 0 var(--card-ring) var(--hot);
+  }
+
+  .deck-count,
+  .stats-panel,
+  .piles-panel,
+  .hamburger-menu,
+  .drawer-panel,
+  .modal-overlay {
+    backdrop-filter: none;
+  }
+
+  .modal-overlay {
+    background: rgba(1, 12, 18, 0.9);
+  }
+
+  .focus-button {
+    animation: none;
+    box-shadow: 0 0 0 2px #ffd04d;
+  }
+}
+
+/* Telefon poziomo: okna zoom i scheme mieszczą się na ekranie */
+@media (max-height: 500px) {
+  .modal-overlay {
+    padding: 8px;
+  }
+
+  .zoom-content {
+    width: min(92vw, 720px);
+    max-width: none;
+    max-height: calc(100dvh - 16px);
+    padding: 10px 14px;
+  }
+
+  .zoom-content h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+  }
+
+  .zoom-body {
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .zoom-image {
+    width: auto;
+    height: min(calc(100dvh - 90px), 330px);
+    max-width: 40vw;
+    object-fit: contain;
+  }
+
+  .zoom-details {
+    min-width: 0;
+    max-height: calc(100dvh - 90px);
+    overflow-y: auto;
+    font-size: 12px;
+  }
+
+  .zoom-details p {
+    margin: 4px 0;
+  }
+
+  .dismiss-hint {
+    margin-top: 6px;
+  }
+
+  .stats-panel:hover .stats-panel-extra {
+    max-height: calc(100dvh - 60px);
+    overflow-y: auto;
+  }
+
+  .stats-panel-extra p {
+    font-size: 11px;
+  }
+}
+
+  .info-scheme-button {
+    margin-bottom: 6px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+/* TYMCZASOWO: pokazuje granice wszystkich elementów, żeby znaleźć to, co zasłania kartę */
+/*
+
+* {
+  outline: 1px solid rgba(255, 60, 60, 0.45);
+}
+
+.card {
+  outline: 2px solid lime;
+}
+
+*/

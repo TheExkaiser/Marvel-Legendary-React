@@ -63,6 +63,21 @@ export function useGame(setup: GameSetup, settings: Settings) {
   const [attackSplitPrompt, setAttackSplitPrompt] = useState<AttackSplitPromptState | null>(null)
   const [numberPrompt, setNumberPrompt] = useState<NumberPromptState | null>(null)
 
+  // Komunikat o błędzie jako napis w grze (zamiast alert): znika sam po chwili
+  const [toast, setToast] = useState<{ id: number; message: string } | null>(null)
+  const toastIdRef = useRef(0)
+  const toastTimerRef = useRef<number | null>(null)
+
+  function showToast(message: string) {
+    toastIdRef.current += 1
+    setToast({ id: toastIdRef.current, message }) // nowe id = animacja startuje od nowa
+    if (toastTimerRef.current !== null) window.clearTimeout(toastTimerRef.current)
+    toastTimerRef.current = window.setTimeout(() => {
+      setToast(null)
+      toastTimerRef.current = null
+    }, 2200) // tyle samo, co animacja .game-toast w App.css
+  }
+
   const resolveCardRef = useRef<((choice: CardInstance | null) => void) | null>(null)
   const resolveOptionRef = useRef<((choice: string | null) => void) | null>(null)
   const resolveInfoRef = useRef<(() => void) | null>(null)
@@ -209,7 +224,7 @@ export function useGame(setup: GameSetup, settings: Settings) {
       await action(state, ui)
       checkEndConditions(state)
     } catch (e) {
-      alert((e as Error).message)
+      showToast((e as Error).message)
     }
     setVersion((v) => v + 1)
   }
@@ -241,5 +256,6 @@ function debugAct(action: (state: GameState, ui: UiAdapter) => void | Promise<vo
     debugAct,
     numberPrompt,
     answerNumberPrompt,
+    toast,
   }
 }

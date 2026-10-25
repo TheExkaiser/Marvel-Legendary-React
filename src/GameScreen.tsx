@@ -41,10 +41,10 @@ import { KeywordsMenu } from './components/KeywordsMenu'
 import { NumberPrompt } from './components/NumberPrompt'
 import { StackedMasterStrikes } from './components/StackedMasterStrikes'
 import { hasTeleport } from './engine/turn'
-import { fightDemonGoblin } from './engine/combat'
+import { fightDemonGoblin, canAffordVillain, canAffordMastermind, canAffordDemonGoblin } from './engine/combat'
 import { SchemeToken } from './components/SchemeToken'
 import { canFocus, activateFocus } from './engine/focus'
-import { hqCardCost } from './engine/recruit'
+import { hqCardCost, canAffordHqCard, canAffordOfficer } from './engine/recruit'
 
 
 // ---------- Stałe ----------
@@ -87,6 +87,7 @@ function GameScreen({
     answerAttackSplitPrompt,
     numberPrompt,
     answerNumberPrompt,
+    toast,
  } = useGame(setup, settings)
     const discardIds = new Set(state.discard.map((c) => c.instanceId))
   useCardFlip(discardIds)
@@ -251,6 +252,7 @@ function GameScreen({
           <CardView
             data={state.cards[state.mastermind.cardId]}
             onClick={() => act(fightMastermind)}
+            highlight={canAffordMastermind(state) ? 'attack' : undefined}
             effectiveStrength={getEffectiveStrength(state, state.mastermind)}
             strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
             capturedCards={getCapturedCards(state, state.mastermind.instanceId)}
@@ -287,6 +289,7 @@ function GameScreen({
                       data={state.cards[instance.cardId]}
                       flipId={instance.instanceId}
                       onClick={() => act((s, ui) => fightVillain(s, instance.instanceId, ui))}
+                      highlight={canAffordVillain(state, instance) ? 'attack' : undefined}
                       effectiveStrength={getEffectiveStrength(state, instance)}
                       strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
                       capturedCards={getCapturedCards(state, instance.instanceId)}
@@ -307,6 +310,7 @@ function GameScreen({
                 deckId="demon-goblins"
                 label="Demon Goblins (2 Attack)"
                 onClick={() => act(fightDemonGoblin)}
+                highlight={canAffordDemonGoblin(state) ? 'attack' : undefined}
               />
             )}
           </div>
@@ -323,6 +327,7 @@ function GameScreen({
               data={state.cards[state.officerCardId]}
               flipId={state.officerDeck[state.officerDeck.length - 1].instanceId}
               onClick={() => act((s) => recruitOfficer(s))}
+              highlight={canAffordOfficer(state) ? 'buy' : undefined}
             />
           )}
           <div>Remaining: {state.officerDeck.length}</div>
@@ -344,6 +349,11 @@ function GameScreen({
                   effectiveCost={hqVillain ? undefined : hqCardCost(state, i)}
                   costResource={negativeZoneActive ? 'attack' : 'recruit'}
                   strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
+                  highlight={
+                    hqVillain
+                      ? (canAffordVillain(state, instance) ? 'attack' : undefined)
+                      : (canAffordHqCard(state, i) ? 'buy' : undefined)
+                  }
                   onClick={() => act((s, ui) =>
                     hqVillain
                       ? fightVillain(s, instance.instanceId, ui)
@@ -546,6 +556,12 @@ function GameScreen({
           max={numberPrompt.max}
           onConfirm={answerNumberPrompt}
         />
+      )}
+
+      {toast && (
+        <div key={toast.id} className="game-toast">
+          {toast.message}
+        </div>
       )}
 
       {historyOpen && <GameHistoryMenu onClose={() => setHistoryOpen(false)} />}

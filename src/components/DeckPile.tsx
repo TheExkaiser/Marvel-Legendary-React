@@ -12,12 +12,14 @@ export function DeckPile({
   topCard,
   onClick,
   label,
+  highlight,
 }: {
   count: number
   deckId?: string
   topCard?: CardData
   onClick?: () => void
   label?: string
+  highlight?: 'buy' | 'attack' // obrys: złoty = stać nas na kupno, czerwony = stać nas na atak
 }) {
   const [srcIndex, setSrcIndex] = useState(0)
 
@@ -42,7 +44,7 @@ export function DeckPile({
 
   return (
 <div
-  className={onClick ? 'deck-pile clickable' : 'deck-pile'}
+  className={['deck-pile', onClick ? 'clickable' : '', highlight ? `highlight-${highlight}` : ''].filter(Boolean).join(' ')}
   data-deck-id={deckId}
   onClick={onClick}
 >
