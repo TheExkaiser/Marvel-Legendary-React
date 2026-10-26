@@ -3,7 +3,7 @@ import type { CardData } from '../engine/types'
 
 // Rewers próbujemy wczytać w tej kolejności; jeśli oba pliki zawiodą, pokazujemy gradient
 const BACK_SOURCES = ['cardback.webp', 'cardback.png']
-const EDGE_COLORS = ['#f4eedb', '#d8d0b8'] // na przemian jasny i ciemny = wrażenie stosu kartek
+const EDGE_COLORS = ['#f4eedb', '#a6a49d'] // na przemian jasny i ciemny = wrażenie stosu kartek
 const MAX_THICKNESS = 9 // px
 
 export function DeckPile({
