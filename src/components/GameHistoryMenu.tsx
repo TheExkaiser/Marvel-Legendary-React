@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type { SetupChoices } from '../engine/types'
 import { loadGameLog, exportGameLog, savePendingSetupChoices } from '../gameLog'
+import type { GameLogEntry } from '../gameLog'
+import { useMediaQuery } from '../useMediaQuery'
 
 interface GameHistoryMenuProps {
   onClose: () => void
@@ -9,9 +11,13 @@ interface GameHistoryMenuProps {
   onApply?: (choices: SetupChoices) => void
 }
 
+const resultText = (entry: GameLogEntry) => (entry.result === 'Lose' ? 'Lose' : `${entry.result} VP`)
+
 export function GameHistoryMenu({ onClose, onApply }: GameHistoryMenuProps) {
   const log = loadGameLog()
   const [addedId, setAddedId] = useState<string | null>(null)
+  // Telefon (poziomo lub wąski ekran): karty zamiast szerokiej tabeli
+  const compact = useMediaQuery('(max-height: 500px), (max-width: 700px)')
 
   function handleAddToNextSetup(entryId: string, choices: SetupChoices) {
     if (onApply) {
@@ -22,9 +28,14 @@ export function GameHistoryMenu({ onClose, onApply }: GameHistoryMenuProps) {
     setAddedId(entryId)
   }
 
+  const addLabel = (entry: GameLogEntry) => (addedId === entry.id ? 'Added ✓' : 'Add To Next Setup')
+
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content history-content" onClick={(e) => e.stopPropagation()}>
+      <div
+        className={compact ? 'modal-content history-content history-content-compact' : 'modal-content history-content'}
+        onClick={(e) => e.stopPropagation()}
+      >
         <h3>Game History</h3>
         <button className="close-button" onClick={onClose}>✕</button>
 
@@ -36,6 +47,38 @@ export function GameHistoryMenu({ onClose, onApply }: GameHistoryMenuProps) {
 
         {log.length === 0 ? (
           <p>No completed games yet.</p>
+        ) : compact ? (
+          <ul className="history-list">
+            {log.map((entry) => (
+              <li key={entry.id} className="history-card">
+                <div className="history-card-head">
+                  <span>{entry.date} {entry.time}</span>
+                  <span className={entry.result === 'Lose' ? 'history-card-result lose' : 'history-card-result win'}>
+                    {resultText(entry)}
+                  </span>
+                </div>
+                <div className="history-card-title">{entry.mastermindName}</div>
+                <div className="history-card-sub">{entry.schemeName} · {entry.gameModeName}</div>
+                <dl className="history-card-lines">
+                  <dt>Heroes</dt>
+                  <dd>{entry.heroNames.join(', ')}</dd>
+                  {entry.villainGroupNames.length > 0 && (
+                    <>
+                      <dt>Villains</dt>
+                      <dd>{entry.villainGroupNames.join(', ')}</dd>
+                    </>
+                  )}
+                  {entry.henchmenGroupNames.length > 0 && (
+                    <>
+                      <dt>Henchmen</dt>
+                      <dd>{entry.henchmenGroupNames.join(', ')}</dd>
+                    </>
+                  )}
+                </dl>
+                <button onClick={() => handleAddToNextSetup(entry.id, entry.choices)}>{addLabel(entry)}</button>
+              </li>
+            ))}
+          </ul>
         ) : (
           <div className="history-table-wrap">
             <table className="history-table">
@@ -64,11 +107,9 @@ export function GameHistoryMenu({ onClose, onApply }: GameHistoryMenuProps) {
                     <td>{entry.heroNames.join(', ')}</td>
                     <td>{entry.villainGroupNames.join(', ')}</td>
                     <td>{entry.henchmenGroupNames.join(', ')}</td>
-                    <td>{entry.result === 'Lose' ? 'Lose' : `${entry.result} VP`}</td>
+                    <td>{resultText(entry)}</td>
                     <td>
-                      <button onClick={() => handleAddToNextSetup(entry.id, entry.choices)}>
-                        {addedId === entry.id ? 'Added ✓' : 'Add To Next Setup'}
-                      </button>
+                      <button onClick={() => handleAddToNextSetup(entry.id, entry.choices)}>{addLabel(entry)}</button>
                     </td>
                   </tr>
                 ))}

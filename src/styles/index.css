@@ -8,6 +8,8 @@
 @import './Board.css';
 @import '../components/DebugPanel.css';
 @import '../components/Modal.css';
+@import '../components/ZoomModal.css';
+@import '../components/ChoicePrompt.css';
 @import '../components/LogPanel.css';
 @import '../components/StatsPanel.css';
 @import '../components/Piles.css';

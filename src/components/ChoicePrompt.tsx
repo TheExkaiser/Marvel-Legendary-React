@@ -19,7 +19,7 @@ export function ChoicePrompt({ state, options, prompt, optional, onChoose }: Cho
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content">
+      <div className="modal-content choice-prompt">
         <p>{prompt}</p>
 
         {handOptions.length > 0 && (

@@ -1,0 +1,81 @@
+/* Okno podglądu karty i scheme (komponent ZoomModal) */
+
+.zoom-content {
+  max-width: 520px;
+}
+
+.zoom-body {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.zoom-image {
+  width: 250px;
+  max-width: 100%;
+  flex-shrink: 0;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.zoom-details p {
+  margin: 6px 0;
+  color: var(--text);
+}
+
+.zoom-details strong {
+  color: var(--gold);
+}
+
+@media (max-width: 700px) {
+  .zoom-body {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
+  .zoom-image {
+    width: 110px;
+  }
+}
+
+@media (max-height: 500px) {
+  /* Podgląd karty i scheme: układ jak na desktopie (tytuł, pod nim obrazek i tekst obok, od góry), tylko mniejszy */
+  .zoom-content {
+    width: auto;
+    max-width: min(92vw, 520px);
+    max-height: calc(100dvh - 16px);
+    padding: 12px 16px;
+  }
+
+  .zoom-content h3 {
+    margin: 0 0 10px;
+    font-size: 20px;
+  }
+
+  .zoom-body {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .zoom-image {
+    width: auto;
+    height: min(calc(100dvh - 110px), 250px);
+    max-width: 38vw;
+    object-fit: contain;
+  }
+
+  .zoom-details {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-height: calc(100dvh - 110px);
+    overflow-y: auto;
+    font-size: 13px;
+  }
+
+  .zoom-details p {
+    margin: 4px 0;
+  }
+}

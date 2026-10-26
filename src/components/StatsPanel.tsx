@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { ZoomModal } from './ZoomModal'
 
 type StatProps = {
   icon: string
@@ -128,24 +128,17 @@ export function StatsPanel({
         </button>
       </div>
 
-      {showScheme &&
-        createPortal(
-          <div className="modal-overlay" onClick={closeScheme}>
-            <div className="modal-content zoom-content">
-              <h3>{scheme.name}</h3>
-              <div className="zoom-body">
-                {scheme.img && <img src={scheme.img} alt={scheme.name} className="zoom-image" />}
-                <div className="zoom-details">
-                  {schemeText
-                    ? schemeText.split('\n').map((line, i) => <p key={i}>{line}</p>)
-                    : <p>(No description)</p>}
-                </div>
-              </div>
-              <p className="dismiss-hint">Press anywhere to close</p>
-            </div>
-          </div>,
-          document.body,
-        )}
+      {showScheme && (
+        <ZoomModal
+          title={scheme.name}
+          onClose={closeScheme}
+          image={scheme.img ? <img src={scheme.img} alt={scheme.name} className="zoom-image" /> : undefined}
+        >
+          {schemeText
+            ? schemeText.split('\n').map((line, i) => <p key={i}>{line}</p>)
+            : <p>(No description)</p>}
+        </ZoomModal>
+      )}
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import type { CardData } from '../engine/types'
 import { CardImage } from './CardImage'
+import { ZoomModal } from './ZoomModal'
 import { teamName } from '../data/teams'
 import './FocusButton.css'
 import { KeywordText } from './KeywordText'
@@ -93,50 +93,7 @@ function CapturedBadge({ count }: { count: number }) {
   )
 }
 
-// Treść popupu zoomu — współdzielona przez główną kartę i miniaturki złapanych kart.
-function CardZoomContent({ data, capturedCards }: { data: CardData; capturedCards?: CardData[] }) {
-  return (
-    <div className="zoom-body">
-      {data.img && <CardImage src={data.img} alt={data.name} className="zoom-image" large />}
-      <div className="zoom-details">
-        {data.hero !== undefined && (
-          <p><strong>Hero:</strong> {data.hero}</p>
-        )}
-        {(data.team ?? []).length > 0 && (
-          <p><strong>Team:</strong> {(data.team ?? []).map(teamName).join(', ')}</p>
-        )}
-        {(data.type ?? []).length > 0 && (
-          <p><strong>Type:</strong> {(data.type ?? []).join(', ')}</p>
-        )}
-        {data.strength !== undefined && <p><strong>Attacks:</strong> {data.strength}</p>}
-        {data.attack !== undefined && <p><strong>Attacks:</strong> {data.attack}</p>}
-        {data.cost !== undefined && <p><strong>Cost:</strong> {data.cost}</p>}
-        {data.vp !== undefined && <p><strong>VP:</strong> {data.vp}</p>}
-        {data.text && (
-          <div className="card-text-block">
-            <strong>Text:</strong>
-            <p><KeywordText text={data.text} /></p>
-          </div>
-        )}
-        <ConditionLine data={data} />
-        {data.flavor && (
-          <p className="card-flavor-text" style={{ fontStyle: 'italic' }}>
-            {data.flavor}
-          </p>
-        )}
-        {capturedCards && capturedCards.length > 0 && (
-          <div className="captured-cards-row">
-            {capturedCards.map((c, i) => (
-              <CapturedCardThumbnail key={i} data={c} />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// Pełny popup zoomu (nagłówek + zamknięcie + treść), w portalu.
+// Popup zoomu karty: powłoka ZoomModal + szczegóły karty. Używany też przez miniaturki złapanych kart.
 function CardZoomModal({
   data,
   capturedCards,
@@ -146,15 +103,45 @@ function CardZoomModal({
   capturedCards?: CardData[]
   onClose: () => void
 }) {
-  return createPortal(
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content zoom-content">
-        <h3>{data.name}</h3>
-        <CardZoomContent data={data} capturedCards={capturedCards} />
-        <p className="dismiss-hint">Press anywhere to close</p>
-      </div>
-    </div>,
-    document.body,
+  return (
+    <ZoomModal
+      title={data.name}
+      onClose={onClose}
+      image={data.img ? <CardImage src={data.img} alt={data.name} className="zoom-image" large /> : undefined}
+    >
+      {data.hero !== undefined && (
+        <p><strong>Hero:</strong> {data.hero}</p>
+      )}
+      {(data.team ?? []).length > 0 && (
+        <p><strong>Team:</strong> {(data.team ?? []).map(teamName).join(', ')}</p>
+      )}
+      {(data.type ?? []).length > 0 && (
+        <p><strong>Type:</strong> {(data.type ?? []).join(', ')}</p>
+      )}
+      {data.strength !== undefined && <p><strong>Attacks:</strong> {data.strength}</p>}
+      {data.attack !== undefined && <p><strong>Attacks:</strong> {data.attack}</p>}
+      {data.cost !== undefined && <p><strong>Cost:</strong> {data.cost}</p>}
+      {data.vp !== undefined && <p><strong>VP:</strong> {data.vp}</p>}
+      {data.text && (
+        <div className="card-text-block">
+          <strong>Text:</strong>
+          <p><KeywordText text={data.text} /></p>
+        </div>
+      )}
+      <ConditionLine data={data} />
+      {data.flavor && (
+        <p className="card-flavor-text" style={{ fontStyle: 'italic' }}>
+          {data.flavor}
+        </p>
+      )}
+      {capturedCards && capturedCards.length > 0 && (
+        <div className="captured-cards-row">
+          {capturedCards.map((c, i) => (
+            <CapturedCardThumbnail key={i} data={c} />
+          ))}
+        </div>
+      )}
+    </ZoomModal>
   )
 }
 
