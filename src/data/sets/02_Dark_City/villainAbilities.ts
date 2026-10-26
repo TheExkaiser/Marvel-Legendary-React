@@ -12,7 +12,7 @@ import {
   revealTopCards,
 } from '../../../engine/keywords'
 import { gainWound, drawCards } from '../../../engine/game'
-import { resolveVillainDeckCard, resolveMasterStrike, playTopVillainCard } from '../../../engine/villainPhase'
+import { resolveVillainDeckCard, resolveMasterStrike, playTopVillainCard, revealTopVillainCards } from '../../../engine/villainPhase'
 import { shuffle } from '../../../engine/random'
 import { CITY_NAMES } from '../../../engine/constants'
 import type { CardInstance, GameState } from '../../../engine/types'
@@ -148,11 +148,12 @@ const bystandersOf = (state: GameState, self: CardInstance): number =>
 
 /** Odkrywa górne `count` kart talii złoczyńców, `self` łapie Bystanderów, reszta wraca w losowej kolejności. */
 async function captureRevealedBystanders(state: GameState, ui: UiAdapter, self: CardInstance, count: number): Promise<void> {
-  const revealed: CardInstance[] = []
-  for (let i = 0; i < count; i++) {
-    const card = state.villainDeck.pop()
-    if (card) revealed.push(card)
-  }
+  const revealed = await revealTopVillainCards(
+    state,
+    ui,
+    count,
+    `${state.cards[self.cardId].name}: top ${count} cards of the Villain Deck`,
+  )
   const bystanders = revealed.filter((c) => state.cards[c.cardId].kind === 'bystander')
   state.villainDeck.push(...shuffle(revealed.filter((c) => !bystanders.includes(c))))
   for (const bystander of bystanders) await captureCard(state, ui, self, bystander)

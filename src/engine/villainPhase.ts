@@ -48,6 +48,23 @@ export async function playTopVillainCard(state: GameState, ui: UiAdapter): Promi
   if (card) await resolveVillainDeckCard(state, card, ui)
 }
 
+/** Zdejmuje górne `count` kart talii złoczyńców i pokazuje je graczowi. Pusta talia NIE kończy gry (odkrycie to nie dobranie). Zwraca karty od wierzchu. */
+export async function revealTopVillainCards(
+  state: GameState,
+  ui: UiAdapter,
+  count: number,
+  title: string,
+): Promise<CardInstance[]> {
+  const revealed: CardInstance[] = []
+  for (let i = 0; i < count; i++) {
+    const card = state.villainDeck.pop()
+    if (card) revealed.push(card)
+  }
+  if (revealed.length > 0) await ui.showCards(revealed, title)
+  return revealed
+}
+
+
 /** Odkrywa wierzchnią kartę talii złoczyńców i rozpatruje ją według jej rodzaju. */
 export async function villainPhase(state: GameState, ui: UiAdapter): Promise<void> {
   await playTopVillainCard(state, ui)

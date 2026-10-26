@@ -253,6 +253,7 @@ export const BLACK_WIDOW_CARDS: DeckEntry[] = [
       hero: 'Black Widow',
       img: '/cards/core-set/hero-black-widow-silent-sniper.webp',
       team: ['avengers'],
+      type: ['covert'],
       attack: 4,
       cost: 7,
       text: 'Defeat a Villain or Mastermind that has a Bystander.',

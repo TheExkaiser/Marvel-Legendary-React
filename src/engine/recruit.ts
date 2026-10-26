@@ -109,8 +109,7 @@ export function recruitHero(state: GameState, instanceId: string): void {
     }
   }
   state.hq[index] = null
-  if (isBystander) rescueCard(state, instance)
-  else placeRecruitedCard(state, instance)
+  if (!isBystander) placeRecruitedCard(state, instance) // Bystandera ratuje recruitHeroWithUi: rescueCard jest async i wymaga ui
   logEvent(state, isBystander ? `Rescued: ${data.name}` : `Recruited: ${data.name}`)
   refillHq(state)
 }
@@ -124,6 +123,10 @@ export async function recruitHeroWithUi(state: GameState, instanceId: string, ui
 
   recruitHero(state, instanceId)
   const data = state.cards[instance.cardId]
+  if (data.kind === 'bystander') {
+    await rescueCard(state, instance, ui)
+    return
+  }
   const hasWallCrawl =
     (data.keywords ?? []).includes('wall-crawl') || getScheme(state).allHeroesHaveWallCrawl === true
   if (!data.hero || !hasWallCrawl) return

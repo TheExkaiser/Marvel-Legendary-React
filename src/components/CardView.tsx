@@ -67,16 +67,18 @@ function AttackModifierBadge({ data, effectiveStrength, strengthResource = 'atta
   )
 }
 
-// Odznaka z AKTUALNYM kosztem karty w HQ (recruit.png + wartość), gdy odbiega od bazowego: zielony = taniej, czerwony = drożej.
+// Odznaka z AKTUALNYM kosztem karty w HQ, gdy odbiega od bazowego: zielony = taniej, czerwony = drożej.
+// Ikona zależy od zasobu: recruit = cost.png, attack (Pull Reality) = attack.png.
 function CostModifierBadge({ data, effectiveCost, costResource = 'recruit' }: { data: CardData; effectiveCost?: number; costResource?: 'attack' | 'recruit' }) {
   if (data.cost === undefined || effectiveCost === undefined || (effectiveCost === data.cost && costResource === 'recruit')) return null
-  const color = costResource === 'attack' ? '#ffd93d' : effectiveCost < data.cost ? '#4ade80' : '#ff6b6b'
+  const usesAttackIcon = costResource === 'attack'
+  const color = usesAttackIcon ? '#ffd93d' : effectiveCost < data.cost ? '#4ade80' : '#ff6b6b'
   return (
     <div className="attack-modifier-badge">
       <img
-        className="attack-modifier-icon cost-icon"
-        src={`${import.meta.env.BASE_URL}icons/cost.png`}
-        alt="Cost"
+        className={`attack-modifier-icon${usesAttackIcon ? '' : ' cost-icon'}`}
+        src={`${import.meta.env.BASE_URL}icons/${usesAttackIcon ? 'attack' : 'cost'}.png`}
+        alt={usesAttackIcon ? 'Attack' : 'Cost'}
       />
       <span className="attack-modifier-value" style={{ color }}>{effectiveCost}</span>
     </div>
