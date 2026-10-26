@@ -333,7 +333,6 @@ function GameScreen({
               highlight={canAffordOfficer(state) ? 'buy' : undefined}
             />
           )}
-          <div>Remaining: {state.officerDeck.length}</div>
         </div>
         {state.hq.map((instance, i) => {
           const explosions = state.hqExplosions?.[i] ?? 0
