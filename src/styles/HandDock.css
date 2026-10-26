@@ -21,7 +21,9 @@
   transform-origin: 50% 130%;
   transform: translateY(var(--drop)) rotate(var(--rot));
   transition: transform 0.18s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
 }
+
 
 .hand-slot:first-child {
   margin-left: 0;
@@ -44,5 +46,6 @@
 
   .hand-slot {
     margin-left: -13px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
   }
 }

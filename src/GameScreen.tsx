@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { CSSProperties, WheelEvent as ReactWheelEvent } from 'react'
 import { useGame } from './useGame'
-import type { GameSetup } from './engine/types'
+import type { GameSetup, CardInstance } from './engine/types'
 import { getScheme } from './engine/schemeRegistry'
 import { sumVictoryPoints, finalScore } from './engine/keywords'
 import {
@@ -114,7 +114,10 @@ function GameScreen({
   const scheme = getScheme(state)
   const negativeZoneActive =
     scheme.id === 'fantasticfour_pull_reality_into_the_negative_zone' && [2, 4, 6].includes(state.twistsRevealed)
-  const [viewingCaptivesOf, setViewingCaptivesOf] = useState<string | null>(null)
+    // Played: karty z Focusem zawsze po lewej (sort stabilny, więc kolejność zagrania w obrębie grup zostaje)
+  const hasFocus = (c: CardInstance): boolean => getCardData(state, c).focus !== undefined
+  const playedSorted = [...state.played].sort((a, b) => Number(hasFocus(b)) - Number(hasFocus(a)))
+    const [viewingCaptivesOf, setViewingCaptivesOf] = useState<string | null>(null)
   
   const [viewingPile, setViewingPile] = useState<'victory' | 'ko' | 'discard' | 'teleport' | null>(null)
 
@@ -388,13 +391,14 @@ function GameScreen({
         <h2 className="section-heading">Played ({state.played.length})</h2>
         <div className="row-with-deck">
         <div className="row">
-          {state.played.map((c) => {
+          {playedSorted.map((c) => {
             const data = getCardData(state, c)
             return (
               <CardView
                 key={c.instanceId}
                 data={data}
                 flipId={c.instanceId}
+                dimmed={!hasFocus(c)}
                 focusButton={
                   canFocus(state, c)
                     ? {

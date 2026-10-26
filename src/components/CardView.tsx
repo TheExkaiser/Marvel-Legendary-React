@@ -18,6 +18,7 @@ interface CardViewProps {
   costResource?: 'attack' | 'recruit' // zasób wymagany do rekrutacji tej karty
   focusButton?: { cost: number; onClick: () => void } // złoty przycisk Focus na karcie (tylko zagrane karty)
   highlight?: 'buy' | 'attack' // obrys: złoty = stać nas na kupno, czerwony = stać nas na atak
+  dimmed?: boolean // przyciemnienie: zwykłe zagrane karty w Played (karty z Focusem zostają jasne)
 }
 
 function ConditionLine({ data }: { data: CardData }) {
@@ -176,7 +177,7 @@ function CapturedCardThumbnail({ data }: { data: CardData }) {
 const HOLD_MS = 450 // jak długo trzymać kartę, żeby otworzyć zoom
 const HOLD_MOVE_TOLERANCE = 10 // px; większy ruch palca = to scroll, nie hold
 
-export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, strengthResource, capturedCards, focusButton, effectiveCost, costResource, highlight }: CardViewProps) {
+export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, strengthResource, capturedCards, focusButton, effectiveCost, costResource, highlight, dimmed }: CardViewProps) {
   const [zoomed, setZoomed] = useState(false)
   const capturedCount = capturedCards?.length ?? 0
 
@@ -204,7 +205,7 @@ export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, s
   return (
     <>
       <div
-        className={['card', onClick ? 'clickable' : '', highlight ? `highlight-${highlight}` : ''].filter(Boolean).join(' ')}
+        className={['card', onClick ? 'clickable' : '', highlight ? `highlight-${highlight}` : '', dimmed ? 'card-dimmed' : ''].filter(Boolean).join(' ')}
         onClick={onClick ? handleClick : undefined}
         title={data.name}
         data-flip-id={flipId}

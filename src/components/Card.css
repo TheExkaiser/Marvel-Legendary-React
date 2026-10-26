@@ -30,6 +30,13 @@
   font-size: 13px;
 }
 
+
+.card.card-dimmed {
+  opacity: 0.55;
+}
+
+
+
 .destroyed-city-token {
   width: 120px;
   aspect-ratio: 5 / 7;
@@ -344,4 +351,5 @@
   .card.highlight-attack {
     box-shadow: 0 0 0 var(--card-ring) var(--hot);
   }
+
 }
