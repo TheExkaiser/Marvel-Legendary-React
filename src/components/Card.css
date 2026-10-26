@@ -261,7 +261,7 @@
 
 @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
   .card {
-    border-radius: 1px;
+    border-radius: 3px;
   }
 
   .card,
