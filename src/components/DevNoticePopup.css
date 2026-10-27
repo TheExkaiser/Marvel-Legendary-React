@@ -5,14 +5,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 12px;
+  box-sizing: border-box;
   background: rgba(0, 0, 0, 0.75);
   cursor: pointer;
 }
 
 .dev-notice-box {
+  box-sizing: border-box;
   max-width: 520px;
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px); /* okno nigdy nie wyższe niż ekran; gdy treść się nie mieści, przewija się w środku */
   margin: 0 20px;
   padding: 28px 32px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: #1c1c24;
   color: #f0f0f0;
   border: 2px solid #c9a227;
@@ -55,4 +62,51 @@
   height: 28px;
   object-fit: contain;
   width: 28px;
+}
+
+/* Telefon (pionowo i poziomo): mniejsze marginesy i czcionki, zestawy w rzędzie zamiast w kolumnie */
+@media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
+  .dev-notice-overlay {
+    padding: 6px;
+  }
+
+  .dev-notice-box {
+    margin: 0;
+    padding: 12px 16px;
+    font-size: 12px;
+    line-height: 1.35;
+    max-height: calc(100vh - 12px);
+    max-height: calc(100dvh - 12px);
+  }
+
+  .dev-notice-box h2 {
+    margin-bottom: 6px;
+    font-size: 16px;
+  }
+
+  .dev-notice-box p {
+    margin: 6px 0;
+  }
+
+  .dev-notice-implemented {
+    margin-bottom: 6px;
+  }
+
+  .dev-notice-sets {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 14px;
+    width: auto;
+    margin-bottom: 8px;
+  }
+
+  .dev-notice-set {
+    gap: 6px;
+  }
+
+  .dev-notice-set img {
+    height: 20px;
+    width: 20px;
+  }
 }
