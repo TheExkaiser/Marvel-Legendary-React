@@ -16,6 +16,7 @@ export type KeywordBlock =
 export interface KeywordEntry {
   id: string
   name: string
+  aliases?: string[] // odmiany nazwy rozpoznawane w tekście karty (np. liczba mnoga)
   tooltip: string // krótki opis w okienku po najechaniu na słowo w tekście karty (KeywordText)
   // Czy dana karta używa tego słowa kluczowego. Menu pokazuje wpis, jeśli którakolwiek karta w grze spełnia warunek.
   appearsOn: (card: CardData) => boolean
@@ -179,6 +180,56 @@ export const KEYWORD_GLOSSARY: KeywordEntry[] = [
       {
         type: 'text',
         text: `If you try to fight Galactus a second time in the same turn, he will return to his full Attack and you cannot use his Cosmic Threat ability a second time that turn.`,
+      },
+    ],
+  },
+  {
+    id: 'shard',
+    name: 'Shard',
+    aliases: ['Shards'],
+    tooltip: 'Shards are tokens from a supply of 18. Spend one to get +1 Attack. Shards on a Villain or Mastermind give it +1 Attack each.',
+    appearsOn: (c) => hasKeyword(c, 'shard'),
+    blocks: [
+      {
+        type: 'text',
+        text: `There are 18 Shard tokens. If you, a Villain or the Mastermind would gain a Shard but none are left in the supply, no Shard is gained and the game continues.`,
+      },
+      {
+        type: 'text',
+        text: `**You:** a Shard you gain stays in front of you. Click the Shard counter to spend them: each spent Shard returns to the supply and gives +1 Attack. You can spend as many as you like in a turn and keep the rest for later turns. Shards are worth no Victory Points.`,
+      },
+      {
+        type: 'text',
+        text: `**Villains:** Shards a Villain gains are put on it, and it gets +1 Attack for each. When you defeat it, you take one of its Shards and the rest return to the supply. When it escapes, the Mastermind gains one of its Shards and the rest return to the supply.`,
+      },
+      {
+        type: 'text',
+        text: `**Mastermind:** Shards on the Mastermind give it +1 Attack each. After you fight it, you take one of its Shards and the rest return to the supply. Then you resolve the Fight effect of the Tactic, which may add Shards to the Mastermind for future fights.`,
+      },
+    ],
+  },
+  {
+    id: 'artifact',
+    name: 'Artifact',
+    aliases: ['Artifacts'],
+    tooltip: 'A Hero you play in front of you that stays in play every turn. Its "once per turn" abilities can be used on each of your turns, including the turn you play it.',
+    appearsOn: (c) => hasKeyword(c, 'artifact'),
+    blocks: [
+      {
+        type: 'text',
+        text: `Some Heroes are also Artifacts. You gain them like any Hero (into your discard pile). When you draw one, you may play it in front of you. You then control it, and at the end of your turn it stays in play while your other cards are discarded.`,
+      },
+      {
+        type: 'text',
+        text: `Use an Artifact's abilities with the buttons on the card, usually once per turn, starting on the turn you play it. You don't have to use them. Several Artifacts with the same name each work separately. A card turns dim once all its once-per-turn abilities are used.`,
+      },
+      {
+        type: 'text',
+        text: `Artifacts you control count as your Heroes, and you may reveal them when a card asks you to reveal a Hero. But you only "played" an Artifact on the turn you put it out, so it triggers Superpower abilities and "Heroes you played this turn" counts only on that turn.`,
+      },
+      {
+        type: 'text',
+        text: `If an effect copies an Artifact, you use that Artifact's "once per turn" ability once and nothing else happens.`,
       },
     ],
   },

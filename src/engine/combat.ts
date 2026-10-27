@@ -15,6 +15,7 @@ import { gainVillainAsHero } from './cardData'
 import { refillHq } from './recruit'
 import { getMastermindRule } from './mastermindRules'
 import { isCityDestroyed } from './cityLayout'
+import { claimShardFrom } from './shards'
 
 /** Czy Recruit płaci za tę kartę jak Attack: God of Thunder (cała tura) albo Bribe (tylko ta karta). */
 function recruitPays(state: GameState, cardId: string): boolean {
@@ -111,6 +112,7 @@ async function removeVillainFromCity(state: GameState, index: number, ui: UiAdap
   const villain = state.city[index]!
   const location = CITY_NAMES[index]
   state.city[index] = null
+  claimShardFrom(state, villain) // jeden Shard dla gracza, reszta do zapasu
   addRecruit(state, state.defeatRecruitBonus ?? 0)
   for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) await rescueBystander(state, ui)
 
@@ -284,6 +286,7 @@ export async function fightVillain(
 
   if (isHqVillain) {
     state.hq[hqIndex] = null
+    claimShardFrom(state, villain)
     const captives = state.captives[villain.instanceId] ?? []
     const rescued = scheme.onCaptivesRescued?.(state, villain, captives) ?? captives
     delete state.captives[villain.instanceId]
@@ -375,6 +378,7 @@ export async function fightMastermind(state: GameState, ui: UiAdapter): Promise<
 
     await scheme.beforeMastermindFight?.(state, ui, strength)
     await spendAttack(state, strength, ui, mmId)
+    claimShardFrom(state, state.mastermind) // najpierw Shard dla gracza, dopiero potem Fight taktyki (może dać Mastermindowi nowe)
     await claimTactic(state, ui)
     await resolveMastermindCaptives(state, ui)
   } finally {

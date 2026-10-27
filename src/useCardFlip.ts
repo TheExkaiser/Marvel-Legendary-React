@@ -10,7 +10,8 @@ const COARSE = typeof window !== 'undefined' && window.matchMedia('(pointer: coa
 const DURATION = COARSE ? 320 : 500 // ms — na dotyku krócej, bo mniej klatek do narysowania
 const EASING = 'cubic-bezier(0.2, 0.8, 0.2, 1)'
 const MIN_MOVE = 2 // px: mniejsze przesunięcia ignorujemy
-const FLYING_Z_INDEX = '60' // nad ręką (50), pod oknami modalnymi (100)
+const FLYING_Z_INDEX = '60' // karty lecące w ręce i kopie schodzące na discard: nad ręką (50), pod oknami modalnymi (100)
+const BOARD_FLYING_Z_INDEX = '49' // karty lecące po planszy (Played, HQ, miasto): tuż pod ręką (50), żeby nie wskakiwały na jej karty
 const MAX_GHOSTS = COARSE ? 6 : 24 // ile kart naraz "odlatuje" na discard (reszta po prostu znika)
 
 interface Snapshot {
@@ -141,7 +142,8 @@ export function useCardFlip(discardIds: ReadonlySet<string>): void {
 
       // 3. Same ZAPISY: odpal zaplanowane animacje
       for (const { el, id, after, dx, dy } of flights) {
-        el.style.zIndex = FLYING_Z_INDEX
+        // Karta w ręce (after.fixed) lata nad innymi kartami ręki, karta na planszy zostaje pod całą ręką
+        el.style.zIndex = after.fixed ? FLYING_Z_INDEX : BOARD_FLYING_Z_INDEX
         flying.current.add(el)
         const animation = el.animate(
           [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'translate(0, 0)' }],

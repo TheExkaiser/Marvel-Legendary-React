@@ -11,6 +11,8 @@ import { runMasterStrikeReactions } from './masterStrikeReactions'
 import { asEnemyEffect, getAmbushShields } from './replacements'
 import { getMastermindRule } from './mastermindRules'
 import { isCityDestroyed } from './cityLayout'
+import { passShardsToMastermind } from './shards'
+import { runArtifactReactions } from './artifacts'
 
 /** Rozpatruje pojedynczą kartę z talii złoczyńców, według jej rodzaju (bez pop'owania z talii). */
 export async function resolveVillainDeckCard(
@@ -64,7 +66,6 @@ export async function revealTopVillainCards(
   return revealed
 }
 
-
 /** Odkrywa wierzchnią kartę talii złoczyńców i rozpatruje ją według jej rodzaju. */
 export async function villainPhase(state: GameState, ui: UiAdapter): Promise<void> {
   await playTopVillainCard(state, ui)
@@ -92,6 +93,7 @@ export async function resolveMasterStrike(
     state.cityDestroyed?.some((c) => c?.instanceId === card.instanceId) // Galactus: Master Strike leży na zniszczonym polu
   if (!stacked) state.ko.push(card)
 
+  await runArtifactReactions(state, ui, 'master-strike-completed') // Incoming Detector
   await getGameMode(state).onMasterStrikeResolved?.(state, ui)
 }
 
@@ -106,6 +108,7 @@ export async function escapeVillain(state: GameState, villain: CardInstance, ui:
     else state.ko.push(c)
   }
   delete state.captives[villain.instanceId]
+  passShardsToMastermind(state, villain) // Mastermind dostaje jeden Shard uciekiniera, reszta wraca do zapasu
 
   getScheme(state).onVillainEscaped?.(state, villain, lost)
 
@@ -149,6 +152,7 @@ export async function enterCity(state: GameState, villain: CardInstance, ui: UiA
   if (ambushAbilities?.onAmbush) {
     if (await ambushCancelledByShield(state, ui)) return
     await asEnemyEffect(state, () => ambushAbilities.onAmbush!(state, ui, villain))
+    await runArtifactReactions(state, ui, 'ambush-completed') // Incoming Detector
   }
 }
 

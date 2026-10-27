@@ -1,27 +1,21 @@
 import type { SetData } from '../../../engine/types'
 import {
-  PAINT_THE_TOWN_RED_HEROES,
-  PAINT_THE_TOWN_RED_MASTERMINDS,
-  PAINT_THE_TOWN_RED_VILLAIN_GROUPS,
-  PAINT_THE_TOWN_RED_HENCHMEN_GROUPS,
-  PAINT_THE_TOWN_RED_BYSTANDER_GROUPS,
+  GUARDIANS_OF_THE_GALAXY_HEROES,
+  GUARDIANS_OF_THE_GALAXY_MASTERMINDS,
+  GUARDIANS_OF_THE_GALAXY_VILLAIN_GROUPS,
+  GUARDIANS_OF_THE_GALAXY_HENCHMEN_GROUPS,
+  GUARDIANS_OF_THE_GALAXY_BYSTANDER_GROUPS,
 } from './content'
-import { PAINT_THE_TOWN_RED_SCHEMES } from './schemes'
+import { GUARDIANS_OF_THE_GALAXY_SCHEMES } from './schemes'
 import './heroAbilities'
-import './villainAbilities'
-import './masterStrikeAbilities'
-import './tacticAbilities'
-import './mastermindRules'
 
-/* Wzór
-export const GUARDIANS_OF_THE_GALAXY_RED_SET: SetData = {
+export const GUARDIANS_OF_THE_GALAXY_SET: SetData = {
   id: 'guardians_of_the_galaxy',
   name: 'Guardians of the Galaxy',
-  schemes: PAINT_THE_TOWN_RED_SCHEMES, tutaj gotg
-  heroes: PAINT_THE_TOWN_RED_HEROES, tutaj gotg
-  villainGroups: PAINT_THE_TOWN_RED_VILLAIN_GROUPS, tutaj gotg
-  henchmenGroups: PAINT_THE_TOWN_RED_HENCHMEN_GROUPS, tutaj gotg
-  masterminds: PAINT_THE_TOWN_RED_MASTERMINDS, tutaj gotg
-  bystanderGroups: PAINT_THE_TOWN_RED_BYSTANDER_GROUPS, tutaj gotg
+  schemes: GUARDIANS_OF_THE_GALAXY_SCHEMES,
+  heroes: GUARDIANS_OF_THE_GALAXY_HEROES,
+  villainGroups: GUARDIANS_OF_THE_GALAXY_VILLAIN_GROUPS,
+  henchmenGroups: GUARDIANS_OF_THE_GALAXY_HENCHMEN_GROUPS,
+  masterminds: GUARDIANS_OF_THE_GALAXY_MASTERMINDS,
+  bystanderGroups: GUARDIANS_OF_THE_GALAXY_BYSTANDER_GROUPS,
 }
-*/

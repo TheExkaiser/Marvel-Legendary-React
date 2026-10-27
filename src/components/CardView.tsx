@@ -4,6 +4,7 @@ import { CardImage } from './CardImage'
 import { ZoomModal } from './ZoomModal'
 import { teamName } from '../data/teams'
 import './FocusButton.css'
+import './CardExtras.css'
 import { KeywordText } from './KeywordText'
 
 interface CardViewProps {
@@ -18,7 +19,9 @@ interface CardViewProps {
   costResource?: 'attack' | 'recruit' // zasób wymagany do rekrutacji tej karty
   focusButton?: { cost: number; onClick: () => void } // złoty przycisk Focus na karcie (tylko zagrane karty)
   highlight?: 'buy' | 'attack' // obrys: złoty = stać nas na kupno, czerwony = stać nas na atak
-  dimmed?: boolean // przyciemnienie: zwykłe zagrane karty w Played (karty z Focusem zostają jasne)
+  dimmed?: boolean // przyciemnienie: zwykłe zagrane karty w Played (Focus i aktywne Artifacty zostają jasne)
+  shards?: number // liczba Shardów leżących na złoczyńcy / masterminedzie
+  artifactButtons?: { label: string; onClick: () => void }[] // przyciski zdolności "raz na turę" artefaktu
 }
 
 function ConditionLine({ data }: { data: CardData }) {
@@ -82,6 +85,38 @@ function CostModifierBadge({ data, effectiveCost, costResource = 'recruit' }: { 
         alt={usesAttackIcon ? 'Attack' : 'Cost'}
       />
       <span className="attack-modifier-value" style={{ color }}>{effectiveCost}</span>
+    </div>
+  )
+}
+
+// Odznaka Shardów na karcie (każdy Shard = +1 Attack; siła w odznace siły już to uwzględnia).
+function ShardBadge({ count }: { count: number }) {
+  if (count <= 0) return null
+  return (
+    <div className="shard-badge" title={`Shards: ${count} (+${count} Attack)`}>
+      <span className="shard-badge-gem">◆</span>
+      <span>{count}</span>
+    </div>
+  )
+}
+
+// Przyciski zdolności artefaktu (styl jak Focus). Każdy to osobna zdolność "raz na turę".
+function ArtifactButtons({ buttons }: { buttons?: { label: string; onClick: () => void }[] }) {
+  if (!buttons?.length) return null
+  return (
+    <div className="artifact-buttons">
+      {buttons.map((button, i) => (
+        <button
+          key={i}
+          className="focus-button"
+          onClick={(e) => {
+            e.stopPropagation() // żeby kliknięcie przycisku nie odpaliło też onClick karty
+            button.onClick()
+          }}
+        >
+          {button.label}
+        </button>
+      ))}
     </div>
   )
 }
@@ -177,7 +212,7 @@ function CapturedCardThumbnail({ data }: { data: CardData }) {
 const HOLD_MS = 450 // jak długo trzymać kartę, żeby otworzyć zoom
 const HOLD_MOVE_TOLERANCE = 10 // px; większy ruch palca = to scroll, nie hold
 
-export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, strengthResource, capturedCards, focusButton, effectiveCost, costResource, highlight, dimmed }: CardViewProps) {
+export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, strengthResource, capturedCards, focusButton, effectiveCost, costResource, highlight, dimmed, shards, artifactButtons }: CardViewProps) {
   const [zoomed, setZoomed] = useState(false)
   const capturedCount = capturedCards?.length ?? 0
 
@@ -249,6 +284,7 @@ export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, s
         </button>
 
         <CapturedBadge count={capturedCount} />
+        <ShardBadge count={shards ?? 0} />
         <AttackModifierBadge data={data} effectiveStrength={effectiveStrength} strengthResource={strengthResource} />
         <CostModifierBadge data={data} effectiveCost={effectiveCost} costResource={costResource} />
 
@@ -263,6 +299,8 @@ export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, s
             Focus ({focusButton.cost})
           </button>
         )}
+
+        <ArtifactButtons buttons={artifactButtons} />
 
         {data.img ? (
           <CardImage src={data.img} alt={data.name} />

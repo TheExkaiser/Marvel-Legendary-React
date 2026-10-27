@@ -132,6 +132,14 @@ export interface GameState {
   mindControlThisTurn?: boolean // Professor X (Mind Control): po pokonaniu Villaina możesz go zdobyć
   instanceOverrides?: Record<string, InstanceOverride> // instanceId -> nadpisane dane karty
   focusUsesThisTurn?: Record<string, number> // cardId -> ile razy użyto Focusa tej karty w tej turze, łącznie ze wszystkich kopii (reset w endTurn)
+  artifacts?: CardInstance[] // Artifacty pod kontrolą gracza: zostają w grze między turami (nie wchodzą do played ani discardu przy końcu tury)
+  artifactUsesThisTurn?: Record<string, number> // `${instanceId}:${abilityId}` -> ile razy użyto zdolności artefaktu w tej turze (reset w endTurn)
+  shards?: number // Shardy gracza, każdy = +1 Attack po wydaniu (brak = 0)
+  shardsOn?: Record<string, number> // instanceId złoczyńcy lub mastermina -> liczba Shardów na nim (każdy = +1 Attack jego siły)
+  shardSupply?: number // Shardy w zapasie (brak = pełny zapas, SHARD_SUPPLY_SIZE w shards.ts)
+  shardAttackSuppressedThisTurn?: string[] // instanceId złoczyńców/mastermina, którzy w tej turze nie dostają Attack od Shardów (Galactic Assassin)
+  shardsAsRecruitThisTurn?: boolean // Groot and Branches: w tej turze Shardy można wydawać także na Recruit (reset w endTurn)
+  shardsOnNextRecruitThisTurn?: boolean // I Am Groot: następny zrekrutowany Bohater daje Shardy równe jego kosztowi (reset w endTurn)
   cosmicThreatUsedThisTurn?: boolean // Cosmic Threat Galactusa: użyty w tej turze (reset w endTurn)
   cosmicThreatReduction?: number // Cosmic Threat Galactusa: obniżenie jego siły na czas jednej walki (czyszczone po walce)
   newHandDiscardCount?: number // Force of Eternity: ile kart odrzucić po dobraniu nowej ręki na koniec tury

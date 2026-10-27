@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { CSSProperties, WheelEvent as ReactWheelEvent } from 'react'
 import { useGame } from './useGame'
-import type { GameSetup, CardInstance } from './engine/types'
+import type { CardInstance, GameSetup } from './engine/types'
 import { getScheme } from './engine/schemeRegistry'
 import { sumVictoryPoints, finalScore } from './engine/keywords'
 import {
@@ -28,7 +28,9 @@ import { PilePrompt } from './components/PilePrompt'
 import { CITY_NAMES } from './engine/constants'
 import { victoryPile, getCardData } from './engine/cardData'
 import './styles/index.css'
-import { getEffectiveStrength, getCapturedCards } from './engine/keywords'
+import { getEffectiveStrength, getCapturedCards, isArtifactData } from './engine/keywords'
+import { usableArtifactAbilities, activateArtifactAbility, isArtifactExhausted } from './engine/artifacts'
+import { shardsOn, gameUsesShards, spendShardsWithPrompt } from './engine/shards'
 import { useSettings } from './useSettings'
 import { SettingsMenu } from './components/SettingsMenu'
 import { CapturePrompt } from './components/CapturePrompt'
@@ -114,29 +116,35 @@ function GameScreen({
   const scheme = getScheme(state)
   const negativeZoneActive =
     scheme.id === 'fantasticfour_pull_reality_into_the_negative_zone' && [2, 4, 6].includes(state.twistsRevealed)
-    // Played: karty z Focusem zawsze po lewej (sort stabilny, więc kolejność zagrania w obrębie grup zostaje)
+
+  // Played: Artifacty pod kontrolą (zostają między turami) pierwsze, potem karty z Focusem, potem reszta.
+  // Sort stabilny, więc kolejność zagrania w obrębie grup zostaje.
   const hasFocus = (c: CardInstance): boolean => getCardData(state, c).focus !== undefined
-  const playedSorted = [...state.played].sort((a, b) => Number(hasFocus(b)) - Number(hasFocus(a)))
-    const [viewingCaptivesOf, setViewingCaptivesOf] = useState<string | null>(null)
+  const playedRow: CardInstance[] = [
+    ...(state.artifacts ?? []),
+    ...[...state.played].sort((a, b) => Number(hasFocus(b)) - Number(hasFocus(a))),
+  ]
+  const [viewingCaptivesOf, setViewingCaptivesOf] = useState<string | null>(null)
   
   const [viewingPile, setViewingPile] = useState<'victory' | 'ko' | 'discard' | 'teleport' | null>(null)
 
   const [historyOpen, setHistoryOpen] = useState(false)
   const [keywordsOpen, setKeywordsOpen] = useState(false)
   const loggedRef = useRef(false)
-  const previousResourcesRef = useRef<{ attack: number; recruit: number; victory: number } | null>(null)
-  const [resourceDeltas, setResourceDeltas] = useState<Partial<Record<'attack' | 'recruit' | 'victory', number>>>({})
+  const previousResourcesRef = useRef<{ attack: number; recruit: number; victory: number; shards: number } | null>(null)
+  const [resourceDeltas, setResourceDeltas] = useState<Partial<Record<'attack' | 'recruit' | 'victory' | 'shards', number>>>({})
   const [resourceDeltaEventId, setResourceDeltaEventId] = useState(0)
   const victoryPoints = sumVictoryPoints(state, victoryPile(state))
+  const playerShards = state.shards ?? 0
 
   useEffect(() => {
     const previous = previousResourcesRef.current
-    const current = { attack: state.attack, recruit: state.recruit, victory: victoryPoints }
+    const current = { attack: state.attack, recruit: state.recruit, victory: victoryPoints, shards: playerShards }
     previousResourcesRef.current = current
     if (!previous) return
 
-    const next: Partial<Record<'attack' | 'recruit' | 'victory', number>> = {}
-    for (const key of ['attack', 'recruit', 'victory'] as const) {
+    const next: Partial<Record<'attack' | 'recruit' | 'victory' | 'shards', number>> = {}
+    for (const key of ['attack', 'recruit', 'victory', 'shards'] as const) {
       const delta = current[key] - previous[key]
       if (delta !== 0) next[key] = delta
     }
@@ -146,7 +154,7 @@ function GameScreen({
     setResourceDeltas(next)
     const timeout = window.setTimeout(() => setResourceDeltas({}), 900)
     return () => window.clearTimeout(timeout)
-  }, [state.attack, state.recruit, victoryPoints])
+  }, [state.attack, state.recruit, victoryPoints, playerShards])
   
   const mastermindCaptives = state.captives[state.mastermind.instanceId]?.length ?? 0
   
@@ -236,6 +244,8 @@ function GameScreen({
         resourceDeltas={resourceDeltas}
         resourceDeltaEventId={resourceDeltaEventId}
         onVictoryClick={() => setViewingPile('victory')}
+        shards={gameUsesShards(state) ? playerShards : undefined}
+        onShardsClick={() => act(spendShardsWithPrompt)}
         scheme={scheme}
         twistsRevealed={state.twistsRevealed}
         twistCount={scheme.twistCount}
@@ -259,6 +269,7 @@ function GameScreen({
             effectiveStrength={getEffectiveStrength(state, state.mastermind)}
             strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
             capturedCards={getCapturedCards(state, state.mastermind.instanceId)}
+            shards={shardsOn(state, state.mastermind)}
           />
           {(state.mastermindSchemeTwists?.length ?? 0) > 0 && (
             <div className="markers">{scheme.mastermindTwistLabel ?? 'Mastermind Twists'}: {state.mastermindSchemeTwists!.length}</div>
@@ -296,6 +307,7 @@ function GameScreen({
                       effectiveStrength={getEffectiveStrength(state, instance)}
                       strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
                       capturedCards={getCapturedCards(state, instance.instanceId)}
+                      shards={shardsOn(state, instance)}
                     />
                   ) : (
                     <div className="slot-empty">{CITY_NAMES[i]}</div>
@@ -333,6 +345,7 @@ function GameScreen({
               highlight={canAffordOfficer(state) ? 'buy' : undefined}
             />
           )}
+          <div>Remaining: {state.officerDeck.length}</div>
         </div>
         {state.hq.map((instance, i) => {
           const explosions = state.hqExplosions?.[i] ?? 0
@@ -348,6 +361,7 @@ function GameScreen({
                   flipId={instance.instanceId}
                   flipFrom="hero-deck"
                   effectiveStrength={hqVillain ? getEffectiveStrength(state, instance) : undefined}
+                  shards={hqVillain ? shardsOn(state, instance) : undefined}
                   effectiveCost={hqVillain ? undefined : hqCardCost(state, i)}
                   costResource={negativeZoneActive ? 'attack' : 'recruit'}
                   strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
@@ -387,23 +401,32 @@ function GameScreen({
 
       {/* ===== Zagrane karty + talia gracza (po prawej) ===== */}
       <section className="section-block section-block-played">
-        <h2 className="section-heading">Played ({state.played.length})</h2>
+        <h2 className="section-heading">Played ({playedRow.length})</h2>
         <div className="row-with-deck">
         <div className="row">
-          {playedSorted.map((c) => {
+          {playedRow.map((c) => {
             const data = getCardData(state, c)
+            const artifact = isArtifactData(data)
             return (
               <CardView
                 key={c.instanceId}
                 data={data}
                 flipId={c.instanceId}
-                dimmed={!hasFocus(c)}
+                dimmed={artifact ? isArtifactExhausted(state, c) : !hasFocus(c)}
                 focusButton={
                   canFocus(state, c)
                     ? {
                         cost: data.focus!,
                         onClick: () => act((s, ui) => activateFocus(s, c.instanceId, ui)),
                       }
+                    : undefined
+                }
+                artifactButtons={
+                  artifact
+                    ? usableArtifactAbilities(state, c).map((ability) => ({
+                        label: ability.label,
+                        onClick: () => act((s, ui) => activateArtifactAbility(s, c.instanceId, ability.id, ui)),
+                      }))
                     : undefined
                 }
               />

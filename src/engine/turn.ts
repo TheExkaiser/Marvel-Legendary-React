@@ -9,7 +9,7 @@ import { villainPhase } from './villainPhase'
 import { addRecruit, addAttack } from './resources'
 import { applyVersatile } from './versatile'
 import { getCardData } from './cardData'
-import { discardCard } from './keywords'
+import { discardCard, isArtifactData } from './keywords'
 
 /** Zagrywa kartę z ręki: dolicza attack/recruit i odpala jej zdolność. */
 export async function playCard(
@@ -29,7 +29,8 @@ export async function playCard(
   }
 
   const [instance] = state.hand.splice(index, 1)
-  state.played.push(instance)
+  if (isArtifactData(data)) state.artifacts = [...(state.artifacts ?? []), instance] // Artifact zostaje w grze między turami
+  else state.played.push(instance)
   logEvent(state, `Played: ${data.name}`)
   addAttack(state, data.attack ?? 0)
   addRecruit(state, data.recruit ?? 0)
@@ -160,6 +161,10 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.masterStrikeAutoDrawUsedThisTurn = false
   state.teleportGrantedThisTurn = []
   state.focusUsesThisTurn = {}
+  state.artifactUsesThisTurn = {}
+  state.shardAttackSuppressedThisTurn = []
+  state.shardsAsRecruitThisTurn = false
+  state.shardsOnNextRecruitThisTurn = false
   state.cancelFightEffectsThisTurn = false
   state.cosmicThreatUsedThisTurn = false
   state.hqRecruitBonuses = {}

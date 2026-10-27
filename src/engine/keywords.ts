@@ -8,6 +8,7 @@ import { addRecruit } from './resources'
 import { getMastermindRule } from './mastermindRules'
 import { takeTopCards } from './deckOps'
 import { getStrengthModifier } from './strengthModifiers'
+import { shardAttackBonus } from './shards'
 
 
 export function countPlayedThisTurn(
@@ -95,11 +96,11 @@ export function finalScore(state: GameState, pile: CardInstance[]): number {
 
 // DECK + HAND + PLAYED + DISCARD = wszystkie karty, które gracz aktualnie posiada
 export function allOwnedCards(state: GameState): CardInstance[] {
-  return [...state.deck, ...state.hand, ...state.played, ...state.discard, ...(state.teleported ?? [])]
+  return [...state.deck, ...state.hand, ...state.played, ...state.discard, ...(state.teleported ?? []), ...(state.artifacts ?? [])]
 }
 
 export function koCard(state: GameState, instanceId: string): void {
-  for (const pile of [state.hand, state.discard, state.played, state.deck]) {
+  for (const pile of [state.hand, state.discard, state.played, state.deck, state.artifacts ?? []]) {
     const index = pile.findIndex((c) => c.instanceId === instanceId)
     if (index !== -1) {
       const [card] = pile.splice(index, 1)
@@ -123,7 +124,7 @@ export async function discardCard(
     }
   }
 
-  for (const pile of [state.hand, state.played]) {
+  for (const pile of [state.hand, state.played, state.artifacts ?? []]) {
     const index = pile.findIndex((c) => c.instanceId === instanceId)
     if (index === -1) continue
 
@@ -140,7 +141,7 @@ export async function discardCard(
   }
 }
 
-export type CardFilter = { type?: string; team?: string; hero?: string }
+export type CardFilter = { type?: string; team?: string; hero?: string; artifact?: boolean }
 
 function effectiveTypeTeam(state: GameState, instance: CardInstance): { type: string[]; team: string[] } {
   const data = state.cards[instance.cardId]
@@ -155,6 +156,7 @@ function effectiveTypeTeam(state: GameState, instance: CardInstance): { type: st
 function matchesFilter(state: GameState, instance: CardInstance, filter: CardFilter): boolean {
   const data = state.cards[instance.cardId]
   if (data.kind === 'wound') return false
+  if (filter.artifact && !isArtifactData(data)) return false
   const { type, team } = effectiveTypeTeam(state, instance)
   if (filter.type && !type.includes(filter.type)) return false
   if (filter.team && !team.includes(filter.team)) return false
@@ -162,19 +164,23 @@ function matchesFilter(state: GameState, instance: CardInstance, filter: CardFil
   return true
 }
 
-// HAVE = ręka + zagrane + discard
+// HAVE = ręka + zagrane + discard + Artifacty pod kontrolą
 export function haveZone(state: GameState): CardInstance[] {
-  return [...state.hand, ...state.played, ...state.discard]
+  return [...state.hand, ...state.played, ...state.discard, ...(state.artifacts ?? [])]
 }
 
-// REVEAL = ręka + zagrane (bez discardu)
+// REVEAL = ręka + zagrane + Artifacty pod kontrolą (bez discardu)
 export function revealZone(state: GameState): CardInstance[] {
-  return [...state.hand, ...state.played]
+  return [...state.hand, ...state.played, ...(state.artifacts ?? [])]
 }
 
-// PLAYED = tylko karty aktualnie leżące w "played" (w przeciwieństwie do revealZone, NIE liczy ręki)
+// PLAYED = karty leżące w "played" (w przeciwieństwie do revealZone, NIE liczy ręki)
+// + Artifacty wyłożone w TEJ turze (stary Artifact nie jest "zagrany" w tej turze)
 export function playedZone(state: GameState): CardInstance[] {
-  return [...state.played]
+  const artifactsPlayedNow = (state.artifacts ?? []).filter((a) =>
+    state.cardsPlayedThisTurn.some((c) => c.instanceId === a.instanceId),
+  )
+  return [...state.played, ...artifactsPlayedNow]
 }
 
 export function haveCards(state: GameState, filter: CardFilter = {}): CardInstance[] {
@@ -243,6 +249,7 @@ export function getEffectiveStrength(
   total += getScheme(state).villainStrengthModifier?.(state, instance) ?? 0
   total += getMastermindRule(state)?.villainStrengthModifier?.(state, instance) ?? 0
   total += cardStrengthModifier?.(state, instance) ?? 0
+  total += shardAttackBonus(state, instance)
   total -= cosmicThreatReduction(state, instance)
 
   return Math.max(0, total) // siła nie może zejść poniżej 0 (inaczej spendAttack by ją "zwracał")
@@ -265,7 +272,8 @@ export async function discardCardChecked(
   await discardCard(state, instanceId, ui)
   return (
     !state.hand.some((c) => c.instanceId === instanceId) &&
-    !state.played.some((c) => c.instanceId === instanceId)
+    !state.played.some((c) => c.instanceId === instanceId) &&
+    !(state.artifacts ?? []).some((c) => c.instanceId === instanceId)
   )
 }
 
@@ -279,6 +287,15 @@ export async function koFromHandOrDiscard(state: GameState, ui: UiAdapter, promp
 
 export function isVillainCard(data: CardData): boolean {
   return data.villainGroup !== undefined || data.henchman === true
+}
+
+export function isArtifactData(data: CardData): boolean {
+  return (data.keywords ?? []).includes('artifact')
+}
+
+/** Artifacty pod kontrolą gracza, opcjonalnie przefiltrowane (typ, drużyna, bohater). */
+export function artifactCards(state: GameState, filter: CardFilter = {}): CardInstance[] {
+  return (state.artifacts ?? []).filter((c) => matchesFilter(state, c, filter))
 }
 
 export function villainsIn(state: GameState, pile: CardInstance[]): CardInstance[] {

@@ -55,9 +55,11 @@ type StatsPanelProps = {
   attack: number
   recruit: number
   victoryPoints: number
-  resourceDeltas?: Partial<Record<'attack' | 'recruit' | 'victory', number>>
+  resourceDeltas?: Partial<Record<'attack' | 'recruit' | 'victory' | 'shards', number>>
   resourceDeltaEventId?: number
   onVictoryClick?: () => void
+  shards?: number // undefined = w grze nie ma kart operujących na Shardach (licznik ukryty)
+  onShardsClick?: () => void
   scheme: SchemeInfo
   twistsRevealed: number
   twistCount: number
@@ -78,6 +80,8 @@ export function StatsPanel({
   resourceDeltas,
   resourceDeltaEventId,
   onVictoryClick,
+  shards,
+  onShardsClick,
   scheme,
   twistsRevealed,
   twistCount,
@@ -106,6 +110,16 @@ export function StatsPanel({
         <Stat icon="attack.png" label="Attacks" value={attack} delta={resourceDeltas?.attack} deltaEventId={resourceDeltaEventId} />
         <Stat icon="recruit.png" label="Recruits" value={recruit} delta={resourceDeltas?.recruit} deltaEventId={resourceDeltaEventId} />
         <Stat icon="victory.png" label="VP" value={victoryPoints} delta={resourceDeltas?.victory} deltaEventId={resourceDeltaEventId} onClick={onVictoryClick} />
+        {shards !== undefined && (
+          <Stat
+            icon="shard.png"
+            label="Shards"
+            value={shards}
+            delta={resourceDeltas?.shards}
+            deltaEventId={resourceDeltaEventId}
+            onClick={shards > 0 ? onShardsClick : undefined}
+          />
+        )}
       </div>
 
       <div className="stats-panel-extra">

@@ -6,11 +6,16 @@ import './KeywordText.css'
 
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
+// Każde słowo kluczowe może mieć odmiany (aliases), np. "Shard" + "Shards"
+const TERMS = KEYWORD_GLOSSARY.flatMap((entry) =>
+  [entry.name, ...(entry.aliases ?? [])].map((term) => ({ term, entry })),
+)
+
 // Najdłuższe nazwy pierwsze, żeby np. "Cosmic Threat" nie rozbiło się na krótszy wpis
 const KEYWORD_PATTERN = new RegExp(
-  `\\b(${[...KEYWORD_GLOSSARY]
-    .sort((a, b) => b.name.length - a.name.length)
-    .map((entry) => escapeRegex(entry.name))
+  `\\b(${[...TERMS]
+    .sort((a, b) => b.term.length - a.term.length)
+    .map(({ term }) => escapeRegex(term))
     .join('|')})\\b`,
 )
 
@@ -74,7 +79,7 @@ export function KeywordText({ text }: { text: string }) {
     <>
       {parts.map((part, i) => {
         // split z grupą przechwytującą daje na nieparzystych miejscach dopasowane słowa kluczowe
-        const entry = i % 2 === 1 ? KEYWORD_GLOSSARY.find((e) => e.name === part) : undefined
+        const entry = i % 2 === 1 ? TERMS.find((t) => t.term === part)?.entry : undefined
         return entry ? <KeywordTerm key={i} entry={entry} /> : <Fragment key={i}>{part}</Fragment>
       })}
     </>

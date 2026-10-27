@@ -4,6 +4,7 @@ import { getScheme } from './schemeRegistry'
 import { rescueCard } from './wounds'
 import { CITY_NAMES } from './constants'
 import type { UiAdapter } from './ui'
+import { gainShards } from './shards'
 
 /** Save Humanity: za tyle Recruit ratujesz Bystandera z HQ. */
 const BYSTANDER_RESCUE_COST = 2
@@ -82,7 +83,7 @@ export function canAffordOfficer(state: GameState): boolean {
 }
 
 /** Kupuje bohatera z HQ (płaci recruit), karta trafia do stosu odrzuconych.
- * Bystander w HQ (Save Humanity) kosztuje 2 Recruit i jest ratowany do Victory Pool. */
+ * Bystander w HQ (Save Humanity) kosztuje 2 Recruit; samo ratowanie (async) robi recruitHeroWithUi. */
 export function recruitHero(state: GameState, instanceId: string): void {
   assertPlaying(state)
   const index = state.hq.findIndex((c) => c?.instanceId === instanceId)
@@ -107,6 +108,10 @@ export function recruitHero(state: GameState, instanceId: string): void {
     if (remainingBonus > 0) {
       state.hqRecruitBonuses = { ...state.hqRecruitBonuses, [location]: Math.max(0, remainingBonus - baseCost) }
     }
+  }
+  if (!isBystander && data.hero && state.shardsOnNextRecruitThisTurn) {
+    state.shardsOnNextRecruitThisTurn = false
+    gainShards(state, baseCost) // I Am Groot: Shardy równe (drukowanemu) kosztowi zrekrutowanego Bohatera
   }
   state.hq[index] = null
   if (!isBystander) placeRecruitedCard(state, instance) // Bystandera ratuje recruitHeroWithUi: rescueCard jest async i wymaga ui
@@ -186,6 +191,10 @@ export function recruitOfficer(state: GameState): void {
 
   if (payWithAttack) state.attack -= cost
   else state.recruit -= cost
+  if (state.shardsOnNextRecruitThisTurn) {
+    state.shardsOnNextRecruitThisTurn = false
+    gainShards(state, cost) // I Am Groot: Officer też jest Bohaterem
+  }
   placeRecruitedCard(state, instance)
   logEvent(state, `Recruited: ${data.name}`)
 }
