@@ -308,7 +308,20 @@ function GameScreen({
 
         <div className="city-slot">
           <div className="zone-title">
-            City (<button className="info-scheme-button" onClick={() => setViewingPile('escaped')}>Escaped: {state.escaped.length}</button>)
+            City (<span
+              className="escaped-count"
+              onClick={() => setViewingPile('escaped')}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  setViewingPile('escaped')
+                }
+              }}
+              role="button"
+              tabIndex={0}
+            >
+              Escaped: {state.escaped.length}
+            </span>)
             {(state.schemeTokens ?? []).map((t) => (
               <SchemeToken key={t.instanceId} data={state.cards[t.cardId]} />
             ))}
