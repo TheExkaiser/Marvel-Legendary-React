@@ -108,8 +108,13 @@ function mastermindItems(sets: SetData[]): PickItem[] {
 }
 
 /** Dzieli widoczne kafelki na sekcje zależnie od sortowania (z nagłówkami albo bez). */
+function compareNames(a: string, b: string): number {
+  const sortName = (name: string) => name.replace(/^the\s+/i, '')
+  return sortName(a).localeCompare(sortName(b), 'en') || a.localeCompare(b, 'en')
+}
+
 function buildSections(items: PickItem[], activeSets: SetData[], mode: SortMode, byTeam: boolean): Section[] {
-  const byName = (a: PickItem, b: PickItem) => a.name.localeCompare(b.name, 'en')
+  const byName = (a: PickItem, b: PickItem) => compareNames(a.name, b.name)
 
   if (mode === 'set') {
     return activeSets
@@ -129,7 +134,7 @@ function buildSections(items: PickItem[], activeSets: SetData[], mode: SortMode,
       groups.set(key, [...(groups.get(key) ?? []), item])
     }
     return [...groups.entries()]
-      .sort(([a], [b]) => (a === '' ? 1 : b === '' ? -1 : teamName(a).localeCompare(teamName(b), 'en')))
+      .sort(([a], [b]) => (a === '' ? 1 : b === '' ? -1 : compareNames(teamName(a), teamName(b))))
       .map(([key, list]) => ({
         key: key || 'none',
         title: key ? teamName(key) : 'No team',
@@ -642,7 +647,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
                 (s) =>
                   s.schemes.length > 0 && (
                     <optgroup key={s.id} label={s.name}>
-                      {s.schemes.map((sc) => (
+                      {[...s.schemes].sort((a, b) => compareNames(a.name, b.name)).map((sc) => (
                         <option key={sc.id} value={sc.id}>
                           {sc.name}
                         </option>

@@ -19,6 +19,7 @@ export {
   debugPlayNextSchemeTwist,
   debugKoAllHeroesFromHq,
   debugEscapeAllVillainsFromCity,
+  debugMoveAllVillainsToLeft,
   debugDrawCard,
 } from './debug'
 export { peekTopCard } from './deckOps'

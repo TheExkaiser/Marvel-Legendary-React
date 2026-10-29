@@ -10,7 +10,7 @@
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 56;
+  z-index: 60;
   padding: 14px 8px;
   writing-mode: vertical-rl;
   font-family: var(--font-body);

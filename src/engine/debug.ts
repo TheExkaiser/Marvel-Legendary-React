@@ -3,6 +3,7 @@ import type { UiAdapter } from './ui'
 import { koFromHq, refillHq } from './recruit'
 import { drawCards } from './deckOps'
 import { escapeVillain, playNextVillainDeckCardOfKind, playTopVillainCard } from './villainPhase'
+import { isCityDestroyed } from './cityLayout'
 
 /** Id kart startowych — patrz data/sets/01_Core_Set/cards.ts (STARTING_CARDS). */
 const STARTING_CARD_IDS = ['shield-agent', 'shield-trooper']
@@ -58,6 +59,17 @@ export async function debugEscapeAllVillainsFromCity(state: GameState, ui: UiAda
     state.city[i] = null
     await escapeVillain(state, villain, ui)
   }
+}
+
+/** DEBUG: shift villains toward the Bridge, preserving their relative order and avoiding destroyed spaces. */
+export function debugMoveAllVillainsToLeft(state: GameState): void {
+  const spaces = state.city.map((_, index) => index).filter((index) => !isCityDestroyed(state, index))
+  const villains = spaces.flatMap((index) => state.city[index] ? [state.city[index]!] : [])
+  state.city = state.city.map(() => null)
+  villains.forEach((villain, index) => {
+    const destination = spaces[index]
+    if (destination !== undefined) state.city[destination] = villain
+  })
 }
 
 export function debugDrawCard(state: GameState): void {
