@@ -357,7 +357,16 @@ function GameScreen({
                 </div>
               ))}
             </div>
-            <DeckPile count={state.villainDeck.length} />
+            <div className="city-deck-group">
+              <DeckPile count={state.villainDeck.length} />
+              {scheme.id === 'gotg_intergalactic_kree_nega_bomb' && (
+                <DeckPile
+                  count={state.negaBombDeck?.length ?? 0}
+                  label="Nega-Bomb"
+                  className="nega-bomb-pile"
+                />
+              )}
+            </div>
             {(state.demonGoblins?.length ?? 0) > 0 && (
               <DeckPile
                 count={state.demonGoblins!.length}
