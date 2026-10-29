@@ -6,11 +6,15 @@ registerMastermindRule('mastermind-carnage', {
 })
 
 registerMastermindRule('mastermind-thanos', {
-  villainStrengthModifier: (state) =>
-    -2 *
-    (state.artifacts ?? []).filter((artifact) => {
-      const data = state.cards[artifact.cardId]
-      return data.villainGroup === 'Infinity Gems' && (data.keywords ?? []).includes('artifact')
-    }).length,
+  villainStrengthModifier: (state, instance) => {
+    if (instance.instanceId !== state.mastermind.instanceId) return 0
+    return (
+      -2 *
+      (state.artifacts ?? []).filter((artifact) => {
+        const data = state.cards[artifact.cardId]
+        return data.villainGroup === 'Infinity Gems' && (data.keywords ?? []).includes('artifact')
+      }).length
+    )
+  },
   captivesSurviveFight: true,
 })
