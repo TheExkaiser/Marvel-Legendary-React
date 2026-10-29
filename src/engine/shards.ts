@@ -74,6 +74,15 @@ export function claimShardFrom(state: GameState, target: CardInstance): void {
   logEvent(state, `Took a Shard from ${state.cards[target.cardId].name}`)
 }
 
+/** Transfers one Shard from a card to the player without changing the supply. */
+export function claimOneShardOn(state: GameState, target: CardInstance): void {
+  const count = shardsOn(state, target)
+  if (count === 0) throw new Error(`${state.cards[target.cardId].name} has no Shards`)
+  setShardsOn(state, target, count - 1)
+  state.shards = (state.shards ?? 0) + 1
+  logEvent(state, `Took a Shard from ${state.cards[target.cardId].name}`)
+}
+
 /** Ucieczka Villaina: Mastermind dostaje jeden z jego Shardów, resztę zwracasz do zapasu. */
 export function passShardsToMastermind(state: GameState, villain: CardInstance): void {
   const count = shardsOn(state, villain)
