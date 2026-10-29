@@ -109,22 +109,26 @@ registerVillainAbilities('villain-infinity-gems-power-gem', {
 
 registerVillainAbilities('villain-infinity-gems-reality-gem', {
   onAmbush: async (state, _ui, self) => {
-    const gemsInCity = state.city.filter((card): card is CardInstance => !!card && isInfinityGem(state, card)).length
-    const gemsEscaped = state.escaped.filter((card) => isInfinityGem(state, card)).length
+    const gemsInCity = state.city.filter(
+      (card): card is CardInstance => !!card && card.instanceId !== self.instanceId && isInfinityGem(state, card),
+    ).length
+    const gemsEscaped = state.escaped.filter(
+      (card) => card.instanceId !== self.instanceId && isInfinityGem(state, card),
+    ).length
     placeShardsOn(state, self, gemsInCity + gemsEscaped)
   },
 })
 
 registerVillainAbilities('villain-infinity-gems-soul-gem', {
   onAmbush: async (state, _ui, self) => {
-    placeShardsOn(state, self, villainsInCity(state).length)
+    const otherVillains = villainsInCity(state).filter((villain) => villain.instanceId !== self.instanceId)
+    placeShardsOn(state, self, otherVillains.length)
   },
 })
 
 registerVillainAbilities('villain-infinity-gems-space-gem', {
-  onAmbush: async (state, _ui, self) => {
-    const emptySpaces = state.city.filter((card, index) => !card && !isCityDestroyed(state, index)).length
-    placeShardsOn(state, self, emptySpaces)
+  onAmbush: async (state, _ui, self, { emptyCitySpacesBeforeEntry }) => {
+    placeShardsOn(state, self, emptyCitySpacesBeforeEntry)
   },
 })
 
