@@ -43,7 +43,7 @@ import { KeywordsMenu } from './components/KeywordsMenu'
 import { NumberPrompt } from './components/NumberPrompt'
 import { StackedMasterStrikes } from './components/StackedMasterStrikes'
 import { hasTeleport } from './engine/turn'
-import { fightDemonGoblin, canAffordVillain, canAffordMastermind, canAffordDemonGoblin } from './engine/combat'
+import { fightDemonGoblin, canAffordVillain, canAffordMastermind, canAffordMastermindTarget, canAffordDemonGoblin } from './engine/combat'
 import { SchemeToken } from './components/SchemeToken'
 import { canFocus, activateFocus } from './engine/focus'
 import { hqCardCost, canAffordHqCard, canAffordOfficer, canAffordSidekick, recruitSidekick } from './engine/recruit'
@@ -282,6 +282,29 @@ function GameScreen({
       {/* ===== Mastermind (po lewej) + Miasto + talia villainów (po prawej) ===== */}
       <div className="board-top">
         <div className="mastermind-slot">
+          <div className="additional-masterminds">
+            {(state.masterminds ?? []).filter((mastermind) =>
+              mastermind.instanceId !== state.mastermind.instanceId &&
+              !(state.defeatedMastermindIds ?? []).includes(mastermind.instanceId),
+            ).map((mastermind) => (
+              <div className="additional-mastermind" key={mastermind.instanceId}>
+                <div className="markers">
+                  {state.singleFightMasterminds?.includes(mastermind.instanceId)
+                    ? 'Mastermind'
+                    : `Tactics: ${state.mastermindTactics?.[mastermind.instanceId]?.length ?? 0}`}
+                </div>
+                <CardView
+                  data={state.cards[mastermind.cardId]}
+                  onClick={() => act((s, ui) => fightMastermind(s, ui, mastermind.instanceId))}
+                  highlight={canAffordMastermindTarget(state, mastermind) ? 'attack' : undefined}
+                  effectiveStrength={getEffectiveStrength(state, mastermind)}
+                  strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
+                  capturedCards={getCapturedCards(state, mastermind.instanceId)}
+                  shards={shardsOn(state, mastermind)}
+                />
+              </div>
+            ))}
+          </div>
           <div className="zone-title">Tactics: {state.tactics.length}</div>
           <CardView
             data={state.cards[state.mastermind.cardId]}

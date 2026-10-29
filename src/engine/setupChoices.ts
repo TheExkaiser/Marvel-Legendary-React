@@ -210,7 +210,7 @@ export function pruneChoices(choices: SetupChoices, sets: SetData[], gameModes: 
         villainDeckHeroIds: keep(sets.flatMap((s) => s.heroes), choices.villainDeckHeroIds ?? []),
     villainGroupIds: keep(sets.flatMap((s) => s.villainGroups), choices.villainGroupIds),
     henchmenGroupIds: keep(sets.flatMap((s) => s.henchmenGroups), choices.henchmenGroupIds),
-    excludedBystanderGroupIds: keep(sets.flatMap((s) => s.bystanderGroups), choices.excludedBystanderGroupIds ?? []),
+    excludedBystanderGroupIds: choices.excludedBystanderGroupIds ?? [],
     sidekicksEnabled: choices.sidekicksEnabled ?? true,
     heroSelectionMode: choices.heroSelectionMode ?? 'full-random',
     uniqueHeroRealNames: choices.uniqueHeroRealNames ?? true,

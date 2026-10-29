@@ -117,7 +117,13 @@ export function createGameState(setup: GameSetup): GameState {
 
     // Mastermind
     mastermind: { instanceId: mastermind.card.id, cardId: mastermind.card.id },
+    masterminds: [{ instanceId: mastermind.card.id, cardId: mastermind.card.id }],
     tactics: shuffle(mastermind.tactics.map((t) => ({ instanceId: t.id, cardId: t.id }))),
+    mastermindTactics: {},
+    mastermindStrikeIds: { [mastermind.card.id]: mastermind.masterStrikeId },
+    singleFightMasterminds: [],
+    defeatedMastermindIds: [],
+    mastermindAttackModifiers: {},
     mysterioTacticIds: [],
     masterStrikeId: mastermind.masterStrikeId,
     ledVillainGroup: villainCards.map((e) => e.card.villainGroup).find((g) => g !== undefined),

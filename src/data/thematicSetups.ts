@@ -50,4 +50,13 @@ export const THEMATIC_SETUPS: ThematicSetup[] = [
     villainGroupIds: ['paint_red_maximum_carnage', 'paint_red_sinister_six'],
     henchmenGroupIds: [],
   },
+  {
+    id: 'guardians-of-the-galaxy-complete',
+    name: 'Guardians of the Galaxy — Complete Set',
+    schemeIds: ['gotg_forge_the_infinity_gauntlet', 'gotg_the_kree_skrull_war', 'gotg_intergalactic_kree_nega_bomb', 'gotg_unite_the_shards'],
+    mastermindIds: ['mastermind-supreme-intelligence-of-the-kree', 'mastermind-thanos'],
+    heroPoolIds: ['gotg_drax_the_destroyer', 'gotg_gamora', 'gotg_groot', 'gotg_rocket_raccoon', 'gotg_star_lord'],
+    villainGroupIds: ['gotg_kree_starforce', 'gotg_infinity_gems'],
+    henchmenGroupIds: [],
+  },
 ]
