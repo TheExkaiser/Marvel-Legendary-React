@@ -1,4 +1,4 @@
-/* Main game zones */
+/* The City and HQ are two rows of one shared eight-column grid. */
 
 .board-zone-scroll {
   width: 100%;
@@ -10,59 +10,56 @@
 .board-zones {
   --board-card-width: 120px;
   --board-gap: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: max-content;
-  gap: var(--board-gap);
-  margin-inline: auto;
-}
-
-.board-top,
-.hq-zone {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(5, var(--board-card-width)) max-content;
-  column-gap: var(--board-gap);
-  width: max-content;
-  align-items: start;
-}
-
-.board-top {
-  margin-left: calc(2 * (var(--board-card-width) + var(--board-gap)));
+  grid-template-columns: repeat(8, var(--board-card-width));
   grid-auto-rows: auto;
+  gap: var(--board-gap);
+  width: max-content;
+  margin-inline: auto;
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: linear-gradient(160deg, rgba(56, 225, 255, 0.07), rgba(255, 61, 87, 0.06));
 }
 
+.board-top,
+.hq-zone {
+  display: contents;
+}
+
 .additional-mastermind-column,
-.mastermind-slot {
+.mastermind-slot,
+.villain-deck-column,
+.sidekick-column,
+.officer-slot,
+.hero-deck-column,
+.city-space,
+.hq-space {
   position: relative;
-  z-index: 1;
-  grid-row: 1 / span 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   min-width: 0;
+  width: var(--board-card-width);
 }
 
 .additional-mastermind-column {
-  position: absolute;
-  top: 12px;
-  left: calc(-2 * (var(--board-card-width) + var(--board-gap)));
+  grid-column: 1;
+  grid-row: 1;
   gap: 8px;
+  padding-top: 54px;
 }
 
 .mastermind-slot {
-  position: absolute;
-  top: 12px;
-  left: calc(-1 * (var(--board-card-width) + var(--board-gap)));
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .additional-mastermind-column .card,
-.mastermind-slot > .card {
+.mastermind-slot > .card,
+.city-space .card,
+.hq-space .card {
   width: var(--board-card-width);
 }
 
@@ -71,22 +68,29 @@
 }
 
 .additional-mastermind-empty {
-  width: 120px;
+  width: var(--board-card-width);
   aspect-ratio: 5 / 7;
 }
 
 .city-title {
-  grid-column: 1 / span 5;
-  grid-row: 1;
+  position: absolute;
+  top: 10px;
+  left: calc(12px + 2 * (var(--board-card-width) + var(--board-gap)));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: calc(5 * var(--board-card-width) + 4 * var(--board-gap));
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
 }
 
 .city-space {
-  display: flex;
-  grid-row: 2;
-  flex-direction: column;
-  align-items: center;
-  width: var(--board-card-width);
-  min-width: 0;
+  grid-row: 1;
+  padding-top: 54px;
 }
 
 .city-space-label {
@@ -102,17 +106,9 @@
   text-align: center;
 }
 
-.villain-deck-column,
-.hero-deck-column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 0;
-}
-
 .villain-deck-column {
-  grid-column: 6;
-  grid-row: 1 / span 2;
+  grid-column: 8;
+  grid-row: 1;
   gap: 8px;
 }
 
@@ -152,45 +148,19 @@
   outline-offset: 2px;
 }
 
-.hq-zone {
-  margin-left: calc(2 * (var(--board-card-width) + var(--board-gap)));
-  padding: 10px 12px 12px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: rgba(56, 225, 255, 0.035);
-}
-
-.hq-heading {
-  grid-column: 1 / -1;
-  margin: 0;
-  min-height: 32px;
-}
-
 .sidekick-column {
-  position: absolute;
-  top: 52px;
-  left: calc(-1 * (var(--board-card-width) + var(--board-gap)));
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  min-width: 0;
+  grid-column: 1;
+  grid-row: 2;
+  justify-content: flex-start;
 }
 
 .officer-slot {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  grid-column: 2;
+  grid-row: 2;
   gap: 5px;
-  min-width: 0;
   color: var(--muted);
   font-size: 10px;
   text-align: center;
-}
-
-.officer-slot {
-  position: absolute;
-  top: 52px;
-  left: calc(-2 * (var(--board-card-width) + var(--board-gap)));
 }
 
 .sidekick-slot {
@@ -214,14 +184,11 @@
 }
 
 .hq-space {
-  position: relative;
   grid-row: 2;
-  width: var(--board-card-width);
-  min-width: 0;
 }
 
 .hero-deck-column {
-  grid-column: 6;
+  grid-column: 8;
   grid-row: 2;
 }
 
@@ -324,44 +291,15 @@
   }
 
   .board-zones {
-    margin-inline: 0;
-  }
-
-  .board-top,
-  .hq-zone {
     --board-card-width: 96px;
     --board-gap: 6px;
-    grid-template-columns: repeat(5, var(--board-card-width)) max-content;
+    grid-template-columns: repeat(8, var(--board-card-width));
+    margin-inline: 0;
     padding: 8px;
   }
 
-  .board-top {
-    margin-left: calc(2 * (var(--board-card-width) + var(--board-gap)));
-    padding-top: 8px;
-  }
-
-  .hq-zone {
-    margin-left: calc(2 * (var(--board-card-width) + var(--board-gap)));
-  }
-
   .additional-mastermind-column {
-    top: 8px;
-    left: calc(-2 * (var(--board-card-width) + var(--board-gap)));
-  }
-
-  .mastermind-slot {
-    top: 8px;
-    left: calc(-1 * (var(--board-card-width) + var(--board-gap)));
-  }
-
-  .sidekick-column {
-    top: 36px;
-    left: calc(-1 * (var(--board-card-width) + var(--board-gap)));
-  }
-
-  .officer-slot {
-    top: 36px;
-    left: calc(-2 * (var(--board-card-width) + var(--board-gap)));
+    padding-top: 32px;
   }
 
   .zone-title {
@@ -373,6 +311,17 @@
   .city-space-label {
     margin-top: 4px;
     font-size: 10px;
+  }
+
+  .city-space {
+    padding-top: 32px;
+  }
+
+  .city-title {
+    top: 6px;
+    left: calc(8px + 2 * (var(--board-card-width) + var(--board-gap)));
+    width: calc(5 * var(--board-card-width) + 4 * var(--board-gap));
+    font-size: 12px;
   }
 
   .city-space .card,

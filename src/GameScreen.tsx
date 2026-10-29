@@ -284,7 +284,6 @@ function GameScreen({
       {/* ===== Board zone: Masterminds, city, and villain deck ===== */}
       <div className="board-top">
         <div className="additional-mastermind-column">
-          <div className="zone-title">Additional</div>
           {(state.masterminds ?? []).filter((mastermind) =>
             mastermind.instanceId !== state.mastermind.instanceId &&
             !(state.defeatedMastermindIds ?? []).includes(mastermind.instanceId),
@@ -384,7 +383,7 @@ function GameScreen({
           )}
         </div>
         {state.city.map((instance, i) => (
-          <div className="city-space" key={i} style={{ gridColumn: i + 1 }}>
+          <div className="city-space" key={i} style={{ gridColumn: i + 3, gridRow: 1 }}>
             {state.cityDestroyed?.[i] ? (
               <div className="destroyed-city-token" title="Destroyed City">
                 <img
@@ -416,7 +415,6 @@ function GameScreen({
 
       {/* ===== Board zone: Sidekicks, Officers, HQ, and Hero deck ===== */}
       <section className="hq-zone">
-        <h2 className="section-heading hq-heading">HQ</h2>
         <div className="sidekick-column">
           {state.sidekickCardId && (
             <div className="sidekick-slot">
@@ -453,7 +451,7 @@ function GameScreen({
             <div
               className="hq-space"
               key={instance?.instanceId ?? `hq-${i}`}
-              style={{ gridColumn: i + 1 }}
+              style={{ gridColumn: i + 3, gridRow: 2 }}
             >
               {instance ? (
                 <CardView
