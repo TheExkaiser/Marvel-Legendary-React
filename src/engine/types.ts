@@ -85,6 +85,7 @@ export interface GameState {
   attachedCards: Record<string, CardInstance> // instanceId złoczyńcy -> przypięta karta (Skrull Queen Veranke, Skrull Shapeshifters)
   demonGoblins?: CardInstance[] // Transform Citizens Into Demons: Bystanderzy ułożeni obok schematu jako Demon Goblin
   schemeTokens?: CardInstance[] // tokeny leżące na karcie scheme'u (np. dziecko w Capture Baby Hope)
+  negaBombDeck?: CardInstance[] // Intergalactic Kree Nega-Bomb: zakryta talia Bystanderów i Twistów
   hqExplosions?: number[] // Detonate the Helicarrier: liczba Eksplozji na każdym miejscu HQ
   cityDestroyed?: (CardInstance | null)[] // Galactus: zniszczone pola miasta; wpis = karta Master Strike leżąca na polu (patrz cityLayout.ts)
   hqDestroyed?: boolean[] // Detonate the Helicarrier: zniszczone miejsca HQ (nie przyjmują Bohaterów)
@@ -218,6 +219,8 @@ export interface SchemeDef {
   afterVillainDefeated?: (state: GameState, villain: CardInstance, ui: UiAdapter) => void | Promise<void>
   onVillainEscaped?: (state: GameState, villain: CardInstance, lostCaptives: CardInstance[]) => void
   checkLoss?: (state: GameState) => boolean
+  checkWin?: (state: GameState) => boolean
+  winMessage?: string
 
   villainStrengthModifier?: (state: GameState, instance: CardInstance) => number
 
@@ -235,6 +238,12 @@ export interface SchemeDef {
 
   setupRules?: Partial<SetupRules>
   mastermindTwistLabel?: string
+  schemeTwistLabel?: string
+  mastermindActions?: {
+    label: string
+    canActivate: (state: GameState) => boolean
+    activate: (state: GameState) => void
+  }[]
 }
 
 /** Tryb rozgrywki (np. Dark City - Advanced Solo). Nadpisuje domyślne reguły setupu

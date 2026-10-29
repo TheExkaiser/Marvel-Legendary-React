@@ -48,7 +48,7 @@ function Stat({ icon, label, value, delta, deltaEventId, onClick }: StatProps) {
   )
 }
 
-type SchemeInfo = { name: string; img?: string; text?: string; description?: string }
+type SchemeInfo = { name: string; img?: string; text?: string; description?: string; shardsInSupply?: number }
 
 type StatsPanelProps = {
   turn: number
@@ -130,6 +130,7 @@ export function StatsPanel({
         <p>
           Twisty: {twistsRevealed} / {twistCount}
         </p>
+        {scheme.shardsInSupply !== undefined && <p>Shards in Supply: {scheme.shardsInSupply}</p>}
         {Object.entries(counters).map(([name, value]) => (
           <p key={name}>
             {name}: {value}

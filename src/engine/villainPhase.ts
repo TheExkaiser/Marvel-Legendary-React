@@ -188,7 +188,9 @@ export function checkEndConditions(state: GameState): void {
   const scheme = getScheme(state)
   const escapedTooMany = scheme.escapeLimit !== undefined && state.escaped.length >= scheme.escapeLimit
 
-  if (escapedTooMany || scheme.checkLoss?.(state) || getMastermindRule(state)?.checkLoss?.(state)) {
+  if (scheme.checkWin?.(state)) {
+    state.status = 'won'
+  } else if (escapedTooMany || scheme.checkLoss?.(state) || getMastermindRule(state)?.checkLoss?.(state)) {
     state.status = 'lost'
   }
 }

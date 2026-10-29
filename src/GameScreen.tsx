@@ -140,6 +140,12 @@ function GameScreen({
   const [resourceDeltaEventId, setResourceDeltaEventId] = useState(0)
   const victoryPoints = sumVictoryPoints(state, victoryPile(state))
   const playerShards = state.shards ?? 0
+  const mastermindActions = (scheme.mastermindActions ?? [])
+    .filter((action) => action.canActivate(state))
+    .map((action) => ({
+      label: action.label,
+      onClick: () => act((s) => action.activate(s)),
+    }))
 
   useEffect(() => {
     const previous = previousResourcesRef.current
@@ -223,7 +229,11 @@ function GameScreen({
         <div className="modal-overlay">
           <div className="modal-content game-over-content">
             <h2>{state.status === 'won' ? '🎉 You Win!' : '💀 You Lose'}</h2>
-            <p>{state.status === 'won' ? 'Mastermind defeated.' : 'Evil wins.'}</p>
+            <p>
+              {state.status === 'won'
+                ? (scheme.checkWin?.(state) ? (scheme.winMessage ?? 'You win.') : 'Mastermind defeated.')
+                : 'Evil wins.'}
+            </p>
             <div className="game-over-buttons">
               <button onClick={onRestart}>Restart</button>
               <button onClick={onExit}>Main Menu</button>
@@ -250,7 +260,13 @@ function GameScreen({
         onVictoryClick={() => setViewingPile('victory')}
         shards={gameUsesShards(state) ? playerShards : undefined}
         onShardsClick={() => act(spendShardsWithPrompt)}
-        scheme={scheme}
+        scheme={{
+          ...scheme,
+          shardsInSupply:
+            scheme.shardSupplyLimit === undefined
+              ? undefined
+              : (state.shardSupply ?? scheme.shardSupplyLimit),
+        }}
         twistsRevealed={state.twistsRevealed}
         twistCount={scheme.twistCount}
         counters={state.counters}
@@ -274,6 +290,7 @@ function GameScreen({
             strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
             capturedCards={getCapturedCards(state, state.mastermind.instanceId)}
             shards={shardsOn(state, state.mastermind)}
+            artifactButtons={mastermindActions}
           />
           {state.mastermind.cardId === 'mastermind-thanos' && (
             <div className="markers">Bound Souls: {mastermindCaptives}</div>
@@ -326,6 +343,11 @@ function GameScreen({
               ))}
             </div>
             <DeckPile count={state.villainDeck.length} />
+            {(state.schemeTwists?.length ?? 0) > 0 && scheme.schemeTwistLabel && (
+              <div className="markers">
+                {scheme.schemeTwistLabel}: {state.schemeTwists?.length ?? 0}
+              </div>
+            )}
             {(state.demonGoblins?.length ?? 0) > 0 && (
               <DeckPile
                 count={state.demonGoblins!.length}
