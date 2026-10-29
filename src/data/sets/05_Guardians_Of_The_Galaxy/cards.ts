@@ -1,4 +1,4 @@
-import type { DeckEntry } from '../../../engine/types'
+import type { DeckEntry, MastermindData } from '../../../engine/types'
 
 const img = (slug: string) => `/cards/guardians-of-the-galaxy/${slug}.webp`
 const TEAM = ['guardians-of-the-galaxy']
@@ -142,3 +142,94 @@ export const INFINITY_GEMS_CARDS: DeckEntry[] = [
     ['artifact', 'villain-artifact', 'shard'],
   ),
 ]
+
+export const SUPREME_INTELLIGENCE_OF_THE_KREE: MastermindData = {
+  card: {
+    id: 'mastermind-supreme-intelligence-of-the-kree',
+    name: 'Supreme Intelligence of the Kree',
+    img: img('mastermind-supreme-intelligence-of-the-kree'),
+    strength: 9,
+    vp: 6,
+    text: 'Always Leads: Kree Starforce.',
+  },
+  tactics: [
+    {
+      id: 'supreme-intelligence-combined-knowledge-of-all-kree',
+      name: 'Combined Knowledge of All Kree',
+      img: img('supreme-intelligence-combined-knowledge-of-all-kree'),
+      vp: 6,
+      text: 'Fight: The Supreme Intelligence gains a Shard for each Kree Villain in the city and/or the Escape Pile.',
+    },
+    {
+      id: 'supreme-intelligence-cosmic-omniscience',
+      name: 'Cosmic Omniscience',
+      img: img('supreme-intelligence-cosmic-omniscience'),
+      vp: 6,
+      text: 'Fight: The Supreme Intelligence gains a Shard for each Master Strike in the KO pile.',
+    },
+    {
+      id: 'supreme-intelligence-countermeasure-protocols',
+      name: 'Countermeasure Protocols',
+      img: img('supreme-intelligence-countermeasure-protocols'),
+      vp: 6,
+      text: 'Fight: The Supreme Intelligence gains a Shard for each Mastermind Tactic in any player’s Victory Pile, including this one.',
+    },
+    {
+      id: 'supreme-intelligence-guide-kree-evolution',
+      name: 'Guide Kree Evolution',
+      img: img('supreme-intelligence-guide-kree-evolution'),
+      vp: 6,
+      text: 'Fight: The Supreme Intelligence and Kree Villains in the city each gain a Shard.',
+    },
+  ],
+  masterStrikeId: 'mastermind-supreme-intelligence-of-the-kree-master-strike',
+  masterStrikeText:
+    'The Supreme Intelligence gains a Shard. Then each player reveals their hand and discards each card with cost equal to, or one higher than, the number of Shards on the Supreme Intelligence.',
+  alwaysLeads: { villainGroupId: 'gotg_kree_starforce' },
+}
+
+export const THANOS: MastermindData = {
+  card: {
+    id: 'mastermind-thanos',
+    name: 'Thanos',
+    img: img('mastermind-thanos'),
+    strength: 24,
+    vp: 7,
+    text: 'Always Leads: Infinity Gems. Thanos gets -2 Attack for each Infinity Gem Artifact card controlled by any player.',
+  },
+  tactics: [
+    {
+      id: 'thanos-centuries-of-envy',
+      name: 'Centuries of Envy',
+      img: img('thanos-centuries-of-envy'),
+      vp: 6,
+      text: 'Fight: Each other player discards an Infinity Gem Artifact card they control.',
+    },
+    {
+      id: 'thanos-god-of-death',
+      name: 'God of Death',
+      img: img('thanos-god-of-death'),
+      vp: 6,
+      text: "Fight: Each other player reveals their hand and gains a Wound for each card with the same name as any card in Thanos' Bound Souls pile.",
+    },
+    {
+      id: 'thanos-keeper-of-souls',
+      name: 'Keeper of Souls',
+      img: img('thanos-keeper-of-souls'),
+      vp: 6,
+      text: "Fight: Gain a Hero from Thanos' Bound Souls pile. Then each other player puts a non-grey Hero from their discard pile into Thanos' Bound Souls pile.",
+    },
+    {
+      id: 'thanos-the-mad-titan',
+      name: 'The Mad Titan',
+      img: img('thanos-the-mad-titan'),
+      vp: 6,
+      text: "Fight: Each other player reveals their hand and discards all cards with the same name as any card in Thanos' Bound Souls pile.",
+    },
+  ],
+  masterStrikeId: 'mastermind-thanos-master-strike',
+  masterStrikeText:
+    'Each player reveals their hand and puts one of their non-grey Heroes next to Thanos in a Bound Souls pile.',
+  alwaysLeads: { villainGroupId: 'gotg_infinity_gems' },
+  alwaysLeadsForced: true,
+}

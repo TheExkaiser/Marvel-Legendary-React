@@ -79,7 +79,13 @@ function capCounts(entries: DeckEntry[], maxCount: number): DeckEntry[] {
 export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: GameModeDef[]): GameSetup {
   const gameMode = pick(gameModes, (m) => m.id, choices.gameModeId, 'game mode')
   const scheme = pick(sets.flatMap((s) => s.schemes), (s) => s.id, choices.schemeId, 'scheme')
-  const rules = resolveRules(gameMode, scheme)
+  const mastermind = pick(
+    sets.flatMap((s) => s.masterminds),
+    (m) => m.card.id,
+    choices.mastermindId,
+    'mastermind',
+  )
+  const rules = resolveRules(gameMode, scheme, mastermind)
 
   const problems = getSetupProblems(choices, rules)
   if (choices.uniqueHeroRealNames) {
@@ -91,13 +97,6 @@ export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: Ga
     }
   }
   if (problems.length > 0) throw new Error(`Invalid setup:\n${problems.join('\n')}`)
-
-  const mastermind = pick(
-    sets.flatMap((s) => s.masterminds),
-    (m) => m.card.id,
-    choices.mastermindId,
-    'mastermind',
-  )
 
   const heroPool = sets.flatMap((s) => s.heroes)
   const villainPool = sets.flatMap((s) => s.villainGroups)

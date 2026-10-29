@@ -9,6 +9,9 @@ import {
 import { GUARDIANS_OF_THE_GALAXY_SCHEMES } from './schemes'
 import './heroAbilities'
 import './villainAbilities'
+import './mastermindRules'
+import './masterStrikeAbilities'
+import './tacticAbilities'
 
 export const GUARDIANS_OF_THE_GALAXY_SET: SetData = {
   id: 'guardians_of_the_galaxy',

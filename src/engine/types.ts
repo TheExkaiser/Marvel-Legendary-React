@@ -42,6 +42,7 @@ export interface MastermindData {
   masterStrikeId: string
   masterStrikeText?: string
   alwaysLeads?: { villainGroupId?: string; henchmenGroupId?: string } // id z CardGroup, np. 'darkcity_marauders'
+  alwaysLeadsForced?: boolean // Ten Mastermind wymusza Always Leads nawet gdy globalnie wyłączone
   extraCards?: CardData[] // karty używane przez zdolności, ale nie należące do początkowej talii Tactics
 }
 

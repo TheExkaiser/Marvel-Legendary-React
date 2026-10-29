@@ -400,7 +400,7 @@ export async function fightMastermind(state: GameState, ui: UiAdapter): Promise<
     await spendAttack(state, strength, ui, mmId)
     claimShardFrom(state, state.mastermind) // najpierw Shard dla gracza, dopiero potem Fight taktyki (może dać Mastermindowi nowe)
     await claimTactic(state, ui)
-    await resolveMastermindCaptives(state, ui)
+    if (!rule?.captivesSurviveFight) await resolveMastermindCaptives(state, ui)
   } finally {
     state.cosmicThreatReduction = 0
   }

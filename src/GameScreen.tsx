@@ -275,6 +275,9 @@ function GameScreen({
             capturedCards={getCapturedCards(state, state.mastermind.instanceId)}
             shards={shardsOn(state, state.mastermind)}
           />
+          {state.mastermind.cardId === 'mastermind-thanos' && (
+            <div className="markers">Bound Souls: {mastermindCaptives}</div>
+          )}
           {(state.mastermindSchemeTwists?.length ?? 0) > 0 && (
             <div className="markers">{scheme.mastermindTwistLabel ?? 'Mastermind Twists'}: {state.mastermindSchemeTwists!.length}</div>
           )}
