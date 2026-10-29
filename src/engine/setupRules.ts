@@ -16,8 +16,7 @@ export const DEFAULT_SETUP_RULES: SetupRules = {
   requiredBystanderGroups: ['coreset_bystanders'],
 }
 
-// Always Leads jest obsługiwane, ale wyłączone: jedyny tryb (Dark City - Advanced Solo) go nie używa.
-// Przy kolejnym trybie można to zamienić na flagę w GameModeDef.
+// Always Leads jest domyślnie wyłączone; pojedynczy Mastermind może wymusić swoją grupę.
 const ALWAYS_LEADS_ENABLED = false
 
 /** Domyślne reguły + nadpisania z Game Mode + nadpisania z Scheme (Scheme wygrywa)
@@ -28,14 +27,20 @@ export function resolveRules(
   mastermind?: MastermindData,
 ): SetupRules {
   const rules = { ...DEFAULT_SETUP_RULES, ...gameMode.setupRules, ...scheme.setupRules }
-  const led = ALWAYS_LEADS_ENABLED ? mastermind?.alwaysLeads?.villainGroupId : undefined
+  const led =
+    ALWAYS_LEADS_ENABLED || mastermind?.alwaysLeadsForced
+      ? mastermind?.alwaysLeads?.villainGroupId
+      : undefined
   if (led) rules.requiredVillainGroups = [...new Set([...rules.requiredVillainGroups, led])]
   return rules
 }
 
 /** Po wyborze mastermina z Always Leads dokleja jego grupę do wybranych (zastępując ostatnią, jeśli brak miejsca). */
 export function withLedGroup(ids: string[], mastermind: MastermindData | undefined, max: number): string[] {
-  const led = ALWAYS_LEADS_ENABLED ? mastermind?.alwaysLeads?.villainGroupId : undefined
+  const led =
+    ALWAYS_LEADS_ENABLED || mastermind?.alwaysLeadsForced
+      ? mastermind?.alwaysLeads?.villainGroupId
+      : undefined
   if (!led || ids.includes(led)) return ids
   return [...ids.slice(0, Math.max(0, max - 1)), led]
 }

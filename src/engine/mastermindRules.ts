@@ -10,6 +10,7 @@ export interface MastermindRule {
   // Bez tego pola liczy się bieżąca siła. Galactus: siły po Cosmic Threat dla każdej wybieralnej klasy.
   fightStrengthOptions?: (state: GameState) => number[]
   woundsToDeckTop?: boolean // Mephisto: zdobyte Rany trafiają na wierzch talii zamiast do odrzuconych
+  captivesSurviveFight?: boolean // Thanos: Bound Souls pozostają przy Mastermindzie po walce
 }
 
 const rules = new Map<string, MastermindRule>()
@@ -21,4 +22,3 @@ export function registerMastermindRule(mastermindCardId: string, rule: Mastermin
 export function getMastermindRule(state: GameState): MastermindRule | undefined {
   return rules.get(state.mastermind.cardId)
 }
-
