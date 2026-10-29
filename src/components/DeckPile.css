@@ -2,6 +2,7 @@
 
 .deck-pile {
   position: relative;
+  transform-origin: left bottom;
   width: 120px;
   aspect-ratio: 5 / 7;
   flex-shrink: 0;
