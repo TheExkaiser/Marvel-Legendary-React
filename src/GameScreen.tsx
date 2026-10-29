@@ -306,6 +306,10 @@ function GameScreen({
                 />
               </div>
             ))}
+            <div className="additional-mastermind additional-mastermind-empty" aria-label="Empty additional Mastermind slot">
+              <div className="markers">Additional Mastermind</div>
+              <div className="slot-empty" />
+            </div>
           </div>
           <div className="zone-title">Tactics: {state.tactics.length}</div>
           <CardView
