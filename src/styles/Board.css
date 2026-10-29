@@ -175,7 +175,7 @@
 }
 
 .sidekick-slot .deck-pile {
-  width: min(76px, 100%);
+  width: 100%;
   margin-left: 0;
 }
 
@@ -278,11 +278,6 @@
   margin-left: 4px;
 }
 
-.row-with-deck .deck-group > .deck-pile:nth-child(2) {
-  position: static;
-  margin-left: 4px;
-}
-
 @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
   .board-zone-scroll {
     width: calc(100vw - 16px);
@@ -345,7 +340,7 @@
   }
 
   .sidekick-slot .deck-pile {
-    width: 46px;
+    width: 60px;
   }
 
   .officer-slot .card {
@@ -404,7 +399,4 @@
     width: 78px;
   }
 
-  .row-with-deck .deck-group > .deck-pile:nth-child(2) {
-    margin-left: 0;
-  }
 }
