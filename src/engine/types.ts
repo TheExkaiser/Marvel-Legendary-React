@@ -136,7 +136,7 @@ export interface GameState {
   artifactUsesThisTurn?: Record<string, number> // `${instanceId}:${abilityId}` -> ile razy użyto zdolności artefaktu w tej turze (reset w endTurn)
   shards?: number // Shardy gracza, każdy = +1 Attack po wydaniu (brak = 0)
   shardsOn?: Record<string, number> // instanceId złoczyńcy lub mastermina -> liczba Shardów na nim (każdy = +1 Attack jego siły)
-  shardSupply?: number // Shardy w zapasie (brak = pełny zapas, SHARD_SUPPLY_SIZE w shards.ts)
+  shardSupply?: number // Pozostałe Shardy, jeśli Scheme ustala limit
   shardAttackSuppressedThisTurn?: string[] // instanceId złoczyńców/mastermina, którzy w tej turze nie dostają Attack od Shardów (Galactic Assassin)
   shardsAsRecruitThisTurn?: boolean // Groot and Branches: w tej turze Shardy można wydawać także na Recruit (reset w endTurn)
   shardsOnNextRecruitThisTurn?: boolean // I Am Groot: następny zrekrutowany Bohater daje Shardy równe jego kosztowi (reset w endTurn)
@@ -187,6 +187,7 @@ export interface SchemeDef {
   name: string
   img: string
   twistCount: number
+  shardSupplyLimit?: number
   escapeLimit?: number
   text?: string
 
