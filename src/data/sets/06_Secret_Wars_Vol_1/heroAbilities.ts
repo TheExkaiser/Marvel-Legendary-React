@@ -1,14 +1,16 @@
 import { registerCardAbility } from '../../../engine/cardAbilities'
-import { chooseOneCard } from '../../../engine/abilityHelpers'
+import { chooseOneCard, revealOneOr } from '../../../engine/abilityHelpers'
 import { getCardData } from '../../../engine/cardData'
-import { drawCards, drawRevealed, putCardsOnTop } from '../../../engine/deckOps'
-import { revealCards, koCard, discardCard, revealTopCards, isVillainCard, countPlayedThisTurn } from '../../../engine/keywords'
+import { drawCards, drawRevealed, putCardsOnTop, revealTopAndDrawIf } from '../../../engine/deckOps'
+import { revealCards, koCard, discardCard, revealTopCards, isVillainCard, countPlayedThisTurn, matchesRampageCharacter, mostRecentHeroPlayed, getEffectiveStrength, countBystandersInPile, isShieldHero, koFromVictoryPile } from '../../../engine/keywords'
 import { addAttack, addRecruit } from '../../../engine/resources'
 import { gainSidekicks } from '../../../engine/sidekicks'
-import { defeatVillainFromDeck, registerFightEffectCancellation, registerLocationDefeatHook } from '../../../engine/combat'
+import { claimTacticFree, defeatVillainFree, defeatVillainFromDeck, registerFightEffectCancellation, registerLocationDefeatHook, registerVillainDefeatHook } from '../../../engine/combat'
 import { refillHq } from '../../../engine/recruit'
 import { returnShardsOn } from '../../../engine/shards'
 import { teleportCard } from '../../../engine/turn'
+import { enterCity, resolveVillainDeckCard } from '../../../engine/villainPhase'
+import { gainWound, rescueCard } from '../../../engine/wounds'
 import type { CardInstance, GameState } from '../../../engine/types'
 
 function hasNoRulesText(state: GameState, instance: CardInstance): boolean {
@@ -281,4 +283,328 @@ registerCardAbility('secret-wars-magik-wield-the-soulsword', async (state, { ui 
   })
   const chosen = await chooseOneCard(ui, targets, 'Wield the Soulsword: choose a Villain or Mastermind in your Victory Pile.')
   if (chosen) addAttack(state, state.cards[chosen.cardId].vp ?? 0)
+})
+
+registerCardAbility('secret-wars-maximus-mental-domination', async (state, { ui }) => {
+  if (countPlayedThisTurn(state, { type: 'covert' }) === 0) return
+  const targets = state.city.filter(
+    (card): card is CardInstance => !!card && state.cards[card.cardId].henchman === true,
+  )
+  const chosen = await chooseOneCard(ui, targets, 'Mental Domination: defeat a Henchman Villain for free.')
+  if (chosen) await defeatVillainFree(state, chosen.instanceId, ui)
+})
+
+registerCardAbility('secret-wars-maximus-enslave-the-will', async (state, { self }) => {
+  if (countPlayedThisTurn(state, { type: 'tech' }) > 0) {
+    state.activeVillainDefeatHooks = [...(state.activeVillainDefeatHooks ?? []), self.instanceId]
+  }
+})
+
+registerVillainDefeatHook('secret-wars-maximus-enslave-the-will', async (state) => {
+  gainSidekicks(state, 1)
+})
+
+registerCardAbility('secret-wars-maximus-pieces-on-a-chessboard', async (state, { ui }) => {
+  const henchmen = state.defeated.filter((card) => state.cards[card.cardId].henchman === true)
+  const chosen = await ui.choose(henchmen, {
+    prompt: 'Pieces on a Chessboard: have a Henchman Villain from your Victory Pile enter the city?',
+    optional: true,
+  })
+  if (!chosen) return
+  const index = state.defeated.findIndex((card) => card.instanceId === chosen.instanceId)
+  if (index < 0) return
+  const [henchman] = state.defeated.splice(index, 1)
+  await enterCity(state, henchman, ui)
+  drawCards(state, 1)
+})
+
+registerCardAbility('secret-wars-maximus-inhuman-mastery', async (state, { ui }) => {
+  const techHeroes = revealCards(state, { type: 'tech' }).filter(
+    (card) => !!state.cards[card.cardId].hero,
+  )
+  await revealOneOr(
+    ui,
+    techHeroes,
+    'Inhuman Mastery: reveal a Tech Hero.',
+    'Inhuman Mastery: revealed a Tech Hero',
+    async () => {
+      const henchmen = state.defeated.filter((card) => state.cards[card.cardId].henchman === true)
+      const chosen = await chooseOneCard(
+        ui,
+        henchmen,
+        'Inhuman Mastery: choose a Henchman Villain from your Victory Pile.',
+      )
+      if (!chosen) return
+      const index = state.defeated.findIndex((card) => card.instanceId === chosen.instanceId)
+      if (index < 0) return
+      const [henchman] = state.defeated.splice(index, 1)
+      await resolveVillainDeckCard(state, henchman, ui)
+      if (state.city.some((card) => card?.instanceId === henchman.instanceId)) {
+        await defeatVillainFree(state, henchman.instanceId, ui)
+      }
+    },
+  )
+  if (countPlayedThisTurn(state, { team: 'cabal' }) > 0) {
+    addAttack(state, state.henchmenDefeatedThisTurn ?? 0)
+  }
+})
+
+registerCardAbility('secret-wars-namor-lead-the-armies-of-atlantis', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'instinct' }) > 0) gainSidekicks(state, 1)
+})
+
+registerCardAbility('secret-wars-namor-ruler-of-the-seas', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'strength' }) === 0) return
+  state.locationAttackModifiers.Bridge = (state.locationAttackModifiers.Bridge ?? 0) - 2
+  state.mastermindAttackModifierThisTurn -= 2
+})
+
+registerCardAbility('secret-wars-namor-feed-the-sharks', async (state, { ui }) => {
+  const options = [...state.hand, ...state.discard]
+  if (options.length === 0) return
+  const chosen = await ui.choose(options, {
+    prompt: 'Feed the Sharks: KO a card from your hand or discard pile to draw a card?',
+    optional: true,
+  })
+  if (!chosen) return
+  koCard(state, chosen.instanceId)
+  drawCards(state, 1)
+})
+
+registerCardAbility('secret-wars-namor-imperius-rex', async (state, { ui }) => {
+  const canFightMastermind =
+    countPlayedThisTurn(state, { type: 'instinct' }) >= 2 &&
+    countPlayedThisTurn(state, { type: 'strength' }) >= 2
+  const villains = state.city.filter((card): card is CardInstance => !!card && isVillainCard(state.cards[card.cardId]))
+  if (canFightMastermind && villains.length > 0) {
+    const choice = await ui.chooseOption(
+      [{ id: 'villain', label: 'Defeat a Villain for free' }, { id: 'mastermind', label: 'Defeat the Mastermind once for free' }],
+      'Imperius Rex: choose which enemy to defeat for free.',
+    )
+    if (choice === 'mastermind') {
+      await claimTacticFree(state, ui)
+      return
+    }
+    if (choice !== 'villain') return
+  } else if (canFightMastermind && villains.length === 0) {
+    await claimTacticFree(state, ui)
+    return
+  }
+  const chosen = await chooseOneCard(ui, villains, 'Imperius Rex: defeat a Villain for free.')
+  if (chosen) await defeatVillainFree(state, chosen.instanceId, ui)
+})
+
+registerCardAbility('secret-wars-old-man-logan-last-survivor', async (state, { ui }) => {
+  if (countPlayedThisTurn(state, { type: 'instinct' }) === 0) return
+  const options = [...state.hand, ...state.discard]
+  if (options.length === 0) return
+  const chosen = await ui.choose(options, {
+    prompt: 'Last Survivor: KO a card from your hand or discard pile?',
+    optional: true,
+  })
+  if (!chosen) return
+  const isWound = state.cards[chosen.cardId].kind === 'wound'
+  koCard(state, chosen.instanceId)
+  if (isWound) drawCards(state, 1)
+})
+
+registerCardAbility('secret-wars-old-man-logan-loner', async (state) => {
+  if ((state.heroesRecruitedThisTurn ?? 0) === 0) addAttack(state, 2)
+})
+
+registerCardAbility('secret-wars-old-man-logan-rage-out', async (state, { self, ui }) => {
+  if (countPlayedThisTurn(state, { type: 'instinct' }) === 0) return
+  const wolverine = [...revealCards(state), ...state.defeated].find((card) =>
+    card.instanceId !== self.instanceId && matchesRampageCharacter(state, card, 'Wolverine'),
+  )
+  await revealOneOr(
+    ui,
+    wolverine ? [wolverine] : [],
+    'Cross-Dimensional Wolverine Rampage: reveal a Wolverine card.',
+    'Cross-Dimensional Wolverine Rampage: revealed a Wolverine card',
+    async () => {
+      const wound = state.wounds[state.wounds.length - 1]
+      await gainWound(state, ui)
+      const gainedWound = wound && [...state.deck, ...state.hand, ...state.played, ...state.discard]
+        .some((card) => card.instanceId === wound.instanceId)
+      if (gainedWound) addAttack(state, 1)
+    },
+  )
+})
+
+registerCardAbility('secret-wars-old-man-logan-no-more-heroes', async (state, { ui }) => {
+  await ui.showCards(state.hand, 'No More Heroes: revealed your hand')
+  const isShieldOrHydra = (card: CardInstance) => {
+    const data = state.cards[card.cardId]
+    return (
+      isShieldHero(data) ||
+      (data.team ?? []).some((team) => team.toLowerCase() === 'hydra') ||
+      /\bHYDRA\b/i.test(data.name)
+    )
+  }
+  if (state.cardsPlayedThisTurn.some(isShieldOrHydra) || state.hand.some(isShieldOrHydra)) return
+  addAttack(state, 5)
+})
+
+registerCardAbility('secret-wars-proxima-midnight-master-combatant', async (state) => {
+  const latestHero = mostRecentHeroPlayed(state)
+  if (!latestHero) return
+  const data = state.cards[latestHero.cardId]
+  if (data.recruit !== undefined) addRecruit(state, 2)
+  if (data.attack !== undefined) addAttack(state, 2)
+})
+
+registerCardAbility('secret-wars-proxima-midnight-general-of-the-black-order', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'instinct' }) > 0) addRecruit(state, 3)
+})
+
+registerCardAbility('secret-wars-proxima-midnight-supernova-spear', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'covert' }) > 0) {
+    addRecruit(state, 4)
+    addAttack(state, 4)
+  }
+})
+
+registerCardAbility('secret-wars-superior-iron-man-armor-upgrades', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'tech' }) > 0) addAttack(state, 2)
+})
+
+registerCardAbility('secret-wars-superior-iron-man-optimized-technology', async (state) => {
+  drawCards(state, 1)
+})
+
+registerCardAbility('secret-wars-superior-iron-man-superior-to-others', async (state, { ui }) => {
+  if (countPlayedThisTurn(state, { type: 'ranged' }) === 0) return
+  const cards = takeTopCards(state, 2)
+  if (cards.length === 0) return
+  await ui.showCards(cards, 'Superior to Others: look at the top two cards of your deck')
+  if (cards.length === 1) {
+    putCardsOnTop(state, cards)
+    return
+  }
+  const firstCost = state.cards[cards[0].cardId].cost ?? 0
+  const secondCost = state.cards[cards[1].cardId].cost ?? 0
+  if (firstCost > secondCost) {
+    drawRevealed(state, [cards[0]])
+    putCardsOnTop(state, [cards[1]])
+  } else if (secondCost > firstCost) {
+    drawRevealed(state, [cards[1]])
+    putCardsOnTop(state, [cards[0]])
+  } else {
+    const chosen = await ui.choose(cards, {
+      prompt: 'Superior to Others: put one card on top of your deck first.',
+      optional: false,
+    })
+    putCardsOnTop(state, chosen ? [chosen, ...cards.filter((card) => card.instanceId !== chosen.instanceId)] : cards)
+  }
+})
+
+registerCardAbility('secret-wars-superior-iron-man-humblebrag', async () => {
+  // There are no additional player Victory Piles in the current single-player game.
+})
+
+registerCardAbility('secret-wars-thanos-revel-in-destruction', async (state) => {
+  if (countPlayedThisTurn(state, { team: 'cabal' }) === 0) return
+  const bystander = state.bystanders.pop()
+  if (!bystander) return
+  state.ko.push(bystander)
+  addRecruit(state, Math.floor(countBystandersInPile(state, state.ko) / 3))
+})
+
+registerCardAbility('secret-wars-thanos-transdimensional-overlord', async (state, { ui }) => {
+  const bystanders = state.defeated.filter((card) => state.cards[card.cardId].kind === 'bystander')
+  const chosen = await ui.choose(bystanders, {
+    prompt: 'Transdimensional Overlord: KO a Bystander from your Victory Pile for +2 Attack?',
+    optional: true,
+  })
+  if (!chosen) return
+  koFromVictoryPile(state, chosen.instanceId)
+  addAttack(state, 2)
+})
+
+registerCardAbility('secret-wars-thanos-galactic-domination', async (state, { ui }) => {
+  if (countPlayedThisTurn(state, { type: 'ranged' }) === 0) return
+  const rangedHeroes = revealCards(state, { type: 'ranged' }).filter(
+    (card) => !!state.cards[card.cardId].hero,
+  )
+  await revealOneOr(
+    ui,
+    rangedHeroes,
+    'Galactic Domination: reveal a Ranged Hero.',
+    'Galactic Domination: revealed a Ranged Hero',
+    async () => {
+      const bystanders = state.defeated.filter((card) => state.cards[card.cardId].kind === 'bystander')
+      const chosen = await chooseOneCard(
+        ui,
+        bystanders,
+        'Galactic Domination: choose a Bystander from your Victory Pile.',
+      )
+      if (!chosen) return
+      const index = state.defeated.findIndex((card) => card.instanceId === chosen.instanceId)
+      if (index < 0) return
+      const [bystander] = state.defeated.splice(index, 1)
+      await rescueCard(state, bystander, ui)
+    },
+  )
+})
+
+registerCardAbility('secret-wars-thanos-utter-annihilation', async (state, { ui }) => {
+  for (let i = 0; i < 6; i++) {
+    const bystander = state.bystanders.pop()
+    if (!bystander) break
+    state.ko.push(bystander)
+  }
+  const bystanderCount = countBystandersInPile(state, state.ko)
+  const villains = state.city.filter(
+    (card): card is CardInstance =>
+      !!card &&
+      isVillainCard(state.cards[card.cardId]) &&
+      (getEffectiveStrength(state, card) ?? 0) < bystanderCount,
+  )
+  const mastermindCanBeDefeated = (getEffectiveStrength(state, state.mastermind) ?? 0) < bystanderCount
+  const targets = [...villains, ...(mastermindCanBeDefeated ? [state.mastermind] : [])]
+  const chosen = await chooseOneCard(ui, targets, 'Utter Annihilation: defeat an eligible Villain or Mastermind for free.')
+  if (!chosen) return
+  if (chosen.instanceId === state.mastermind.instanceId) await claimTacticFree(state, ui)
+  else await defeatVillainFree(state, chosen.instanceId, ui)
+})
+
+registerCardAbility('secret-wars-ultimate-spider-man-marvel-team-up', async (state, { ui }) => {
+  gainSidekicks(state, 1)
+  await revealTopAndDrawIf(
+    state,
+    ui,
+    (card) => (state.cards[card.cardId].cost ?? 0) <= 2,
+    'Marvel Team-Up: revealed the top card of your deck',
+  )
+})
+
+registerCardAbility('secret-wars-ultimate-spider-man-leaping-spider', async (state, { ui }) => {
+  await revealTopAndDrawIf(
+    state,
+    ui,
+    (card) => (state.cards[card.cardId].cost ?? 0) <= 2,
+    'Leaping Spider: revealed the top card of your deck',
+  )
+  if (countPlayedThisTurn(state, { type: 'strength' }) > 0) addAttack(state, 2)
+})
+
+registerCardAbility('secret-wars-ultimate-spider-man-web-slinger', async (state, { ui }) => {
+  state.locationAttackModifiers.Rooftops = (state.locationAttackModifiers.Rooftops ?? 0) - 2
+  state.locationAttackModifiers.Bridge = (state.locationAttackModifiers.Bridge ?? 0) - 2
+  state.mastermindAttackModifierThisTurn -= 2
+  await revealTopAndDrawIf(
+    state,
+    ui,
+    (card) => (state.cards[card.cardId].cost ?? 0) <= 2,
+    'Web-Slinger: revealed the top card of your deck',
+  )
+})
+
+registerCardAbility('secret-wars-ultimate-spider-man-hero-from-another-dimension', async (state) => {
+  const count = state.cardsPlayedThisTurn.filter((card) => {
+    const cost = state.cards[card.cardId].cost ?? 0
+    return cost === 1 || cost === 2
+  }).length
+  addAttack(state, count * 2)
 })

@@ -8,6 +8,7 @@ export const TEAM_NAMES: Record<string, string> = {
   'fantastic-four': 'Fantastic Four',
   'guardians-of-the-galaxy': 'Guardians of the Galaxy',
   illuminati: 'Illuminati',
+  cabal: 'Cabal',
 }
 
 // Brak wpisu = pokazujemy samo id, więc nowy team nigdy nie psuje wyświetlania

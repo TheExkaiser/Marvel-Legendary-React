@@ -68,10 +68,9 @@ registerVillainAbilities('villain-demogoblin', {
 
 registerVillainAbilities('villain-shriek', {
   onFeast: async (state, ui, _self, feasted) => {
-    // The current game mode has one player. Keep the condition explicit so a
-    // future multiplayer mode can add the "each other player" effect here.
-    if (state.cards[feasted.cardId].hero !== undefined && (state.cards[feasted.cardId].cost ?? 0) === 0) return
-    void ui
+    if (state.cards[feasted.cardId].hero !== undefined && (state.cards[feasted.cardId].cost ?? 0) === 0) {
+      await gainWound(state, ui)
+    }
   },
   onEscape: async (state, ui) => {
     await gainWound(state, ui)

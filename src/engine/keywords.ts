@@ -207,6 +207,27 @@ export function hasPlayedCard(state: GameState, filter: CardFilter): boolean {
   return playedCards(state, filter).length > 0
 }
 
+export function mostRecentHeroPlayed(state: GameState): CardInstance | undefined {
+  return [...state.cardsPlayedThisTurn].reverse().find((card) => !!state.cards[card.cardId].hero)
+}
+
+export function matchesRampageCharacter(
+  state: GameState,
+  instance: CardInstance,
+  character: string,
+): boolean {
+  const data = state.cards[instance.cardId]
+  const names = [data.name, data.hero ?? ''].map((name) => name.toLowerCase())
+  const characterName = character.toLowerCase()
+  const aliases =
+    characterName === 'hulk'
+      ? ['hulk', 'maestro', 'nul, breaker of worlds']
+      : characterName === 'wolverine'
+        ? ['wolverine', 'weapon x', 'old man logan']
+        : [characterName]
+  return names.some((name) => aliases.some((alias) => name.includes(alias)))
+}
+
 /** Cosmic Threat (jedna klasa, np. Heraldowie): -3 Attack za każdą kartę tej klasy w ręce i zagranych.
  * Karty z kilkoma klasami (Galactus) wymagają wyboru gracza, więc obsługuje je jego reguła Mastermina. */
 export function cosmicThreatReduction(state: GameState, instance: { cardId: string }): number {
