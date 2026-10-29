@@ -98,15 +98,27 @@ export function canAffordVillain(state: GameState, villain: CardInstance): boole
 /** Czy gracza stać na walkę z Mastermindem. Te same warunki co w fightMastermind, ale bez wykonywania akcji (podświetlanie w UI).
  * Gdy reguła Mastermina podaje kilka możliwych sił (Galactus: Cosmic Threat), wystarczy, że stać nas na którąkolwiek. */
 export function canAffordMastermind(state: GameState): boolean {
+  return canAffordMastermindTarget(state, state.mastermind)
+}
+
+export function canAffordMastermindTarget(state: GameState, mastermind: CardInstance): boolean {
   if (state.status !== 'playing') return false
-  const mmId = state.mastermind.cardId
+  if ((state.defeatedMastermindIds ?? []).includes(mastermind.instanceId)) return false
+  const isSingleFight = (state.singleFightMasterminds ?? []).includes(mastermind.instanceId)
+  const tactics = mastermind.instanceId === state.mastermind.instanceId
+    ? state.tactics
+    : state.mastermindTactics?.[mastermind.instanceId] ?? []
+  if (!isSingleFight && tactics.length === 0) return false
+  const rule = getMastermindRule(state, mastermind)
   const strengths =
-    getMastermindRule(state)?.fightStrengthOptions?.(state) ?? [getEffectiveStrength(state, state.mastermind) ?? 0]
-  const additionalCost = getScheme(state).mastermindFightAdditionalCost?.(state) ?? 0
+    rule?.fightStrengthOptions?.(state) ?? [getEffectiveStrength(state, mastermind) ?? 0]
+  const additionalCost = mastermind.instanceId === state.mastermind.instanceId
+    ? getScheme(state).mastermindFightAdditionalCost?.(state) ?? 0
+    : 0
   const totalAttackOrRecruit = state.attack + state.recruit
   return strengths.some(
     (strength) =>
-      availableAttack(state, mmId) >= strength &&
+      availableAttack(state, mastermind.cardId) >= strength &&
       (additionalCost === 0 || totalAttackOrRecruit >= strength + additionalCost),
   )
 }
@@ -225,6 +237,33 @@ async function removeVillainFromCity(
   }
   await resolveLocationDefeatHooks(state, ui, location)
   await resolveVillainDefeatHooks(state, ui, villain)
+
+  if (
+    !burrows &&
+    state.defeated.some((card) => card.instanceId === villain.instanceId) &&
+    rescued.some((card) => state.cards[card.cardId].kind === 'bystander')
+  ) {
+    const candidates = [villain, ...rescued].filter((card) =>
+      state.defeated.some((entry) => entry.instanceId === card.instanceId),
+    )
+    const remaining = [...candidates]
+    const order: CardInstance[] = []
+    while (remaining.length > 1) {
+      const chosen = await ui.choose(remaining, {
+        prompt: 'Choose the order of this Villain and its rescued Bystanders in your Victory Pile',
+        optional: false,
+      })
+      const selected = chosen ?? remaining[0]
+      order.push(selected)
+      const index = remaining.findIndex((card) => card.instanceId === selected.instanceId)
+      remaining.splice(index, 1)
+    }
+    order.push(...remaining)
+    const ids = new Set(order.map((card) => card.instanceId))
+    const firstIndex = state.defeated.findIndex((card) => ids.has(card.instanceId))
+    state.defeated = state.defeated.filter((card) => !ids.has(card.instanceId))
+    state.defeated.splice(firstIndex, 0, ...order)
+  }
 }
 
 async function resolveVillainFightEffects(
@@ -399,8 +438,11 @@ export async function defeatVillainFree(state: GameState, instanceId: string, ui
   await offerMindControl(state, villain, ui)
 }
 
-async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
-  const tactic = state.tactics.pop()
+async function claimTactic(state: GameState, ui: UiAdapter, mastermind: CardInstance = state.mastermind): Promise<void> {
+  const tactics = mastermind.instanceId === state.mastermind.instanceId
+    ? state.tactics
+    : state.mastermindTactics?.[mastermind.instanceId] ?? []
+  const tactic = tactics.pop()
   if (!tactic) throw new Error('Mastermind jest już pokonany')
 
   await ui.showInfo(tactic, `Odkryto taktykę: ${state.cards[tactic.cardId].name}`)
@@ -413,20 +455,31 @@ async function claimTactic(state: GameState, ui: UiAdapter): Promise<void> {
     await asEnemyEffect(state, () => ability(state, { self: tactic, ui }))
   }
 
-  const returned = state.tactics.some((t) => t.instanceId === tactic.instanceId)
+  const returned = tactics.some((t) => t.instanceId === tactic.instanceId)
   if (!returned) state.defeated.push(tactic)
 
   logEvent(state, `Tactic claimed: ${state.cards[tactic.cardId].name}`)
 
   addRecruit(state, state.defeatRecruitBonus ?? 0)
   for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) await rescueBystander(state, ui)
-  if (state.tactics.length === 0) {
+  if (tactics.length === 0) {
+    state.defeatedMastermindIds = [...(state.defeatedMastermindIds ?? []), mastermind.instanceId]
+  }
+  updateVictoryStatus(state)
+}
+
+function updateVictoryStatus(state: GameState): void {
+  const masterminds = state.masterminds ?? [state.mastermind]
+  if (masterminds.every((mastermind) => (state.defeatedMastermindIds ?? []).includes(mastermind.instanceId))) {
     state.status = 'won'
   }
 }
 
-async function resolveMastermindCaptives(state: GameState, ui: UiAdapter): Promise<void> {
-  const mastermind = state.mastermind
+async function resolveMastermindCaptives(
+  state: GameState,
+  ui: UiAdapter,
+  mastermind: CardInstance = state.mastermind,
+): Promise<void> {
   const captives = state.captives[mastermind.instanceId] ?? []
   const scheme = getScheme(state)
   const rescued = scheme.onCaptivesRescued?.(state, mastermind, captives) ?? captives
@@ -435,18 +488,29 @@ async function resolveMastermindCaptives(state: GameState, ui: UiAdapter): Promi
   for (const card of rescued) await rescueCard(state, card, ui)
 }
 
-export async function fightMastermind(state: GameState, ui: UiAdapter): Promise<void> {
+export async function fightMastermind(
+  state: GameState,
+  ui: UiAdapter,
+  mastermindInstanceId: string = state.mastermind.instanceId,
+): Promise<void> {
   assertPlaying(state)
+  const mastermind = (state.masterminds ?? [state.mastermind])
+    .find((candidate) => candidate.instanceId === mastermindInstanceId)
+  if (!mastermind) throw new Error('Nie znaleziono Masterminda')
+  const singleFight = (state.singleFightMasterminds ?? []).includes(mastermind.instanceId)
+  if (!canAffordMastermindTarget(state, mastermind)) throw new Error('Nie możesz teraz walczyć z tym Mastermindem')
 
   // Cosmic Threat (Galactus): wybór klasy i obniżenie siły na czas tej jednej walki
-  const rule = getMastermindRule(state)
+  const rule = getMastermindRule(state, mastermind)
   if (rule?.beforeFight && !(await rule.beforeFight(state, ui))) return
 
   try {
-    const strength = getEffectiveStrength(state, state.mastermind) ?? 0
-    const mmId = state.mastermind.cardId
+    const strength = getEffectiveStrength(state, mastermind) ?? 0
+    const mmId = mastermind.cardId
     const scheme = getScheme(state)
-    const additionalCost = scheme.mastermindFightAdditionalCost?.(state) ?? 0
+    const additionalCost = mastermind.instanceId === state.mastermind.instanceId
+      ? scheme.mastermindFightAdditionalCost?.(state) ?? 0
+      : 0
     const baseAttackAvailable = availableAttack(state, mmId)
     const totalAttackOrRecruit = state.attack + state.recruit
     const canPayBaseCost =
@@ -458,9 +522,18 @@ export async function fightMastermind(state: GameState, ui: UiAdapter): Promise<
 
     await scheme.beforeMastermindFight?.(state, ui, strength)
     await spendAttack(state, strength, ui, mmId)
-    claimShardFrom(state, state.mastermind) // najpierw Shard dla gracza, dopiero potem Fight taktyki (może dać Mastermindowi nowe)
-    await claimTactic(state, ui)
-    if (!rule?.captivesSurviveFight) await resolveMastermindCaptives(state, ui)
+    claimShardFrom(state, mastermind)
+    if (singleFight) {
+      state.defeatedMastermindIds = [...(state.defeatedMastermindIds ?? []), mastermind.instanceId]
+      addRecruit(state, state.defeatRecruitBonus ?? 0)
+      for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) await rescueBystander(state, ui)
+      if (!rule?.captivesSurviveFight) await resolveMastermindCaptives(state, ui, mastermind)
+      logEvent(state, `Mastermind defeated: ${state.cards[mastermind.cardId].name}`)
+      updateVictoryStatus(state)
+    } else {
+      await claimTactic(state, ui, mastermind)
+      if (!rule?.captivesSurviveFight) await resolveMastermindCaptives(state, ui, mastermind)
+    }
   } finally {
     state.cosmicThreatReduction = 0
   }

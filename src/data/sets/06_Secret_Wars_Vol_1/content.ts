@@ -14,6 +14,7 @@ import {
   SUPERIOR_IRON_MAN_CARDS,
   THANOS_CARDS,
   ULTIMATE_SPIDER_MAN_CARDS,
+  DEADLANDS_CARDS,
 } from './cards'
 
 export const SECRET_WARS_VOL_1_HEROES: CardGroup[] = [
@@ -45,7 +46,25 @@ export const SIDEKICK_CARD: DeckEntry = {
   },
 }
 
-export const SECRET_WARS_VOL_1_VILLAIN_GROUPS: CardGroup[] = []
+export const SECRET_WARS_VOL_1_VILLAIN_GROUPS: CardGroup[] = [
+  { id: 'secret-wars-the-deadlands', name: 'The Deadlands', cards: DEADLANDS_CARDS },
+]
 export const SECRET_WARS_VOL_1_HENCHMEN_GROUPS: CardGroup[] = []
-export const SECRET_WARS_VOL_1_BYSTANDER_GROUPS: CardGroup[] = []
+export const SECRET_WARS_VOL_1_BYSTANDER_GROUPS: CardGroup[] = [
+  {
+    id: 'secretwars_bystanders',
+    name: 'Secret Wars Vol. 1 Bystanders',
+    cards: [{
+      count: 3,
+      card: {
+        id: 'secret-wars-banker',
+        name: 'Banker',
+        img: '/cards/secret-wars-vol-1/secret-wars-banker.webp',
+        kind: 'bystander',
+        vp: 1,
+        text: 'When you rescue this Bystander, you get +2 Recruit usable only to recruit Heroes in the HQ space under the Bank.',
+      },
+    }],
+  },
+]
 export const SECRET_WARS_VOL_1_MASTERMINDS: MastermindData[] = []

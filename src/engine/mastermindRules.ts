@@ -19,6 +19,9 @@ export function registerMastermindRule(mastermindCardId: string, rule: Mastermin
   rules.set(mastermindCardId, rule)
 }
 
-export function getMastermindRule(state: GameState): MastermindRule | undefined {
-  return rules.get(state.mastermind.cardId)
+export function getMastermindRule(
+  state: GameState,
+  mastermind: CardInstance = state.mastermind,
+): MastermindRule | undefined {
+  return rules.get(mastermind.cardId)
 }

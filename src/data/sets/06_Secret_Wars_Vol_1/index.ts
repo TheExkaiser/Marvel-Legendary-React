@@ -8,6 +8,7 @@ import {
   SIDEKICK_CARD,
 } from './content'
 import './heroAbilities'
+import './villainAbilities'
 import { SECRET_WARS_VOL_1_SCHEMES } from './schemes'
 
 export const SECRET_WARS_VOL_1_SET: SetData = {

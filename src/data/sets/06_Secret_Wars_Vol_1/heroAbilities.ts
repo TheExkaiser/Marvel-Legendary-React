@@ -165,6 +165,13 @@ registerCardAbility('secret-wars-sidekick', async (state, { self, ui }) => {
   drawCards(state, 2)
 })
 
+registerCardAbility('secret-wars-banker', async (state) => {
+  state.hqRecruitBonuses = {
+    ...state.hqRecruitBonuses,
+    Bank: (state.hqRecruitBonuses?.Bank ?? 0) + 2,
+  }
+})
+
 function useOncePerTurnAbility(state: GameState, cardId: string): boolean {
   const used = state.oncePerTurnAbilitiesUsed ?? []
   if (used.includes(cardId)) return false

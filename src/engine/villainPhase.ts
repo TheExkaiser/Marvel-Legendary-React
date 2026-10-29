@@ -110,9 +110,30 @@ export async function resolveMasterStrike(
 
   await runMasterStrikeReactions(state, ui)
 
-  const ability = getCardAbility(state.masterStrikeId)
-  if (ability) {
-    await asEnemyEffect(state, () => ability(state, { self: card, ui }))
+  const masterminds = (state.masterminds ?? [state.mastermind])
+    .filter((mastermind) => !(state.defeatedMastermindIds ?? []).includes(mastermind.instanceId))
+  const remaining = [...masterminds]
+  while (remaining.length > 0) {
+    let mastermind = remaining[0]
+    if (remaining.length > 1) {
+      const selected = await ui.choose(remaining, {
+        prompt: 'Choose which Master Strike ability resolves next',
+        optional: false,
+      })
+      if (selected) mastermind = selected
+    }
+    remaining.splice(remaining.findIndex((candidate) => candidate.instanceId === mastermind.instanceId), 1)
+    const strikeId = state.mastermindStrikeIds?.[mastermind.instanceId] ??
+      (mastermind.instanceId === state.mastermind.instanceId ? state.masterStrikeId : undefined)
+    const ability = strikeId ? getCardAbility(strikeId) : undefined
+    if (ability) {
+      state.pendingMasterStrikeMastermindId = mastermind.instanceId
+      try {
+        await asEnemyEffect(state, () => ability(state, { self: card, ui }))
+      } finally {
+        state.pendingMasterStrikeMastermindId = undefined
+      }
+    }
   }
 
   const stacked =
@@ -145,7 +166,9 @@ export async function escapeVillain(state: GameState, villain: CardInstance, ui:
   }
 
   // Dopiero po efekcie Escape: Korath sprawdza, czy uciekinier "had any Shards"
-  passShardsToMastermind(state, villain) // Mastermind dostaje jeden Shard uciekiniera, reszta wraca do zapasu
+  if (!(state.masterminds ?? [state.mastermind]).some((mastermind) => mastermind.instanceId === villain.instanceId)) {
+    passShardsToMastermind(state, villain)
+  }
 }
 
 /** Tarcze przed Ambush (Invisible Barrier): true = gracz anulował efekt Ambush. */

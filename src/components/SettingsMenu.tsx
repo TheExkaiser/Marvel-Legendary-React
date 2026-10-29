@@ -22,6 +22,14 @@ export function SettingsMenu({ settings, onChange, onClose }: SettingsMenuProps)
           Show reveal popups (Twist, Master Strike, villain enters city, bystander captured)
         </label>
         <label className="settings-row">
+          <input
+            type="checkbox"
+            checked={settings.confirmSetDisable}
+            onChange={(e) => onChange('confirmSetDisable', e.target.checked)}
+          />
+          Experimental: confirm removing selected items when disabling a set
+        </label>
+        <label className="settings-row">
           Theme
           <select value={settings.theme} onChange={(e) => onChange('theme', e.target.value)}>
             {THEMES.map((t) => (

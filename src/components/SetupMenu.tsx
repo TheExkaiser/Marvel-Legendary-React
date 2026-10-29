@@ -247,7 +247,14 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   const [choices, setChoices] = useState<SetupChoices>(() => {
     const pending = consumePendingSetupChoices()
     const base = pending ? pruneChoices(pending, sets, GAME_MODES) : EMPTY_CHOICES
-    return { ...base, gameModeId: base.gameModeId || GAME_MODES[0]?.id || '' }
+    return {
+      ...base,
+      gameModeId: base.gameModeId || GAME_MODES[0]?.id || '',
+      sidekicksEnabled: pending ? base.sidekicksEnabled : settings.sidekicksEnabled,
+      excludedBystanderGroupIds: pending
+        ? base.excludedBystanderGroupIds
+        : settings.excludedBystanderGroupIds,
+    }
   })
   const [historyOpen, setHistoryOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -306,6 +313,10 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
 
   function update(patch: Partial<SetupChoices>) {
     setChoices((current) => ({ ...current, ...patch }))
+    if (patch.sidekicksEnabled !== undefined) updateSetting('sidekicksEnabled', patch.sidekicksEnabled)
+    if (patch.excludedBystanderGroupIds !== undefined) {
+      updateSetting('excludedBystanderGroupIds', patch.excludedBystanderGroupIds)
+    }
   }
 
   function toggleSet(id: string) {
@@ -341,7 +352,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
               .map((item) => item.name)),
       ]
 
-      if (selectedNames.length > 0) {
+      if (settings.confirmSetDisable && selectedNames.length > 0) {
         setSetDisablePrompt({ setId: id, setName: set.name, selectedNames })
         return
       }

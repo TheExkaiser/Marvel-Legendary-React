@@ -94,7 +94,14 @@ export interface GameState {
   hqDestroyed?: boolean[] // Detonate the Helicarrier: zniszczone miejsca HQ (nie przyjmują Bohaterów)
 
   mastermind: CardInstance
+  masterminds?: CardInstance[]
   tactics: CardInstance[]
+  mastermindTactics?: Record<string, CardInstance[]>
+  mastermindStrikeIds?: Record<string, string>
+  singleFightMasterminds?: string[]
+  defeatedMastermindIds?: string[]
+  mastermindAttackModifiers?: Record<string, number>
+  pendingMasterStrikeMastermindId?: string
   stackedMasterStrikes?: CardInstance[] // Stryfe: Master Strike'i ułożone obok mastermina
   mysterioTacticIds?: string[] // Master Strike'i zamienione przez Mysterio w Tactics
   masterStrikeId: string

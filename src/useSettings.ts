@@ -7,12 +7,18 @@ export interface Settings {
   showRevealPopups: boolean
   theme: string
   useThemeImage: boolean
+  sidekicksEnabled: boolean
+  excludedBystanderGroupIds: string[]
+  confirmSetDisable: boolean
 }
 
 const DEFAULT_SETTINGS: Settings = {
   showRevealPopups: true,
   theme: DEFAULT_THEME_ID,
   useThemeImage: false,
+  sidekicksEnabled: true,
+  excludedBystanderGroupIds: [],
+  confirmSetDisable: false,
 }
 
 function loadSettings(): Settings {
@@ -28,6 +34,11 @@ function loadSettings(): Settings {
       ...stored,
       theme: migratedTheme ?? DEFAULT_THEME_ID,
       useThemeImage: legacyImageTheme || stored.useThemeImage === true,
+      sidekicksEnabled: stored.sidekicksEnabled !== false,
+      excludedBystanderGroupIds: Array.isArray(stored.excludedBystanderGroupIds)
+        ? stored.excludedBystanderGroupIds.filter((id): id is string => typeof id === 'string')
+        : [],
+      confirmSetDisable: stored.confirmSetDisable === true,
     }
     // zapisany motyw, którego już nie ma na liście, wraca do domyślnego
     if (!THEMES.some((t) => t.id === merged.theme)) merged.theme = DEFAULT_THEME_ID

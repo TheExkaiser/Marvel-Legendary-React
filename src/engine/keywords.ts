@@ -255,8 +255,13 @@ export function getEffectiveStrength(
 
   let total = base ?? 0
 
-  if (instance.instanceId === state.mastermind.instanceId) {
-    total += state.mastermindAttackModifierThisTurn
+  const isMastermind = (state.masterminds ?? [state.mastermind]).some(
+    (mastermind) => mastermind.instanceId === instance.instanceId,
+  )
+  if (isMastermind) {
+    total += instance.instanceId === state.mastermind.instanceId
+      ? state.mastermindAttackModifierThisTurn
+      : state.mastermindAttackModifiers?.[instance.instanceId] ?? 0
     total += state.counters['Dark Portal (Mastermind)'] ?? 0
   } else {
     const cityIndex = state.city.findIndex((c) => c?.instanceId === instance.instanceId)
@@ -268,7 +273,9 @@ export function getEffectiveStrength(
   }
 
   total += getScheme(state).villainStrengthModifier?.(state, instance) ?? 0
-  total += getMastermindRule(state)?.villainStrengthModifier?.(state, instance) ?? 0
+  for (const mastermind of state.masterminds ?? [state.mastermind]) {
+    total += getMastermindRule(state, mastermind)?.villainStrengthModifier?.(state, instance) ?? 0
+  }
   total += cardStrengthModifier?.(state, instance) ?? 0
   total += shardAttackBonus(state, instance)
   total -= cosmicThreatReduction(state, instance)

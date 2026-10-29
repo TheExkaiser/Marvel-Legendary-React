@@ -99,3 +99,37 @@ export const ULTIMATE_SPIDER_MAN_CARDS: DeckEntry[] = [
   { count: 3, card: { id: 'secret-wars-ultimate-spider-man-web-slinger', name: 'Web-Slinger', hero: 'Ultimate Spider-Man', img: img('secret-wars-ultimate-spider-man-web-slinger'), team: ['spider-friends'], type: ['tech'], attack: 0, cost: 2, text: 'You get +2 Attack usable only against the Mastermind or Villains on the Rooftops or Bridge. Reveal the top card of your deck. If it costs 2 or less, draw it.' } },
   { count: 1, card: { id: 'secret-wars-ultimate-spider-man-hero-from-another-dimension', name: 'Hero from Another Dimension', hero: 'Ultimate Spider-Man', img: img('secret-wars-ultimate-spider-man-hero-from-another-dimension'), team: ['spider-friends'], type: ['covert'], attack: 0, cost: 2, text: 'You get +2 Attack for each other card you have played this turn that costs 1 or 2.' } },
 ]
+
+function deadlandsVillain(
+  id: string,
+  name: string,
+  strength: number,
+  vp: number,
+  text: string,
+  keywords: string[] = ['rise-of-the-living-dead'],
+): DeckEntry {
+  return {
+    count: 1,
+    card: {
+      id: `secret-wars-${id}`,
+      name,
+      img: img(id),
+      strength,
+      vp,
+      villainGroup: 'The Deadlands',
+      text,
+      keywords,
+    },
+  }
+}
+
+export const DEADLANDS_CARDS: DeckEntry[] = [
+  deadlandsVillain('zombie-baron-zemo', 'Zombie Baron Zemo', 6, 4, 'Ambush: Rise of the Living Dead. Fight: For each of your Avengers Heroes, rescue a Bystander.'),
+  deadlandsVillain('zombie-loki', 'Zombie Loki', 8, 6, 'Ambush: Rise of the Living Dead. Escape: Loki ascends to become a new Mastermind. Master Strike: Each player reveals a Strength Hero or gains a Wound.'),
+  deadlandsVillain('zombie-madame-hydra', 'Zombie Madame Hydra', 4, 2, 'Ambush: Rise of the Living Dead. Fight: KO one of your S.H.I.E.L.D. Heroes or HYDRA Allies.'),
+  deadlandsVillain('zombie-mr-sinister', 'Zombie Mr. Sinister', 7, 5, 'Ambush: Rise of the Living Dead. Escape: Sinister ascends to become a new Mastermind. Master Strike: Sinister captures a Bystander. Then, each player with exactly 6 cards reveals a Covert Hero or discards cards equal to the number of Bystanders Sinister has.'),
+  deadlandsVillain('zombie-modok', 'Zombie M.O.D.O.K.', 5, 3, 'Ambush: Rise of the Living Dead. Fight: KO one of your Heroes with a Recruit icon.'),
+  deadlandsVillain('zombie-mysterio', 'Zombie Mysterio', 6, 6, 'Ambush: Rise of the Living Dead. Escape: Shuffle this card into the Mastermind’s face-down Tactics. It becomes a Mastermind Tactic that says Fight: Draw two cards.'),
+  deadlandsVillain('zombie-thanos', 'Zombie Thanos', 9, 6, 'Ambush: Rise of the Living Dead. Escape: Thanos ascends to become a new Mastermind. Master Strike: Each player reveals their hand and KOs one of their non-grey Heroes.'),
+  deadlandsVillain('zombie-venom', 'Zombie Venom', 5, 3, 'Ambush: Rise of the Living Dead. You can’t defeat Zombie Venom unless you have a Covert Hero. Escape: Each player gains a Wound.', ['rise-of-the-living-dead']),
+]
