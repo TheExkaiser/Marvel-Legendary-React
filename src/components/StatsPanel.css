@@ -51,12 +51,14 @@
   max-height: 0;
   overflow: hidden;
   opacity: 0;
+  pointer-events: none;
   transition: max-height 0.25s ease, opacity 0.2s ease;
 }
 
 .stats-panel:hover .stats-panel-extra {
   max-height: 420px;
   opacity: 1;
+  pointer-events: auto;
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid var(--line);
