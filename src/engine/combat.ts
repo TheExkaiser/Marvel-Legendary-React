@@ -31,9 +31,16 @@ type LocationDefeatHook = (
   ui: UiAdapter,
   location: string,
 ) => Promise<void>
+type VillainDefeatHook = (
+  state: GameState,
+  ui: UiAdapter,
+  source: CardInstance,
+  villain: CardInstance,
+) => Promise<void>
 
 const fightEffectCancellations = new Map<string, FightEffectCancellation>()
 const locationDefeatHooks = new Map<string, LocationDefeatHook>()
+const villainDefeatHooks = new Map<string, VillainDefeatHook>()
 
 export function registerFightEffectCancellation(cardId: string, callback: FightEffectCancellation): void {
   fightEffectCancellations.set(cardId, callback)
@@ -43,9 +50,27 @@ export function registerLocationDefeatHook(cardId: string, callback: LocationDef
   locationDefeatHooks.set(cardId, callback)
 }
 
+export function registerVillainDefeatHook(cardId: string, callback: VillainDefeatHook): void {
+  villainDefeatHooks.set(cardId, callback)
+}
+
 async function resolveLocationDefeatHooks(state: GameState, ui: UiAdapter, location: string): Promise<void> {
   for (const card of state.cardsPlayedThisTurn) {
     await locationDefeatHooks.get(card.cardId)?.(state, ui, location)
+  }
+}
+
+async function resolveVillainDefeatHooks(
+  state: GameState,
+  ui: UiAdapter,
+  villain: CardInstance,
+): Promise<void> {
+  if (state.cards[villain.cardId].henchman) {
+    state.henchmenDefeatedThisTurn = (state.henchmenDefeatedThisTurn ?? 0) + 1
+  }
+  for (const card of state.cardsPlayedThisTurn) {
+    if (!(state.activeVillainDefeatHooks ?? []).includes(card.instanceId)) continue
+    await villainDefeatHooks.get(card.cardId)?.(state, ui, card, villain)
   }
 }
 
@@ -199,6 +224,7 @@ async function removeVillainFromCity(
     }
   }
   await resolveLocationDefeatHooks(state, ui, location)
+  await resolveVillainDefeatHooks(state, ui, villain)
 }
 
 async function resolveVillainFightEffects(
@@ -291,6 +317,7 @@ export async function defeatVillainFromDeck(
   await scheme.afterVillainDefeated?.(state, villain, ui)
 
   logEvent(state, `Defeated from Villain Deck: ${state.cards[villain.cardId].name}`)
+  await resolveVillainDefeatHooks(state, ui, villain)
   await offerMindControl(state, villain, ui)
   return true
 }
@@ -347,6 +374,7 @@ export async function fightVillain(
     for (const card of rescued) await rescueCard(state, card, ui)
     refillHq(state)
     await scheme.afterVillainDefeated?.(state, villain, ui)
+    await resolveVillainDefeatHooks(state, ui, villain)
   } else {
     await removeVillainFromCity(state, cityIndex, ui, asArtifact)
     await scheme.afterVillainDefeated?.(state, villain, ui)
@@ -463,4 +491,5 @@ export async function fightDemonGoblin(state: GameState, ui: UiAdapter): Promise
 
   // Uratowany jako Bystander: trafia do Victory Pool i liczy się jako "rescue" (Jean Grey itp.)
   await rescueCard(state, goblin, ui)
+  await resolveVillainDefeatHooks(state, ui, goblin)
 }

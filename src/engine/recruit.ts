@@ -133,6 +133,7 @@ export function recruitHero(state: GameState, instanceId: string): void {
   if (payWithAttack) state.attack -= cost
   else state.recruit -= cost
   if (!isBystander && data.hero) {
+    state.heroesRecruitedThisTurn = (state.heroesRecruitedThisTurn ?? 0) + 1
     const location = CITY_NAMES[index]
     const remainingBonus = state.hqRecruitBonuses?.[location] ?? 0
     if (remainingBonus > 0) {

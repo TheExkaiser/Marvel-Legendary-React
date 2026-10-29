@@ -101,6 +101,9 @@ export interface GameState {
     ledVillainGroup?: string // główna grupa złoczyńców tej gry (nazwa z villainGroup), np. dla taktyk Apocalypse'a zamiast "Four Horsemen"
 
   defeated: CardInstance[]
+  henchmenDefeatedThisTurn?: number
+  heroesRecruitedThisTurn?: number
+  activeVillainDefeatHooks?: string[]
   wounds: CardInstance[]
   bystanders: CardInstance[]
   ko: CardInstance[]

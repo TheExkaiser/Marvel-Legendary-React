@@ -156,6 +156,9 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.recruitCountsAsAttackThisTurn = false
   state.cardsDrawnThisTurn = 0
   state.recruitGainedThisTurn = 0
+  state.heroesRecruitedThisTurn = 0
+  state.henchmenDefeatedThisTurn = 0
+  state.activeVillainDefeatHooks = []
   state.attackGainedThisTurn = 0
   state.pendingSurgeOfPower = 0
   state.masterStrikeAutoDrawUsedThisTurn = false

@@ -14,15 +14,20 @@ async function revealFromVillainDeck(
   ui: UiAdapter,
   count: number,
   label: string,
+  showTogether = false,
 ): Promise<CardInstance[]> {
   const revealed: CardInstance[] = []
   for (let i = 0; i < count; i++) {
     const card = state.villainDeck.pop()
     if (card) revealed.push(card)
   }
-  for (const card of revealed) {
-    await ui.revealCard(card, `${label}: revealed ${state.cards[card.cardId].name}`)
-    console.log(`revealed: ${state.cards[card.cardId].name}`)
+  if (showTogether) {
+    await ui.showCards(revealed, `${label}: revealed cards`)
+  } else {
+    for (const card of revealed) {
+      await ui.revealCard(card, `${label}: revealed ${state.cards[card.cardId].name}`)
+      console.log(`revealed: ${state.cards[card.cardId].name}`)
+    }
   }
   return revealed
 }
@@ -288,7 +293,7 @@ registerCardAbility('sinister-telepathic-manipulation', async (state, { ui }) =>
 // ---------- Stryfe ----------
 
 registerCardAbility('stryfe-furious-wrath', async (state, { ui }) => {
-  const revealed = await revealFromVillainDeck(state, ui, 6, 'Furious Wrath')
+  const revealed = await revealFromVillainDeck(state, ui, 6, 'Furious Wrath', true)
 
   const strikes = revealed.filter((c) => state.cards[c.cardId].kind === 'masterstrike')
   const rest = revealed.filter((c) => !strikes.includes(c))
