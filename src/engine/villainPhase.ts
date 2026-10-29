@@ -138,6 +138,9 @@ async function ambushCancelledByShield(state: GameState, ui: UiAdapter): Promise
 export async function enterCity(state: GameState, villain: CardInstance, ui: UiAdapter): Promise<void> {
   await ui.revealCard(villain, `${state.cards[villain.cardId].name} enters the city`)
 
+  const emptyCitySpacesBeforeEntry = state.city.filter(
+    (card, index) => !card && !isCityDestroyed(state, index),
+  ).length
   let moving: CardInstance | null = villain
 
   // Przesuwanie w stronę wyjścia: każda karta wypycha poprzednią
@@ -157,7 +160,9 @@ export async function enterCity(state: GameState, villain: CardInstance, ui: UiA
   const ambushAbilities = getVillainAbilities(villain.cardId)
   if (ambushAbilities?.onAmbush) {
     if (await ambushCancelledByShield(state, ui)) return
-    await asEnemyEffect(state, () => ambushAbilities.onAmbush!(state, ui, villain))
+    await asEnemyEffect(state, () =>
+      ambushAbilities.onAmbush!(state, ui, villain, { emptyCitySpacesBeforeEntry }),
+    )
     await runArtifactReactions(state, ui, 'ambush-completed') // Incoming Detector
   }
 }

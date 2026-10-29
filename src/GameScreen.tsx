@@ -412,6 +412,7 @@ function GameScreen({
                 key={c.instanceId}
                 data={data}
                 flipId={c.instanceId}
+                shards={artifact ? shardsOn(state, c) : undefined}
                 dimmed={artifact ? isArtifactExhausted(state, c) : !hasFocus(c)}
                 focusButton={
                   canFocus(state, c)

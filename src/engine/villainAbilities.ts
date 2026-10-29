@@ -2,7 +2,12 @@ import type { GameState, CardInstance } from './types'
 import type { UiAdapter } from './ui'
 
 export interface VillainAbilities {
-  onAmbush?: (state: GameState, ui: UiAdapter, self: CardInstance) => Promise<void>
+  onAmbush?: (
+    state: GameState,
+    ui: UiAdapter,
+    self: CardInstance,
+    context: { emptyCitySpacesBeforeEntry: number },
+  ) => Promise<void>
   onFeast?: (state: GameState, ui: UiAdapter, self: CardInstance, feasted: CardInstance) => Promise<void>
   onFight?: (state: GameState, ui: UiAdapter, self: CardInstance) => Promise<void>
   onEscape?: (state: GameState, ui: UiAdapter, self: CardInstance) => Promise<void>
