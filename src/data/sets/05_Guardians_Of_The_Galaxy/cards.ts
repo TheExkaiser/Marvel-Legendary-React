@@ -150,7 +150,7 @@ export const SUPREME_INTELLIGENCE_OF_THE_KREE: MastermindData = {
     img: img('mastermind-supreme-intelligence-of-the-kree'),
     strength: 9,
     vp: 6,
-    text: 'Always Leads: Kree Starforce.',
+    text: 'Always Leads: Kree Starforce. Master Strike: The Supreme Intelligence gains a Shard. Then each player reveals their hand and discards each card with cost equal to, or one higher than, the number of Shards on the Supreme Intelligence.',
   },
   tactics: [
     {
@@ -195,7 +195,7 @@ export const THANOS: MastermindData = {
     img: img('mastermind-thanos'),
     strength: 24,
     vp: 7,
-    text: 'Always Leads: Infinity Gems. Thanos gets -2 Attack for each Infinity Gem Artifact card controlled by any player.',
+    text: "Always Leads: Infinity Gems. Thanos gets -2 Attack for each Infinity Gem Artifact card controlled by any player. Master Strike: Each player reveals their hand and puts one of their non-grey Heroes next to Thanos in a Bound Souls pile.",
   },
   tactics: [
     {
