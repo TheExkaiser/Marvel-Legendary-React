@@ -61,15 +61,24 @@ export async function debugEscapeAllVillainsFromCity(state: GameState, ui: UiAda
   }
 }
 
-/** DEBUG: shift villains toward the Bridge, preserving their relative order and avoiding destroyed spaces. */
-export function debugMoveAllVillainsToLeft(state: GameState): void {
+/** DEBUG: advance every villain one city space toward the Bridge; a Bridge villain escapes. */
+export async function debugMoveAllVillainsToLeft(state: GameState, ui: UiAdapter): Promise<void> {
   const spaces = state.city.map((_, index) => index).filter((index) => !isCityDestroyed(state, index))
-  const villains = spaces.flatMap((index) => state.city[index] ? [state.city[index]!] : [])
+  const villains = spaces.map((index) => state.city[index])
+  let escaping: CardInstance | undefined
   state.city = state.city.map(() => null)
-  villains.forEach((villain, index) => {
-    const destination = spaces[index]
-    if (destination !== undefined) state.city[destination] = villain
+
+  villains.forEach((villain, position) => {
+    if (!villain) return
+    const destination = position - 1
+    if (destination < 0) {
+      escaping = villain
+      return
+    }
+    state.city[spaces[destination]] = villain
   })
+
+  if (escaping) await escapeVillain(state, escaping, ui)
 }
 
 export function debugDrawCard(state: GameState): void {
