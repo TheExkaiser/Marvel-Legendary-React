@@ -92,7 +92,11 @@ function GameScreen({
     toast,
  } = useGame(setup, settings)
     const discardIds = new Set(state.discard.map((c) => c.instanceId))
-  useCardFlip(discardIds)
+  useCardFlip(
+    discardIds,
+    new Set(state.sidekickStack.map((card) => card.instanceId)),
+    new Set(state.deck.map((card) => card.instanceId)),
+  )
 
   useEffect(() => {
   if (state.status === 'playing') return
@@ -390,7 +394,7 @@ function GameScreen({
               count={state.sidekickStack.length}
               deckId="sidekick-stack"
               topCard={state.cards[state.sidekickCardId]}
-              label="Sidekicks"
+              showCount={false}
               highlight={canAffordSidekick(state) ? 'buy' : undefined}
               onClick={state.sidekickStack.length > 0 ? () => act((s) => recruitSidekick(s)) : undefined}
             />

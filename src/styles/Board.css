@@ -55,6 +55,9 @@
 }
 
 .sidekick-slot {
+  position: absolute;
+  top: 0;
+  right: calc(100% + 12px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -133,6 +136,7 @@
 
 /* Rekrutacja: prawa krawędź talii bohaterów = krawędź talii villainów */
 .recruit-row {
+  position: relative;
   padding-right: var(--board-inset);
 }
 
@@ -170,6 +174,10 @@
     padding-right: 0;
   }
 
+  .recruit-row {
+    gap: 4px;
+  }
+
   .zone-title {
     min-height: 20px;
     margin-bottom: 4px;
@@ -177,14 +185,16 @@
   }
 
   .officer-slot {
-    padding-right: 6px;
-    margin-right: 4px;
+    padding-right: 4px;
+    margin-right: 0;
     font-size: 8px;
   }
 
   .sidekick-slot {
-    padding-right: 4px;
-    margin-right: 2px;
+    position: static;
+    width: 40px;
+    padding-right: 0;
+    margin-right: 0;
     font-size: 8px;
   }
 
