@@ -24,6 +24,8 @@ export interface KeywordEntry {
 }
 
 const hasKeyword = (card: CardData, keyword: string) => (card.keywords ?? []).includes(keyword)
+const hasCardText = (card: CardData, pattern: RegExp) =>
+  pattern.test(`${card.name} ${card.text ?? ''}`)
 
 export const KEYWORD_GLOSSARY: KeywordEntry[] = [
   {
@@ -230,6 +232,51 @@ export const KEYWORD_GLOSSARY: KeywordEntry[] = [
       {
         type: 'text',
         text: `If an effect copies an Artifact, you use that Artifact's "once per turn" ability once and nothing else happens.`,
+      },
+    ],
+  },
+  {
+    id: 'rise-of-the-living-dead',
+    name: 'Rise of the Living Dead',
+    tooltip: 'A Villain with this ability can reenter the city from the top of a player’s Victory Pile.',
+    appearsOn: (c) =>
+      hasKeyword(c, 'rise-of-the-living-dead') ||
+      hasCardText(c, /\bRise of the Living Dead\b/i),
+    blocks: [
+      {
+        type: 'text',
+        text: `Each player checks the top card of their Victory Pile. If that card is a Villain with a "Rise of the Living Dead" ability, that Villain reenters the city. Mastermind Tactics never return this way.`,
+      },
+      {
+        type: 'text',
+        text: `If you put a Villain with Bystanders into your Victory Pile, you choose the order of those cards.`,
+      },
+    ],
+  },
+  {
+    id: 'cross-dimensional-rampage',
+    name: 'Cross-Dimensional Rampage',
+    aliases: ['Cross-Dimensional Hulk Rampage', 'Cross-Dimensional Wolverine Rampage'],
+    tooltip: 'Reveal a matching Hero or card from your Victory Pile, or gain a Wound.',
+    appearsOn: (c) =>
+      hasKeyword(c, 'cross-dimensional-rampage') ||
+      hasCardText(c, /\bCross-Dimensional\b/i),
+    blocks: [
+      {
+        type: 'text',
+        text: `Cross-Dimensional (Character) Rampage means: Each player reveals one of their (Character) Heroes or a (Character) card in their Victory Pile, or gains a Wound.`,
+      },
+      {
+        type: 'text',
+        text: `(Character) cards include any card with "(Character)" in its card name or Hero name.`,
+      },
+      {
+        type: 'text',
+        text: `**Hulk** cards additionally include Maestro and Nul, Breaker of Worlds.`,
+      },
+      {
+        type: 'text',
+        text: `**Wolverine** cards additionally include any card with Weapon X or Old Man Logan in its name.`,
       },
     ],
   },

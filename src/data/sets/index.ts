@@ -4,9 +4,17 @@ import { DARK_CITY_SET } from './02_Dark_City'
 import { FANTASTIC_FOUR_SET } from './03_Fantastic_Four'
 import { PAINT_THE_TOWN_RED_SET } from './04_Paint_The_Town_Red'
 import { GUARDIANS_OF_THE_GALAXY_SET } from './05_Guardians_Of_The_Galaxy'
+import { SECRET_WARS_VOL_1_SET } from './06_Secret_Wars_Vol_1'
 
 // Wszystkie zestawy dostępne w grze. Dodatek = nowy folder + wpis tutaj
-export const ALL_SETS: SetData[] = [CORE_SET, DARK_CITY_SET, FANTASTIC_FOUR_SET, PAINT_THE_TOWN_RED_SET, GUARDIANS_OF_THE_GALAXY_SET]
+export const ALL_SETS: SetData[] = [
+  CORE_SET,
+  DARK_CITY_SET,
+  FANTASTIC_FOUR_SET,
+  PAINT_THE_TOWN_RED_SET,
+  GUARDIANS_OF_THE_GALAXY_SET,
+  SECRET_WARS_VOL_1_SET,
+]
 
 // Szuka scheme'u po id we wszystkich zestawach
 export function findScheme(id: string): SchemeDef {

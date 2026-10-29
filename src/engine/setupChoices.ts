@@ -10,6 +10,7 @@ export const EMPTY_CHOICES: SetupChoices = {
   villainGroupIds: [],
   henchmenGroupIds: [],
   excludedBystanderGroupIds: [],
+  sidekicksEnabled: true,
   heroSelectionMode: 'full-random',
   uniqueHeroRealNames: true,
 }
@@ -190,6 +191,7 @@ export function completeChoices(
     excludedBystanderGroupIds: (partial.excludedBystanderGroupIds ?? []).filter(
       (id) => bystanderPool.includes(id) && !rules.requiredBystanderGroups.includes(id),
     ),
+    sidekicksEnabled: partial.sidekicksEnabled ?? true,
     heroSelectionMode,
   }
 }
@@ -209,6 +211,7 @@ export function pruneChoices(choices: SetupChoices, sets: SetData[], gameModes: 
     villainGroupIds: keep(sets.flatMap((s) => s.villainGroups), choices.villainGroupIds),
     henchmenGroupIds: keep(sets.flatMap((s) => s.henchmenGroups), choices.henchmenGroupIds),
     excludedBystanderGroupIds: keep(sets.flatMap((s) => s.bystanderGroups), choices.excludedBystanderGroupIds ?? []),
+    sidekicksEnabled: choices.sidekicksEnabled ?? true,
     heroSelectionMode: choices.heroSelectionMode ?? 'full-random',
     uniqueHeroRealNames: choices.uniqueHeroRealNames ?? true,
   }

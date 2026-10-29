@@ -25,6 +25,30 @@ function recruitPays(state: GameState, cardId: string): boolean {
 
 const DEMON_GOBLIN_ATTACK = 2
 
+type FightEffectCancellation = (state: GameState, ui: UiAdapter, enemy: CardInstance) => Promise<boolean>
+type LocationDefeatHook = (
+  state: GameState,
+  ui: UiAdapter,
+  location: string,
+) => Promise<void>
+
+const fightEffectCancellations = new Map<string, FightEffectCancellation>()
+const locationDefeatHooks = new Map<string, LocationDefeatHook>()
+
+export function registerFightEffectCancellation(cardId: string, callback: FightEffectCancellation): void {
+  fightEffectCancellations.set(cardId, callback)
+}
+
+export function registerLocationDefeatHook(cardId: string, callback: LocationDefeatHook): void {
+  locationDefeatHooks.set(cardId, callback)
+}
+
+async function resolveLocationDefeatHooks(state: GameState, ui: UiAdapter, location: string): Promise<void> {
+  for (const card of state.cardsPlayedThisTurn) {
+    await locationDefeatHooks.get(card.cardId)?.(state, ui, location)
+  }
+}
+
 function enemiesCostRecruit(state: GameState): boolean {
   return (
     state.enemiesCostRecruitThisTurn ||
@@ -97,16 +121,23 @@ async function spendAttack(state: GameState, amount: number, ui: UiAdapter, card
 
 /** Ultimate Nullifier: gracz może anulować efekt Fight. Pytamy tylko, gdy efekt faktycznie istnieje. */
 async function fightEffectCancelled(state: GameState, ui: UiAdapter, enemy: CardInstance): Promise<boolean> {
-  if (!state.cancelFightEffectsThisTurn) return false
-  const choice = await ui.chooseOptionWithCard(
-    enemy,
-    [
-      { id: 'cancel', label: 'Anuluj efekt Fight (Ultimate Nullifier)' },
-      { id: 'resolve', label: 'Rozpatrz efekt Fight' },
-    ],
-    'Ultimate Nullifier',
-  )
-  return choice === 'cancel'
+  if (state.cancelFightEffectsThisTurn) {
+    const choice = await ui.chooseOptionWithCard(
+      enemy,
+      [
+        { id: 'cancel', label: 'Cancel the Fight effect (Ultimate Nullifier)' },
+        { id: 'resolve', label: 'Resolve the Fight effect' },
+      ],
+      'Ultimate Nullifier',
+    )
+    if (choice === 'cancel') return true
+  }
+
+  for (const card of state.played) {
+    const cancel = fightEffectCancellations.get(card.cardId)
+    if (cancel && (await cancel(state, ui, enemy))) return true
+  }
+  return false
 }
 
 async function removeVillainFromCity(
@@ -167,6 +198,7 @@ async function removeVillainFromCity(
       if (chosen) koCard(state, chosen.instanceId)
     }
   }
+  await resolveLocationDefeatHooks(state, ui, location)
 }
 
 async function resolveVillainFightEffects(

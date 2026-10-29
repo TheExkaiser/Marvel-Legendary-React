@@ -282,7 +282,8 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
 
   // Zakładka "Villain Deck Heroes" pokazuje się tylko wtedy, gdy scheme tego wymaga,
   // a "Extras" tylko wtedy, gdy któryś aktywny zestaw dostarcza opcjonalne dodatki
-  const hasExtras = items.bystanders.some((i) => !rules.requiredBystanderGroups.includes(i.id))
+  const hasSidekicks = activeSets.some((set) => set.sidekickCards !== undefined)
+  const hasExtras = hasSidekicks || items.bystanders.some((i) => !rules.requiredBystanderGroups.includes(i.id))
   const tabOrder = TAB_ORDER.filter(
     (id) => (id !== 'deckHeroes' || rules.villainDeckHeroes > 0) && (id !== 'extras' || hasExtras),
   )
@@ -507,6 +508,9 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
           : p.cat.max
       p.cat.onChange(randomPick(pool, p.cat.required, count))
     }
+    if (tab === 'extras' && hasSidekicks) {
+      update({ sidekicksEnabled: Math.random() < 0.5 })
+    }
   }
 
   function applyThematicSetup(preset: ThematicSetup) {
@@ -666,7 +670,7 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
                 const extraCount = tabCats.reduce(
                   (n, c) => n + c.selected.filter((x) => !c.required.includes(x)).length,
                   0,
-                )
+                ) + (hasSidekicks && choices.sidekicksEnabled !== false ? 1 : 0)
                 return (
                   <button
                     key={id}
@@ -750,6 +754,21 @@ export function SetupMenu({ sets, onStart }: SetupMenuProps) {
           </div>
 
           <div className="tile-scroll">
+            {tab === 'extras' && hasSidekicks && (
+              <section className="extra-block">
+                <h3 className="extra-title">Sidekicks</h3>
+                <label className="setup-option">
+                  <input
+                    type="checkbox"
+                    checked={choices.sidekicksEnabled ?? true}
+                    onChange={(event) => update({ sidekicksEnabled: event.target.checked })}
+                  />
+                  <span>
+                    Use the Sidekick Stack. Recruit up to one Sidekick each turn for 2 Recruit. Sidekicks gained by card effects do not count toward this limit.
+                  </span>
+                </label>
+              </section>
+            )}
             {panels.map((p) => (
               <div key={p.id} className={tab === 'extras' ? 'extra-block' : undefined}>
                 {tab === 'extras' && (
