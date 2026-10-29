@@ -13,6 +13,7 @@ export function DeckPile({
   onClick,
   label,
   highlight,
+  className,
 }: {
   count: number
   deckId?: string
@@ -20,14 +21,20 @@ export function DeckPile({
   onClick?: () => void
   label?: string
   highlight?: 'buy' | 'attack' // obrys: złoty = stać nas na kupno, czerwony = stać nas na atak
+  className?: string
 }) {
   const [srcIndex, setSrcIndex] = useState(0)
 
   // Pusta talia: przerywany kontur zamiast rewersu
   if (count === 0) {
     return (
-      <div className="deck-pile deck-empty" data-deck-id={deckId}onClick={onClick}>
+      <div
+        className={['deck-pile', 'deck-empty', className, onClick ? 'clickable' : ''].filter(Boolean).join(' ')}
+        data-deck-id={deckId}
+        onClick={onClick}
+      >
         <span className="deck-count">0</span>
+        {label && <div className="deck-label">{label}</div>}
       </div>
     )
   }
@@ -44,7 +51,7 @@ export function DeckPile({
 
   return (
 <div
-  className={['deck-pile', onClick ? 'clickable' : '', highlight ? `highlight-${highlight}` : ''].filter(Boolean).join(' ')}
+  className={['deck-pile', className, onClick ? 'clickable' : '', highlight ? `highlight-${highlight}` : ''].filter(Boolean).join(' ')}
   data-deck-id={deckId}
   onClick={onClick}
 >
