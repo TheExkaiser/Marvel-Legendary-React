@@ -384,7 +384,7 @@ function GameScreen({
           )}
         </div>
         {state.city.map((instance, i) => (
-          <div className="city-space" key={i} style={{ gridColumn: i + 4 }}>
+          <div className="city-space" key={i} style={{ gridColumn: i + 1 }}>
             {state.cityDestroyed?.[i] ? (
               <div className="destroyed-city-token" title="Destroyed City">
                 <img
@@ -453,7 +453,7 @@ function GameScreen({
             <div
               className="hq-space"
               key={instance?.instanceId ?? `hq-${i}`}
-              style={{ gridColumn: i + 4 }}
+              style={{ gridColumn: i + 1 }}
             >
               {instance ? (
                 <CardView
