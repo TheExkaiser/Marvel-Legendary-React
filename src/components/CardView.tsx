@@ -94,8 +94,8 @@ function ShardBadge({ count }: { count: number }) {
   if (count <= 0) return null
   return (
     <div className="shard-badge" title={`Shards: ${count} (+${count} Attack)`}>
-      <span className="shard-badge-gem">◆</span>
-      <span>{count}</span>
+      <img className="shard-badge-icon" src={`${import.meta.env.BASE_URL}icons/shard.png`} alt="" />
+      <span className="shard-badge-count">{count}</span>
     </div>
   )
 }

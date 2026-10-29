@@ -202,7 +202,7 @@ registerArtifactReactions('villain-infinity-gems-soul-gem', {
 registerArtifactAbilities('villain-infinity-gems-soul-gem', [
   {
     id: 'attack-per-shard',
-    label: 'Gain Attack per Shard',
+    label: 'Gain Attack',
     isUsable: (state, self) => shardsOn(state, self) > 0,
     effect: async (state, _ui, self) => addAttack(state, shardsOn(state, self)),
   },

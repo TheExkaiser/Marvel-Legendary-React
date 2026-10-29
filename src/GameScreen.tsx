@@ -117,13 +117,17 @@ function GameScreen({
   const negativeZoneActive =
     scheme.id === 'fantasticfour_pull_reality_into_the_negative_zone' && [2, 4, 6].includes(state.twistsRevealed)
 
-  // Played: Artifacty pod kontrolą (zostają między turami) pierwsze, potem karty z Focusem, potem reszta.
-  // Sort stabilny, więc kolejność zagrania w obrębie grup zostaje.
-  const hasFocus = (c: CardInstance): boolean => getCardData(state, c).focus !== undefined
+  // Played: Artifacty pierwsze, potem Focus, następnie pozostałe karty; nazwy są grupowane razem.
   const playedRow: CardInstance[] = [
     ...(state.artifacts ?? []),
-    ...[...state.played].sort((a, b) => Number(hasFocus(b)) - Number(hasFocus(a))),
-  ]
+    ...state.played,
+  ].sort((a, b) => {
+    const dataA = getCardData(state, a)
+    const dataB = getCardData(state, b)
+    const orderA = isArtifactData(dataA) ? 0 : dataA.focus !== undefined ? 1 : 2
+    const orderB = isArtifactData(dataB) ? 0 : dataB.focus !== undefined ? 1 : 2
+    return orderA - orderB || dataA.name.localeCompare(dataB.name)
+  })
   const [viewingCaptivesOf, setViewingCaptivesOf] = useState<string | null>(null)
   
   const [viewingPile, setViewingPile] = useState<'victory' | 'ko' | 'discard' | 'teleport' | null>(null)
@@ -413,7 +417,7 @@ function GameScreen({
                 data={data}
                 flipId={c.instanceId}
                 shards={artifact ? shardsOn(state, c) : undefined}
-                dimmed={artifact ? isArtifactExhausted(state, c) : !hasFocus(c)}
+                dimmed={artifact ? isArtifactExhausted(state, c) : data.focus === undefined}
                 focusButton={
                   canFocus(state, c)
                     ? {

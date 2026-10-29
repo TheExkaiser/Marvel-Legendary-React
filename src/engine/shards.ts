@@ -2,9 +2,7 @@ import type { CardInstance, GameState } from './types'
 import type { UiAdapter } from './ui'
 import { assertPlaying, logEvent } from './common'
 import { addAttack, addRecruit } from './resources'
-
-/** Liczba żetonów Shard w grze (Guardians of the Galaxy). */
-export const SHARD_SUPPLY_SIZE = 500
+import { getScheme } from './schemeRegistry'
 
 /** Czy w grze są karty operujące na Shardach (słowo kluczowe 'shard' w danych karty). Steruje widocznością licznika w UI. */
 export function gameUsesShards(state: GameState): boolean {
@@ -12,7 +10,8 @@ export function gameUsesShards(state: GameState): boolean {
 }
 
 export function shardSupply(state: GameState): number {
-  return state.shardSupply ?? SHARD_SUPPLY_SIZE
+  const limit = getScheme(state).shardSupplyLimit
+  return limit === undefined ? Number.POSITIVE_INFINITY : (state.shardSupply ?? limit)
 }
 
 export function shardsOn(state: GameState, target: { instanceId: string }): number {
@@ -27,13 +26,15 @@ export function shardAttackBonus(state: GameState, target: { instanceId: string 
 
 /** Zdejmuje z zapasu do `count` Shardów. Pusty zapas = Shard nie jest zdobyty, gra toczy się dalej. */
 function takeFromSupply(state: GameState, count: number): number {
+  const limit = getScheme(state).shardSupplyLimit
   const taken = Math.max(0, Math.min(count, shardSupply(state)))
-  state.shardSupply = shardSupply(state) - taken
+  if (limit !== undefined) state.shardSupply = shardSupply(state) - taken
   return taken
 }
 
 function returnToSupply(state: GameState, count: number): void {
-  if (count > 0) state.shardSupply = shardSupply(state) + count
+  const limit = getScheme(state).shardSupplyLimit
+  if (limit !== undefined && count > 0) state.shardSupply = Math.min(limit, shardSupply(state) + count)
 }
 
 function setShardsOn(state: GameState, target: { instanceId: string }, count: number): void {
