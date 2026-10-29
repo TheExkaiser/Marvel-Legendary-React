@@ -54,6 +54,30 @@ export async function playTopVillainCard(state: GameState, ui: UiAdapter): Promi
   return card
 }
 
+/** Removes and resolves the next card of a specific kind from anywhere in the Villain Deck. */
+export async function playNextVillainDeckCardOfKind(
+  state: GameState,
+  ui: UiAdapter,
+  kind: 'masterstrike' | 'twist',
+): Promise<CardInstance> {
+  let index = -1
+  for (let i = state.villainDeck.length - 1; i >= 0; i--) {
+    if (state.cards[state.villainDeck[i].cardId].kind === kind) {
+      index = i
+      break
+    }
+  }
+  if (index === -1) {
+    const name = kind === 'masterstrike' ? 'Master Strike' : 'Scheme Twist'
+    throw new Error(`No ${name} remains in the Villain Deck`)
+  }
+
+  await runArtifactReactions(state, ui, 'before-villain-card')
+  const [card] = state.villainDeck.splice(index, 1)
+  await resolveVillainDeckCard(state, card, ui, true)
+  return card
+}
+
 /** Zdejmuje górne `count` kart talii złoczyńców i pokazuje je graczowi. Pusta talia NIE kończy gry (odkrycie to nie dobranie). Zwraca karty od wierzchu. */
 export async function revealTopVillainCards(
   state: GameState,
