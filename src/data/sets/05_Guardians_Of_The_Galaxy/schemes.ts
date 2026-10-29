@@ -62,9 +62,9 @@ const FORGE_THE_INFINITY_GAUNTLET: SchemeDef = {
       if (villain && isInfinityGem(state, villain)) placeShardsOn(state, villain, 1)
     }
   },
-  checkLoss: (state) => countVillainsInCityAndEscaped(state, INFINITY_GEMS) >= 6,
-  checkWin: (state) => (state.artifacts ?? []).filter((card) => isInfinityGem(state, card)).length >= 4,
-  winMessage: 'Corrupted by power. You win, but Evil also wins.',
+  checkLoss: (state) =>
+    countVillainsInCityAndEscaped(state, INFINITY_GEMS) >= 6 ||
+    (state.artifacts ?? []).filter((card) => isInfinityGem(state, card)).length >= 4,
 }
 
 const KREE_SKRULL_WAR: SchemeDef = {

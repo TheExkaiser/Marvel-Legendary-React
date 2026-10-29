@@ -219,8 +219,6 @@ export interface SchemeDef {
   afterVillainDefeated?: (state: GameState, villain: CardInstance, ui: UiAdapter) => void | Promise<void>
   onVillainEscaped?: (state: GameState, villain: CardInstance, lostCaptives: CardInstance[]) => void
   checkLoss?: (state: GameState) => boolean
-  checkWin?: (state: GameState) => boolean
-  winMessage?: string
 
   villainStrengthModifier?: (state: GameState, instance: CardInstance) => number
 
