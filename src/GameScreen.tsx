@@ -130,7 +130,7 @@ function GameScreen({
   })
   const [viewingCaptivesOf, setViewingCaptivesOf] = useState<string | null>(null)
   
-  const [viewingPile, setViewingPile] = useState<'victory' | 'ko' | 'discard' | 'teleport' | null>(null)
+  const [viewingPile, setViewingPile] = useState<'victory' | 'ko' | 'discard' | 'teleport' | 'escaped' | null>(null)
 
   const [historyOpen, setHistoryOpen] = useState(false)
   const [keywordsOpen, setKeywordsOpen] = useState(false)
@@ -182,6 +182,7 @@ function GameScreen({
     ko: { title: "KO'd cards", cards: state.ko },
     discard: { title: 'Discard', cards: state.discard },
     teleport: { title: 'Teleport', cards: teleported },
+    escaped: { title: 'Escaped Villains', cards: state.escaped },
   }
 
   // Stałe panele i przyciski potrafią przejąć wheel jako obszar interaktywny.
@@ -307,7 +308,7 @@ function GameScreen({
 
         <div className="city-slot">
           <div className="zone-title">
-            City (Escaped: {state.escaped.length})
+            City (<button className="info-scheme-button" onClick={() => setViewingPile('escaped')}>Escaped: {state.escaped.length}</button>)
             {(state.schemeTokens ?? []).map((t) => (
               <SchemeToken key={t.instanceId} data={state.cards[t.cardId]} />
             ))}
