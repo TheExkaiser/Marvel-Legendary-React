@@ -1,5 +1,8 @@
 import type { GameState, CardInstance } from './types'
-import { refillHq } from './recruit'
+import type { UiAdapter } from './ui'
+import { koFromHq, refillHq } from './recruit'
+import { drawCards } from './deckOps'
+import { escapeVillain, playNextVillainDeckCardOfKind, playTopVillainCard } from './villainPhase'
 
 /** Id kart startowych — patrz data/sets/01_Core_Set/cards.ts (STARTING_CARDS). */
 const STARTING_CARD_IDS = ['shield-agent', 'shield-trooper']
@@ -26,4 +29,37 @@ export function debugRemoveAllStartingCards(state: GameState): void {
       }
     }
   }
+}
+
+export async function debugDrawVillainCard(state: GameState, ui: UiAdapter): Promise<void> {
+  await playTopVillainCard(state, ui)
+}
+
+export async function debugPlayNextMasterStrike(state: GameState, ui: UiAdapter): Promise<void> {
+  await playNextVillainDeckCardOfKind(state, ui, 'masterstrike')
+}
+
+export async function debugPlayNextSchemeTwist(state: GameState, ui: UiAdapter): Promise<void> {
+  await playNextVillainDeckCardOfKind(state, ui, 'twist')
+}
+
+export function debugKoAllHeroesFromHq(state: GameState): void {
+  for (let i = 0; i < state.hq.length; i++) {
+    const hero = state.hq[i]
+    if (hero && state.cards[hero.cardId].hero) koFromHq(state, i)
+  }
+  refillHq(state)
+}
+
+export async function debugEscapeAllVillainsFromCity(state: GameState, ui: UiAdapter): Promise<void> {
+  for (let i = 0; i < state.city.length; i++) {
+    const villain = state.city[i]
+    if (!villain) continue
+    state.city[i] = null
+    await escapeVillain(state, villain, ui)
+  }
+}
+
+export function debugDrawCard(state: GameState): void {
+  drawCards(state, 1)
 }

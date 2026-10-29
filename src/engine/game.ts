@@ -11,6 +11,15 @@ export {
   claimTacticFree,
 } from './combat'
 export { gainWound, gainWoundSilent, rescueBystander } from './wounds'
-export { debugReplaceAllHeroesInHq, debugRemoveAllStartingCards } from './debug'
+export {
+  debugReplaceAllHeroesInHq,
+  debugRemoveAllStartingCards,
+  debugDrawVillainCard,
+  debugPlayNextMasterStrike,
+  debugPlayNextSchemeTwist,
+  debugKoAllHeroesFromHq,
+  debugEscapeAllVillainsFromCity,
+  debugDrawCard,
+} from './debug'
 export { peekTopCard } from './deckOps'
 export { addRecruit, addAttack } from './resources'
