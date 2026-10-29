@@ -291,9 +291,14 @@ function GameScreen({
           {state.mastermind.cardId === 'mastermind-thanos' && (
             <div className="markers">Bound Souls: {mastermindCaptives}</div>
           )}
-          {(state.mastermindSchemeTwists?.length ?? 0) > 0 && (
+          {scheme.id === 'gotg_the_kree_skrull_war' ? (
+            <div className="markers">
+              <div>Skrull: {state.schemeTwists?.length ?? 0}</div>
+              <div>Kree: {state.mastermindSchemeTwists?.length ?? 0}</div>
+            </div>
+          ) : (state.mastermindSchemeTwists?.length ?? 0) > 0 ? (
             <div className="markers">{scheme.mastermindTwistLabel ?? 'Mastermind Twists'}: {state.mastermindSchemeTwists!.length}</div>
-          )}
+          ) : null}
           <StackedMasterStrikes
             cards={state.stackedMasterStrikes ?? []}
             cardIndex={state.cards}
@@ -339,11 +344,6 @@ function GameScreen({
               ))}
             </div>
             <DeckPile count={state.villainDeck.length} />
-            {(state.schemeTwists?.length ?? 0) > 0 && scheme.schemeTwistLabel && (
-              <div className="markers">
-                {scheme.schemeTwistLabel}: {state.schemeTwists?.length ?? 0}
-              </div>
-            )}
             {(state.demonGoblins?.length ?? 0) > 0 && (
               <DeckPile
                 count={state.demonGoblins!.length}
