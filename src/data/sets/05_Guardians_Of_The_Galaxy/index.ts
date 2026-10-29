@@ -8,6 +8,7 @@ import {
 } from './content'
 import { GUARDIANS_OF_THE_GALAXY_SCHEMES } from './schemes'
 import './heroAbilities'
+import './villainAbilities'
 
 export const GUARDIANS_OF_THE_GALAXY_SET: SetData = {
   id: 'guardians_of_the_galaxy',
@@ -19,4 +20,3 @@ export const GUARDIANS_OF_THE_GALAXY_SET: SetData = {
   masterminds: GUARDIANS_OF_THE_GALAXY_MASTERMINDS,
   bystanderGroups: GUARDIANS_OF_THE_GALAXY_BYSTANDER_GROUPS,
 }
-//

@@ -108,7 +108,6 @@ export async function escapeVillain(state: GameState, villain: CardInstance, ui:
     else state.ko.push(c)
   }
   delete state.captives[villain.instanceId]
-  passShardsToMastermind(state, villain) // Mastermind dostaje jeden Shard uciekiniera, reszta wraca do zapasu
 
   getScheme(state).onVillainEscaped?.(state, villain, lost)
 
@@ -116,6 +115,9 @@ export async function escapeVillain(state: GameState, villain: CardInstance, ui:
   if (escapeAbilities?.onEscape) {
     await asEnemyEffect(state, () => escapeAbilities.onEscape!(state, ui, villain))
   }
+
+  // Dopiero po efekcie Escape: Korath sprawdza, czy uciekinier "had any Shards"
+  passShardsToMastermind(state, villain) // Mastermind dostaje jeden Shard uciekiniera, reszta wraca do zapasu
 }
 
 /** Tarcze przed Ambush (Invisible Barrier): true = gracz anulował efekt Ambush. */

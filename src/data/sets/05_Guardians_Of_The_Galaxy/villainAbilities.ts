@@ -1,149 +1,83 @@
-/* Wzór z PTTR
 import { registerVillainAbilities } from '../../../engine/villainAbilities'
 import { registerStrengthModifier } from '../../../engine/strengthModifiers'
-import { addAttack, addRecruit, gainWound } from '../../../engine/game'
-import { getCardAbility } from '../../../engine/cardAbilities'
-import { chooseOneCard } from '../../../engine/abilityHelpers'
-import { discardCard, revealCards } from '../../../engine/keywords'
-import { koFromHq, refillHq } from '../../../engine/recruit'
-import { CITY_NAMES } from '../../../engine/constants'
+import { drawCards, gainWound } from '../../../engine/game'
+import { isVillainCard } from '../../../engine/keywords'
+import { loseShard, placeShardsOn, shardsOn } from '../../../engine/shards'
 import type { CardInstance, GameState } from '../../../engine/types'
-import type { UiAdapter } from '../../../engine/ui'
 
-function captureForVillain(state: GameState, ui: UiAdapter, villain: CardInstance): Promise<void> {
-  const bystander = state.bystanders.pop()
-  if (!bystander) return Promise.resolve()
-  state.captives[villain.instanceId] = [...(state.captives[villain.instanceId] ?? []), bystander]
-  return ui.showCapture(villain, bystander, `Bystander captured by ${state.cards[villain.cardId].name}`)
-}
+const KREE_STARFORCE = 'Kree Starforce'
 
-function hqHeroUnder(state: GameState, self: CardInstance): CardInstance | undefined {
-  const cityIndex = state.city.findIndex((card) => card?.instanceId === self.instanceId)
-  return cityIndex === -1 ? undefined : state.hq[cityIndex] ?? undefined
-}
+const villainsInCity = (state: GameState): CardInstance[] =>
+  state.city.filter((card): card is CardInstance => !!card && isVillainCard(state.cards[card.cardId]))
 
-function highestCostHqHero(state: GameState): CardInstance | undefined {
-  return state.hq
-    .filter((card): card is CardInstance => !!card && state.cards[card.cardId].hero !== undefined)
-    .sort((a, b) => (state.cards[b.cardId].cost ?? 0) - (state.cards[a.cardId].cost ?? 0))[0]
-}
+// ---------- Kree Starforce ----------
 
-async function revealInstinctOrDiscard(state: GameState, ui: UiAdapter, prompt: string): Promise<void> {
-  const instinct = revealCards(state, { type: 'instinct' })
-  const revealed = await chooseOneCard(ui, instinct, prompt)
-  if (revealed) {
-    await ui.showInfo(revealed, `${prompt}: revealed an Instinct Hero`)
-    return
-  }
-  const discarded = await chooseOneCard(ui, state.hand, `${prompt}: discard a card`)
-  if (discarded) await discardCard(state, discarded.instanceId, ui)
-}
+registerStrengthModifier('villain-captain-atlas', (state) => shardsOn(state, state.mastermind))
+registerVillainAbilities('villain-captain-atlas', {
+  onEscape: async (state, ui) => {
+    // "Each player" = gracz: traci Shard, a jeśli nie ma, dostaje Wound
+    if (!loseShard(state)) await gainWound(state, ui)
+  },
+})
 
-async function revealInstinctOrWound(state: GameState, ui: UiAdapter, prompt: string): Promise<void> {
-  const instinct = await chooseOneCard(ui, revealCards(state, { type: 'instinct' }), prompt)
-  if (instinct) {
-    await ui.showInfo(instinct, `${prompt}: revealed an Instinct Hero`)
-    return
-  }
+registerVillainAbilities('villain-demon-druid', {
+  onAmbush: async (state, ui, self) => {
+    const targets = villainsInCity(state).filter((villain) => villain.instanceId !== self.instanceId)
+    if (targets.length === 0) return
+    const chosen =
+      targets.length === 1
+        ? targets[0]
+        : await ui.choose(targets, { prompt: 'Demon Druid (Ambush): choose another Villain to gain two Shards', optional: false })
+    if (chosen) placeShardsOn(state, chosen, 2)
+  },
+})
+
+registerVillainAbilities('villain-dr-minerva', {
+  onAmbush: async (state) => {
+    for (const villain of villainsInCity(state)) {
+      if (state.cards[villain.cardId].villainGroup === KREE_STARFORCE) placeShardsOn(state, villain, 1)
+    }
+  },
+})
+
+registerVillainAbilities('villain-korath-the-pursuer', {
+  onAmbush: async (state, ui, self) => {
+    if (state.deck.length + state.discard.length === 0) return
+    const choice = await ui.chooseOptionWithCard(
+      self,
+      [
+        { id: 'draw', label: 'Draw a card (Korath gains a Shard)' },
+        { id: 'skip', label: 'Do not draw' },
+      ],
+      'Korath the Pursuer (Ambush): draw a card?',
+    )
+    if (choice !== 'draw') return
+    drawCards(state, 1)
+    placeShardsOn(state, self, 1)
+  },
+  onEscape: async (state, ui, self) => {
+    // Shardy uciekiniera przechodzą na Mastermind dopiero po tym efekcie, więc tu jeszcze leżą na Korathcie
+    if (shardsOn(state, self) > 0) await gainWound(state, ui)
+  },
+})
+
+// "Each player" = gracz (zasada projektu), więc oskarżonym jest zawsze on i dostaje Wound
+async function ronanAccuses(state: GameState, ui: Parameters<typeof gainWound>[1]): Promise<void> {
   await gainWound(state, ui)
 }
+registerVillainAbilities('villain-ronan-the-accuser', { onAmbush: ronanAccuses, onEscape: ronanAccuses })
 
-// ---------- Maximum Carnage ----------
-
-registerStrengthModifier('villain-doppelganger', (state, self) => state.cards[hqHeroUnder(state, self)?.cardId ?? '']?.cost ?? 0)
-
-registerVillainAbilities('villain-carrion', {
-  onFeast: async (state, _ui, self, feasted) => {
-    const cityIndex = state.city.findIndex((card) => card?.instanceId === self.instanceId)
-    if (cityIndex !== -1 && state.cards[feasted.cardId].hero !== undefined && (state.cards[feasted.cardId].cost ?? 0) >= 1) {
-      state.returnVillainToCity = { instanceId: self.instanceId, cityIndex }
+registerVillainAbilities('villain-shatterax', {
+  onFight: async (state) => {
+    for (const hero of state.hq) {
+      if (hero && state.cards[hero.cardId].hero !== undefined) placeShardsOn(state, hero, 1)
     }
   },
 })
 
-registerVillainAbilities('villain-demogoblin', {
-  onAmbush: async (state, ui, self) => {
-    await captureForVillain(state, ui, self)
+registerVillainAbilities('villain-supremor', {
+  onAmbush: async (state, _ui, self) => {
+    placeShardsOn(state, self, 1)
+    placeShardsOn(state, state.mastermind, 1)
   },
 })
-
-registerVillainAbilities('villain-shriek', {
-  onFeast: async (state, ui, _self, feasted) => {
-    // The current game mode has one player. Keep the condition explicit so a
-    // future multiplayer mode can add the "each other player" effect here.
-    if (state.cards[feasted.cardId].hero !== undefined && (state.cards[feasted.cardId].cost ?? 0) === 0) return
-    void ui
-  },
-  onEscape: async (state, ui) => {
-    await gainWound(state, ui)
-  },
-})
-
-// ---------- Sinister Six ----------
-
-registerVillainAbilities('villain-chameleon', {
-  onFight: async (state, ui, self) => {
-    const hero = hqHeroUnder(state, self)
-    if (!hero) return
-    const data = state.cards[hero.cardId]
-    addAttack(state, data.attack ?? 0)
-    addRecruit(state, data.recruit ?? 0)
-    const ability = getCardAbility(hero.cardId)
-    if (ability) await ability(state, { self: hero, ui })
-  },
-})
-
-registerVillainAbilities('villain-hobgoblin', {
-  onAmbush: async (state, ui) => {
-    const villains = state.city.filter(
-      (card): card is CardInstance => !!card && state.cards[card.cardId].villainGroup === 'Sinister Six',
-    )
-    for (const villain of villains) await captureForVillain(state, ui, villain)
-  },
-})
-
-registerStrengthModifier('villain-kraven-the-hunter', (state) => state.cards[highestCostHqHero(state)?.cardId ?? '']?.cost ?? 0)
-registerVillainAbilities('villain-kraven-the-hunter', {
-  onEscape: async (state) => {
-    const target = highestCostHqHero(state)
-    if (!target) return
-    const index = state.hq.findIndex((card) => card?.instanceId === target.instanceId)
-    if (index !== -1) {
-      koFromHq(state, index)
-      refillHq(state)
-    }
-  },
-})
-
-registerStrengthModifier('villain-sandman', (state) => state.city.filter(Boolean).length * 2)
-registerVillainAbilities('villain-sandman', {
-  onEscape: async (state, ui) => {
-    await revealInstinctOrWound(state, ui, 'Sandman (Escape): reveal an Instinct Hero')
-  },
-})
-
-registerVillainAbilities('villain-shocker', {
-  onAmbush: async (state, ui) => {
-    await revealInstinctOrDiscard(state, ui, 'Shocker (Ambush): reveal an Instinct Hero')
-  },
-})
-
-registerVillainAbilities('villain-vulture', {
-  onAmbush: async (state, ui, self) => {
-    const bridge = state.city[CITY_NAMES.indexOf('Bridge')]
-    const rooftops = state.city[CITY_NAMES.indexOf('Rooftops')]
-    const targets = [bridge, rooftops].filter((card): card is CardInstance => !!card && card.instanceId !== self.instanceId)
-    const chosen = await chooseOneCard(ui, targets, 'Vulture (Ambush): choose a Villain to swap with Vulture')
-    if (!chosen) return
-    const vultureIndex = state.city.findIndex((card) => card?.instanceId === self.instanceId)
-    const targetIndex = state.city.findIndex((card) => card?.instanceId === chosen.instanceId)
-    if (vultureIndex !== -1 && targetIndex !== -1) {
-      state.city[vultureIndex] = chosen
-      state.city[targetIndex] = self
-    }
-  },
-  onEscape: async (state, ui) => {
-    await revealInstinctOrWound(state, ui, 'Vulture (Escape): reveal an Instinct Hero')
-  },
-})
-*/

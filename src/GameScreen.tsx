@@ -361,7 +361,7 @@ function GameScreen({
                   flipId={instance.instanceId}
                   flipFrom="hero-deck"
                   effectiveStrength={hqVillain ? getEffectiveStrength(state, instance) : undefined}
-                  shards={hqVillain ? shardsOn(state, instance) : undefined}
+                  shards={shardsOn(state, instance)}
                   effectiveCost={hqVillain ? undefined : hqCardCost(state, i)}
                   costResource={negativeZoneActive ? 'attack' : 'recruit'}
                   strengthResource={negativeZoneActive ? 'recruit' : 'attack'}

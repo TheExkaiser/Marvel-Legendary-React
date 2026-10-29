@@ -4,7 +4,7 @@ import { assertPlaying, logEvent } from './common'
 import { addAttack, addRecruit } from './resources'
 
 /** Liczba żetonów Shard w grze (Guardians of the Galaxy). */
-export const SHARD_SUPPLY_SIZE = 18
+export const SHARD_SUPPLY_SIZE = 500
 
 /** Czy w grze są karty operujące na Shardach (słowo kluczowe 'shard' w danych karty). Steruje widocznością licznika w UI. */
 export function gameUsesShards(state: GameState): boolean {
@@ -135,4 +135,32 @@ export async function spendShardsWithPrompt(state: GameState, ui: UiAdapter): Pr
     initial: 1,
   })
   if (count > 0) spendShards(state, count, resource)
+}
+
+/** Gracz traci jeden Shard (wraca do zapasu). Zwraca false, gdy nie miał żadnego (Captain Atlas: wtedy dostaje Wound). */
+export function loseShard(state: GameState): boolean {
+  const have = state.shards ?? 0
+  if (have === 0) return false
+  state.shards = have - 1
+  returnToSupply(state, 1)
+  logEvent(state, 'Lost a Shard')
+  return true
+}
+
+/** Wszystkie Shardy leżące na karcie trafiają do gracza (zdobycie Bohatera z HQ, na którym leżą Shardy: Shatterax).
+ * Nie ruszają zapasu, bo już z niego zeszły. */
+export function claimShardsOn(state: GameState, target: CardInstance): void {
+  const count = shardsOn(state, target)
+  if (count === 0) return
+  setShardsOn(state, target, 0)
+  state.shards = (state.shards ?? 0) + count
+  logEvent(state, `Gained ${count} Shard${count === 1 ? '' : 's'} from ${state.cards[target.cardId].name}`)
+}
+
+/** Wszystkie Shardy leżące na karcie wracają do zapasu (Bohater z Shardami opuścił HQ w inny sposób niż rekrutacja). */
+export function returnShardsOn(state: GameState, target: CardInstance): void {
+  const count = shardsOn(state, target)
+  if (count === 0) return
+  setShardsOn(state, target, 0)
+  returnToSupply(state, count)
 }

@@ -4,7 +4,7 @@ import { getScheme } from './schemeRegistry'
 import { rescueCard } from './wounds'
 import { CITY_NAMES } from './constants'
 import type { UiAdapter } from './ui'
-import { gainShards } from './shards'
+import { claimShardsOn, gainShards, returnShardsOn } from './shards'
 
 /** Save Humanity: za tyle Recruit ratujesz Bystandera z HQ. */
 const BYSTANDER_RESCUE_COST = 2
@@ -32,6 +32,7 @@ export function koFromHq(state: GameState, index: number): CardInstance | undefi
   const card = state.hq[index]
   if (!card) return undefined
   state.hq[index] = null
+  returnShardsOn(state, card) // Shatterax: Bohater opuszcza HQ w inny sposób niż rekrutacja, Shardy wracają do zapasu
 
   const scheme = getScheme(state)
   if (scheme.onHeroKoedFromHq) scheme.onHeroKoedFromHq(state, card, index)
@@ -109,6 +110,7 @@ export function recruitHero(state: GameState, instanceId: string): void {
       state.hqRecruitBonuses = { ...state.hqRecruitBonuses, [location]: Math.max(0, remainingBonus - baseCost) }
     }
   }
+  if (!isBystander && data.hero) claimShardsOn(state, instance) // Shatterax: Shardy leżące na Bohaterze trafiają do gracza
   if (!isBystander && data.hero && state.shardsOnNextRecruitThisTurn) {
     state.shardsOnNextRecruitThisTurn = false
     gainShards(state, baseCost) // I Am Groot: Shardy równe (drukowanemu) kosztowi zrekrutowanego Bohatera

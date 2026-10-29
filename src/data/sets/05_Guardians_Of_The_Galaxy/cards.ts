@@ -41,3 +41,41 @@ export const STAR_LORD_CARDS: DeckEntry[] = [
   { count: 3, card: { id: 'hero-star-lord-implanted-memory-chip', name: 'Implanted Memory Chip', hero: 'Star-Lord', img: img('hero-star-lord-implanted-memory-chip'), team: TEAM, type: ['tech'], keywords: ['artifact'], cost: 6, text: 'Artifact - Once per turn, draw a card.' } },
   { count: 1, card: { id: 'hero-star-lord-sentient-starship', name: 'Sentient Starship', hero: 'Star-Lord', img: img('hero-star-lord-sentient-starship'), team: TEAM, type: ['ranged'], keywords: ['artifact', 'shard'], cost: 8, text: 'Artifact - Once per turn, gain a Shard for each Artifact you control.' } },
 ]
+
+// ---------- Villains ----------
+
+const villainImg = (slug: string) => `/cards/guardians-of-the-galaxy/villain-${slug}.webp`
+
+function villainCard(
+  id: string,
+  name: string,
+  group: string,
+  strength: number | undefined,
+  vp: number,
+  text: string,
+  keywords: string[] = [],
+): DeckEntry {
+  return {
+    count: 1,
+    card: {
+      id: `villain-${id}`,
+      name,
+      img: villainImg(id),
+      strength,
+      vp,
+      villainGroup: group,
+      text,
+      keywords,
+    },
+  }
+}
+
+export const KREE_STARFORCE_CARDS: DeckEntry[] = [
+  villainCard('captain-atlas', 'Captain Atlas', 'Kree Starforce', 6, 4, 'Captain Atlas gets +1 Attack for each Shard on the Mastermind. Escape: Each player loses a Shard. Each player that cannot do so gains a Wound.', ['shard']),
+  villainCard('demon-druid', 'Demon Druid', 'Kree Starforce', 5, 3, 'Ambush: Another Villain in the city gains two Shards.', ['shard']),
+  villainCard('dr-minerva', 'Dr. Minerva', 'Kree Starforce', 5, 3, 'Ambush: Each Kree Villain in the city gains a Shard (including this Villain).', ['shard']),
+  villainCard('korath-the-pursuer', 'Korath the Pursuer', 'Kree Starforce', 5, 3, 'Ambush: Each player may draw a card. Korath gains a Shard for each card drawn this way. Escape: If Korath had any Shards, each player gains a Wound.', ['shard']),
+  villainCard('ronan-the-accuser', 'Ronan the Accuser', 'Kree Starforce', 7, 5, 'Ambush: Each player simultaneously points their finger to accuse another player. Each player who was accused the most gains a Wound. Escape: Same effect.'),
+  villainCard('shatterax', 'Shatterax', 'Kree Starforce', 5, 3, 'Fight: Put a Shard on each Hero in the HQ. When a player gains that Hero, they gain that Shard. If that Hero leaves the HQ some other way, return that Shard to the supply.', ['shard']),
+  { ...villainCard('supremor', 'Supremor', 'Kree Starforce', 3, 2, 'Ambush: Supremor and the Mastermind each gain a Shard.', ['shard']), count: 2 },
+]
