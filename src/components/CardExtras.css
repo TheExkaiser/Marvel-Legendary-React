@@ -4,13 +4,9 @@
   left: 4px;
   top: 4px;
   z-index: 3;
-  display: flex;
-  align-items: center;
-  gap: 1px;
+  width: 24px;
+  height: 24px;
   color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
   pointer-events: none;
 }
 
@@ -20,16 +16,23 @@
 
 .card .shard-badge-icon {
   display: block;
-  width: 12px;
-  height: 12px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 
 .shard-badge-count {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
   color: #fff;
-  -webkit-text-stroke: 0.75px #102033;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  -webkit-text-stroke: 3px #102033;
   paint-order: stroke fill;
-  text-shadow: 0 1px 2px #07111f;
+  text-shadow: 0 3px 5px #07111f;
 }
 
 @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
@@ -37,13 +40,16 @@
     left: 16px;
   }
 
-  .shard-badge {
-    font-size: 9px;
+  .shard-badge,
+  .card .shard-badge-icon {
+    width: 16px;
+    height: 16px;
   }
 
-  .card .shard-badge-icon {
-    width: 10px;
-    height: 10px;
+  .shard-badge-count {
+    font-size: 11px;
+    -webkit-text-stroke: 2px #102033;
+    text-shadow: 0 2px 3px #07111f;
   }
 }
 
