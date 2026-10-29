@@ -2,34 +2,49 @@
 .shard-badge {
   position: absolute;
   left: 4px;
-  top: 30px; /* pod odznaką captured (lewy górny róg) */
+  top: 4px;
   z-index: 3;
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 1px 4px;
-  border: 1px solid rgba(139, 233, 255, 0.75);
-  border-radius: 10px;
-  background: rgba(10, 20, 40, 0.85);
+  gap: 1px;
   color: #fff;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
   line-height: 1;
   pointer-events: none;
 }
 
-.shard-badge-icon {
+.shard-badge-next-to-captured {
+  left: 28px;
+}
+
+.card .shard-badge-icon {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   object-fit: contain;
 }
 
 .shard-badge-count {
   color: #fff;
-  -webkit-text-stroke: 1px #102033;
+  -webkit-text-stroke: 0.75px #102033;
   paint-order: stroke fill;
-  text-shadow: 0 1px 2px #07111f, 0 0 3px #07111f;
+  text-shadow: 0 1px 2px #07111f;
+}
+
+@media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
+  .shard-badge-next-to-captured {
+    left: 16px;
+  }
+
+  .shard-badge {
+    font-size: 9px;
+  }
+
+  .card .shard-badge-icon {
+    width: 10px;
+    height: 10px;
+  }
 }
 
 /* Przyciski zdolności artefaktu: styl .focus-button, ale ustawione w kolumnie na dole karty */

@@ -90,10 +90,13 @@ function CostModifierBadge({ data, effectiveCost, costResource = 'recruit' }: { 
 }
 
 // Odznaka Shardów na karcie (każdy Shard = +1 Attack; siła w odznace siły już to uwzględnia).
-function ShardBadge({ count }: { count: number }) {
+function ShardBadge({ count, hasCapturedCards }: { count: number; hasCapturedCards: boolean }) {
   if (count <= 0) return null
   return (
-    <div className="shard-badge" title={`Shards: ${count} (+${count} Attack)`}>
+    <div
+      className={`shard-badge${hasCapturedCards ? ' shard-badge-next-to-captured' : ''}`}
+      title={`Shards: ${count} (+${count} Attack)`}
+    >
       <img className="shard-badge-icon" src={`${import.meta.env.BASE_URL}icons/shard.png`} alt="" />
       <span className="shard-badge-count">{count}</span>
     </div>
@@ -284,7 +287,7 @@ export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, s
         </button>
 
         <CapturedBadge count={capturedCount} />
-        <ShardBadge count={shards ?? 0} />
+        <ShardBadge count={shards ?? 0} hasCapturedCards={capturedCount > 0} />
         <AttackModifierBadge data={data} effectiveStrength={effectiveStrength} strengthResource={strengthResource} />
         <CostModifierBadge data={data} effectiveCost={effectiveCost} costResource={costResource} />
 
