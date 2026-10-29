@@ -279,7 +279,9 @@ function GameScreen({
         onSchemeIntroClose={beginGame}
       />
 
-      {/* ===== Mastermind (po lewej) + Miasto + talia villainów (po prawej) ===== */}
+      <div className="board-zone-scroll">
+        <div className="board-zones">
+      {/* ===== Board zone: Masterminds, city, and villain deck ===== */}
       <div className="board-top">
         <div className="mastermind-slot">
           <div className="additional-masterminds">
@@ -332,108 +334,106 @@ function GameScreen({
             cardIndex={state.cards}
           />          
         </div>
-
-        <div className="city-slot">
-          <div className="zone-title">
-            City (<span
-              className="escaped-count"
-              onClick={() => setViewingPile('escaped')}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault()
-                  setViewingPile('escaped')
-                }
-              }}
-              role="button"
-              tabIndex={0}
-            >
-              Escaped: {state.escaped.length}
-            </span>)
-            {(state.schemeTokens ?? []).map((t) => (
-              <SchemeToken key={t.instanceId} data={state.cards[t.cardId]} />
-            ))}
-          </div>
-          <div className="city-row">
-            <div className="row">
-              {state.city.map((instance, i) => (
-                <div key={i}>
-                  {state.cityDestroyed?.[i] ? (
-                    <div className="destroyed-city-token" title="Destroyed City">
-                      <img
-                        src={`${import.meta.env.BASE_URL}tokens/destroyed_city_token.jpg`}
-                        alt="Destroyed City"
-                      />
-                    </div>
-                  ) : instance ? (
-                    <CardView
-                      data={state.cards[instance.cardId]}
-                      flipId={instance.instanceId}
-                      onClick={() => act((s, ui) => fightVillain(s, instance.instanceId, ui))}
-                      highlight={canAffordVillain(state, instance) ? 'attack' : undefined}
-                      effectiveStrength={getEffectiveStrength(state, instance)}
-                      strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
-                      capturedCards={getCapturedCards(state, instance.instanceId)}
-                      shards={shardsOn(state, instance)}
-                    />
-                  ) : (
-                    <div className="slot-empty">{CITY_NAMES[i]}</div>
-                  )}
-                  {state.cityMarkers[i].length > 0 && (
-                    <div className="markers">{state.cityMarkers[i].join(', ')}</div>
-                  )}
-                </div>
-              ))}
-            </div>
-            <div className="city-deck-group">
-              <DeckPile count={state.villainDeck.length} />
-              {scheme.id === 'gotg_intergalactic_kree_nega_bomb' && (
-                <DeckPile
-                  count={state.negaBombDeck?.length ?? 0}
-                  label="Nega-Bomb"
-                  className="nega-bomb-pile"
-                />
-              )}
-            </div>
-            {(state.demonGoblins?.length ?? 0) > 0 && (
+        <div className="city-title zone-title">
+          City (<span
+            className="escaped-count"
+            onClick={() => setViewingPile('escaped')}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                setViewingPile('escaped')
+              }
+            }}
+            role="button"
+            tabIndex={0}
+          >
+            Escaped: {state.escaped.length}
+          </span>)
+          {(state.schemeTokens ?? []).map((t) => (
+            <SchemeToken key={t.instanceId} data={state.cards[t.cardId]} />
+          ))}
+        </div>
+        <div className="villain-deck-column">
+          <div className="zone-title">Villain Deck</div>
+          <div className="villain-decks">
+            <DeckPile count={state.villainDeck.length} />
+            {scheme.id === 'gotg_intergalactic_kree_nega_bomb' && (
               <DeckPile
-                count={state.demonGoblins!.length}
-                deckId="demon-goblins"
-                label="Demon Goblins (2 Attack)"
-                onClick={() => act(fightDemonGoblin)}
-                highlight={canAffordDemonGoblin(state) ? 'attack' : undefined}
+                count={state.negaBombDeck?.length ?? 0}
+                label="Nega-Bomb"
+                className="nega-bomb-pile"
               />
             )}
           </div>
-        </div>
-      </div>
-
-      {/* ===== Rekrutacja: oficer + HQ + talia bohaterów (po prawej) ===== */}
-      <section className="section-block section-block-hq">
-        <h2 className="section-heading">HQ</h2>
-        <div className="row recruit-row">
-        {state.sidekickCardId && (
-          <div className="sidekick-slot">
+          {(state.demonGoblins?.length ?? 0) > 0 && (
             <DeckPile
-              count={state.sidekickStack.length}
-              deckId="sidekick-stack"
-              topCard={state.cards[state.sidekickCardId]}
-              showCount={false}
-              highlight={canAffordSidekick(state) ? 'buy' : undefined}
-              onClick={state.sidekickStack.length > 0 ? () => act((s) => recruitSidekick(s)) : undefined}
-            />
-            <div>Recruit: 2</div>
-          </div>
-        )}
-        <div className="officer-slot">
-          {state.officerDeck.length > 0 && (
-            <CardView
-              data={state.cards[state.officerCardId]}
-              flipId={state.officerDeck[state.officerDeck.length - 1].instanceId}
-              onClick={() => act((s) => recruitOfficer(s))}
-              highlight={canAffordOfficer(state) ? 'buy' : undefined}
+              count={state.demonGoblins!.length}
+              deckId="demon-goblins"
+              label="Demon Goblins (2 Attack)"
+              onClick={() => act(fightDemonGoblin)}
+              highlight={canAffordDemonGoblin(state) ? 'attack' : undefined}
             />
           )}
-          <div>Remaining: {state.officerDeck.length}</div>
+        </div>
+        {state.city.map((instance, i) => (
+          <div className="city-space" key={i}>
+            {state.cityDestroyed?.[i] ? (
+              <div className="destroyed-city-token" title="Destroyed City">
+                <img
+                  src={`${import.meta.env.BASE_URL}tokens/destroyed_city_token.jpg`}
+                  alt="Destroyed City"
+                />
+              </div>
+            ) : instance ? (
+              <CardView
+                data={state.cards[instance.cardId]}
+                flipId={instance.instanceId}
+                onClick={() => act((s, ui) => fightVillain(s, instance.instanceId, ui))}
+                highlight={canAffordVillain(state, instance) ? 'attack' : undefined}
+                effectiveStrength={getEffectiveStrength(state, instance)}
+                strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
+                capturedCards={getCapturedCards(state, instance.instanceId)}
+                shards={shardsOn(state, instance)}
+              />
+            ) : (
+              <div className="slot-empty" />
+            )}
+            <div className="city-space-label">{CITY_NAMES[i]}</div>
+            {state.cityMarkers[i].length > 0 && (
+              <div className="markers">{state.cityMarkers[i].join(', ')}</div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* ===== Board zone: Sidekicks, Officers, HQ, and Hero deck ===== */}
+      <section className="hq-zone">
+        <h2 className="section-heading hq-heading">HQ</h2>
+        <div className="hq-support-column">
+          {state.sidekickCardId && (
+            <div className="sidekick-slot">
+              <DeckPile
+                count={state.sidekickStack.length}
+                deckId="sidekick-stack"
+                topCard={state.cards[state.sidekickCardId]}
+                showCount={false}
+                highlight={canAffordSidekick(state) ? 'buy' : undefined}
+                onClick={state.sidekickStack.length > 0 ? () => act((s) => recruitSidekick(s)) : undefined}
+              />
+              <div>Sidekicks · Recruit 2</div>
+            </div>
+          )}
+          <div className="officer-slot">
+            {state.officerDeck.length > 0 && (
+              <CardView
+                data={state.cards[state.officerCardId]}
+                flipId={state.officerDeck[state.officerDeck.length - 1].instanceId}
+                onClick={() => act((s) => recruitOfficer(s))}
+                highlight={canAffordOfficer(state) ? 'buy' : undefined}
+              />
+            )}
+            <div>Officers · {state.officerDeck.length}</div>
+          </div>
         </div>
         {state.hq.map((instance, i) => {
           const explosions = state.hqExplosions?.[i] ?? 0
@@ -442,7 +442,7 @@ function GameScreen({
           const hqVillain = scheme.canFightVillainsInHq === true && !!hqData &&
             (hqData.villainGroup !== undefined || hqData.henchman === true)
           return (
-            <div key={instance?.instanceId ?? `hq-${i}`}>
+            <div className="hq-space" key={instance?.instanceId ?? `hq-${i}`}>
               {instance ? (
                 <CardView
                   data={state.cards[instance.cardId]}
@@ -481,17 +481,19 @@ function GameScreen({
             </div>
           )
         })}
-        <div className="deck-end">
+        <div className="hero-deck-column">
+          <div className="zone-title">Hero Deck</div>
           <DeckPile count={state.heroDeck.length} deckId="hero-deck" />
         </div>
-        </div>
       </section>
+        </div>
+      </div>
 
-      {/* ===== Zagrane karty + talia gracza (po prawej) ===== */}
-      <section className="section-block section-block-played">
+      {/* ===== Player zone: played grid and player piles ===== */}
+      <section className="section-block section-block-played player-zone">
         <h2 className="section-heading">Played ({playedRow.length})</h2>
         <div className="row-with-deck">
-        <div className="row">
+        <div className="played-grid">
           {playedRow.map((c) => {
             const data = getCardData(state, c)
             const artifact = isArtifactData(data)
@@ -522,7 +524,7 @@ function GameScreen({
             )
           })}
         </div>
-        <div className="deck-group">
+        <div className="deck-group player-piles">
           <DeckPile count={state.deck.length} deckId="deck" />
           <DeckPile
             count={state.discard.length}
