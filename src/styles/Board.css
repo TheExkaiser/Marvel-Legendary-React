@@ -26,6 +26,22 @@
   color: var(--text);
 }
 
+.escaped-count {
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.escaped-count:hover {
+  color: var(--gold);
+}
+
+.escaped-count:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
 .officer-slot {
   display: flex;
   flex-direction: column;
