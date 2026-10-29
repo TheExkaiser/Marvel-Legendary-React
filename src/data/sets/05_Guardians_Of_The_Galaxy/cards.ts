@@ -80,63 +80,65 @@ export const KREE_STARFORCE_CARDS: DeckEntry[] = [
   { ...villainCard('supremor', 'Supremor', 'Kree Starforce', 3, 2, 'Ambush: Supremor and the Mastermind each gain a Shard.', ['shard']), count: 2 },
 ]
 
-function infinityGemCard(id: string, name: string, strength: number, count: number, text: string): DeckEntry {
-  return {
-    count,
-    card: {
-      id: `villain-infinity-gems-${id}`,
-      name,
-      img: '',
-      strength,
-      vp: 0,
-      villainGroup: 'Infinity Gems',
-      text,
-      keywords: ['artifact', 'villain-artifact', 'shard'],
-    },
-  }
-}
-
 export const INFINITY_GEMS_CARDS: DeckEntry[] = [
-  infinityGemCard(
-    'mind-gem',
+  villainCard(
+    'infinity-gems-mind-gem',
     'Mind Gem',
+    'Infinity Gems',
     6,
-    1,
+    0,
     'Ambush: Mind Gem gains a Shard for each Scheme Twist in the KO pile and/or stacked next to the Scheme. Fight: Put this into your discard pile as an Artifact. Artifact — Once per turn, you get +2 Recruit.',
+    ['artifact', 'villain-artifact', 'shard'],
   ),
-  infinityGemCard(
-    'power-gem',
+  villainCard(
+    'infinity-gems-power-gem',
     'Power Gem',
+    'Infinity Gems',
     7,
-    1,
+    0,
     'Ambush: Power Gem gains a Shard for each Master Strike in the KO pile and/or stacked next to the Mastermind. Fight: Put this into your discard pile as an Artifact. Artifact — Once per turn, you get +2 Attack.',
+    ['artifact', 'villain-artifact', 'shard'],
   ),
-  infinityGemCard(
-    'reality-gem',
-    'Reality Gem',
-    5,
-    2,
-    "Ambush: Reality Gem gains a Shard for each Infinity Gem Villain card in the city and/or Escape pile. Fight: Put this into your discard pile as an Artifact. Artifact — Before you play a card from the Villain Deck, you may first reveal the top card of the Villain Deck. If it's not a Scheme Twist, you may put it on the bottom of the Villain Deck. If you do, gain a Shard.",
-  ),
-  infinityGemCard(
-    'soul-gem',
+  {
+    ...villainCard(
+      'infinity-gems-reality-gem',
+      'Reality Gem',
+      'Infinity Gems',
+      5,
+      0,
+      "Ambush: Reality Gem gains a Shard for each Infinity Gem Villain card in the city and/or Escape pile. Fight: Put this into your discard pile as an Artifact. Artifact — Before you play a card from the Villain Deck, you may first reveal the top card of the Villain Deck. If it's not a Scheme Twist, you may put it on the bottom of the Villain Deck. If you do, gain a Shard.",
+      ['artifact', 'villain-artifact', 'shard'],
+    ),
+    count: 2,
+  },
+  villainCard(
+    'infinity-gems-soul-gem',
     'Soul Gem',
+    'Infinity Gems',
     6,
-    1,
+    0,
     'Ambush: Soul Gem gains a Shard for each Villain in the city. Fight: Put this into your discard pile as an Artifact. Artifact — Whenever you defeat a Villain, put a Shard on Soul Gem from the supply. Once per turn, you get +Attack equal to the number of Shards on Soul Gem.',
+    ['artifact', 'villain-artifact', 'shard'],
   ),
-  infinityGemCard(
-    'space-gem',
-    'Space Gem',
-    5,
-    2,
-    'Ambush: Space Gem gains a Shard for each empty space in the city. Fight: Put this into your discard pile as an Artifact. Artifact — Once per turn, you may move a Villain to another city space. If another Villain is already there, swap them. If you moved any Villains this way, gain a Shard.',
-  ),
-  infinityGemCard(
-    'time-gem',
+  {
+    ...villainCard(
+      'infinity-gems-space-gem',
+      'Space Gem',
+      'Infinity Gems',
+      5,
+      0,
+      'Ambush: Space Gem gains a Shard for each empty space in the city. Fight: Put this into your discard pile as an Artifact. Artifact — Once per turn, you may move a Villain to another city space. If another Villain is already there, swap them. If you moved any Villains this way, gain a Shard.',
+      ['artifact', 'villain-artifact', 'shard'],
+    ),
+    count: 2,
+  },
+  villainCard(
+    'infinity-gems-time-gem',
     'Time Gem',
+    'Infinity Gems',
     6,
-    1,
+    0,
     'Ambush: Play another card from the Villain Deck. Time Gem gains Shards equal to that card’s printed Victory Points. Fight: Put this into your discard pile as an Artifact. Artifact — When you play this Artifact, take another turn after this one. Use this ability only if this is the first time any player has played the Time Gem this game.',
+    ['artifact', 'villain-artifact', 'shard'],
   ),
 ]
