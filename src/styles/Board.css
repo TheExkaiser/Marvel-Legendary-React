@@ -19,7 +19,7 @@
 .board-top,
 .hq-zone {
   display: grid;
-  grid-template-columns: repeat(7, var(--board-card-width));
+  grid-template-columns: repeat(9, var(--board-card-width));
   column-gap: var(--board-gap);
   width: max-content;
   align-items: start;
@@ -33,10 +33,10 @@
   background: linear-gradient(160deg, rgba(56, 225, 255, 0.07), rgba(255, 61, 87, 0.06));
 }
 
+.additional-mastermind-column,
 .mastermind-slot {
   position: relative;
   z-index: 1;
-  grid-column: 1;
   grid-row: 1 / span 2;
   display: flex;
   flex-direction: column;
@@ -44,29 +44,31 @@
   min-width: 0;
 }
 
-.additional-masterminds {
-  position: absolute;
-  z-index: 3;
-  top: 33px;
-  right: calc(100% + 10px);
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: flex-start;
-  gap: 6px;
-  pointer-events: none;
+.additional-mastermind-column {
+  grid-column: 2;
+  gap: 8px;
+}
+
+.mastermind-slot {
+  grid-column: 3;
+}
+
+.additional-mastermind-column .card,
+.mastermind-slot > .card {
+  width: var(--board-card-width);
 }
 
 .additional-mastermind {
-  pointer-events: auto;
   text-align: center;
 }
 
-.additional-mastermind-empty .slot-empty {
+.additional-mastermind-empty {
   width: 120px;
+  aspect-ratio: 5 / 7;
 }
 
 .city-title {
-  grid-column: 2 / span 5;
+  grid-column: 4 / span 5;
   grid-row: 1;
 }
 
@@ -101,7 +103,7 @@
 }
 
 .villain-deck-column {
-  grid-column: 7;
+  grid-column: 9;
   grid-row: 1 / span 2;
   gap: 8px;
 }
@@ -156,19 +158,33 @@
   min-height: 32px;
 }
 
-.hq-support-column {
+.sidekick-column {
   display: flex;
-  grid-column: 1;
+  grid-column: 2;
+  grid-row: 2;
   align-items: flex-start;
   justify-content: center;
-  gap: 8px;
   min-width: 0;
 }
 
-.sidekick-slot,
 .officer-slot {
   display: flex;
-  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 10px;
+  text-align: center;
+}
+
+.officer-slot {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.sidekick-slot {
+  display: flex;
   flex-direction: column;
   align-items: center;
   gap: 5px;
@@ -195,7 +211,7 @@
 }
 
 .hero-deck-column {
-  grid-column: 7;
+  grid-column: 9;
   grid-row: 2;
 }
 
@@ -290,17 +306,6 @@
   margin-left: 4px;
 }
 
-@media (max-width: 700px) {
-  .additional-masterminds {
-    right: calc(100% + 4px);
-    gap: 3px;
-  }
-
-  .additional-mastermind-empty .slot-empty {
-    width: 96px;
-  }
-}
-
 @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
   .board-zone-scroll {
     width: calc(100vw - 16px);
@@ -316,7 +321,7 @@
   .hq-zone {
     --board-card-width: 96px;
     --board-gap: 6px;
-    grid-template-columns: repeat(7, var(--board-card-width));
+    grid-template-columns: repeat(9, var(--board-card-width));
     padding: 8px;
   }
 
@@ -337,7 +342,9 @@
 
   .city-space .card,
   .hq-space .card,
-  .mastermind-slot > .card {
+  .additional-mastermind-column .card,
+  .mastermind-slot > .card,
+  .additional-mastermind-empty {
     width: 96px;
   }
 
@@ -345,14 +352,15 @@
     min-height: 22px;
   }
 
-  .hq-support-column {
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
+  .sidekick-column {
+    justify-content: center;
   }
 
-  .sidekick-slot,
   .officer-slot {
+    font-size: 8px;
+  }
+
+  .sidekick-slot {
     font-size: 8px;
   }
 
