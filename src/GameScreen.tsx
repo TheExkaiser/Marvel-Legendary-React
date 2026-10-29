@@ -229,11 +229,7 @@ function GameScreen({
         <div className="modal-overlay">
           <div className="modal-content game-over-content">
             <h2>{state.status === 'won' ? '🎉 You Win!' : '💀 You Lose'}</h2>
-            <p>
-              {state.status === 'won'
-                ? (scheme.checkWin?.(state) ? (scheme.winMessage ?? 'You win.') : 'Mastermind defeated.')
-                : 'Evil wins.'}
-            </p>
+            <p>{state.status === 'won' ? 'Mastermind defeated.' : 'Evil wins.'}</p>
             <div className="game-over-buttons">
               <button onClick={onRestart}>Restart</button>
               <button onClick={onExit}>Main Menu</button>
