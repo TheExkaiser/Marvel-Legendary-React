@@ -133,7 +133,8 @@ const INTERGALACTIC_KREE_NEGA_BOMB: SchemeDef = {
   keepsTwistCard: true,
   text:
     'Setup: 8 Twists. Make a face-down Nega-Bomb Deck of 6 Bystanders.\n' +
-    'Twist: Shuffle this Twist into the Nega-Bomb Deck. Then reveal a random card from that deck. If it is a Bystander, rescue it. If it is a Twist, KO it, KO all Heroes from the HQ, and each player gains a Wound.',
+    'Twist: Shuffle this Twist into the Nega-Bomb Deck. Then reveal a random card from that deck. If it is a Bystander, rescue it. If it is a Twist, KO it, KO all Heroes from the HQ, and each player gains a Wound.\n' +
+    'Evil Wins: When 16 non-grey Heroes are in the KO pile.',
   setup: (state) => {
     if (state.bystanders.length < 6) throw new Error('Intergalactic Kree Nega-Bomb requires 6 Bystanders')
     state.negaBombDeck = shuffle(state.bystanders.splice(0, 6))
@@ -159,6 +160,11 @@ const INTERGALACTIC_KREE_NEGA_BOMB: SchemeDef = {
     refillHq(state)
     await gainWound(state, ui)
   },
+  checkLoss: (state) =>
+    state.ko.filter((card) => {
+      const data = state.cards[card.cardId]
+      return !!data.hero && (data.type?.length ?? 0) > 0
+    }).length >= 16,
 }
 
 const UNITE_THE_SHARDS: SchemeDef = {
