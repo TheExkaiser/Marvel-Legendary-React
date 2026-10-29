@@ -283,9 +283,13 @@ function GameScreen({
         <div className="board-zones">
       {/* ===== Board zone: Masterminds, city, and villain deck ===== */}
       <div className="board-top">
-        <div className="mastermind-slot">
-          <div className="additional-masterminds">
-            {(state.masterminds ?? []).filter((mastermind) =>
+        <div className="additional-mastermind-column">
+          <div className="zone-title">Additional</div>
+          {(state.masterminds ?? []).filter((mastermind) =>
+            mastermind.instanceId !== state.mastermind.instanceId &&
+            !(state.defeatedMastermindIds ?? []).includes(mastermind.instanceId),
+          ).length > 0 ? (
+            (state.masterminds ?? []).filter((mastermind) =>
               mastermind.instanceId !== state.mastermind.instanceId &&
               !(state.defeatedMastermindIds ?? []).includes(mastermind.instanceId),
             ).map((mastermind) => (
@@ -305,13 +309,13 @@ function GameScreen({
                   shards={shardsOn(state, mastermind)}
                 />
               </div>
-            ))}
-            <div className="additional-mastermind additional-mastermind-empty" aria-label="Empty additional Mastermind slot">
-              <div className="markers">Additional Mastermind</div>
-              <div className="slot-empty" />
-            </div>
-          </div>
-          <div className="zone-title">Tactics: {state.tactics.length}</div>
+            ))
+          ) : (
+            <div className="slot-empty additional-mastermind-empty" aria-label="Empty additional Mastermind slot" />
+          )}
+        </div>
+        <div className="mastermind-slot">
+          <div className="zone-title">Mastermind · Tactics: {state.tactics.length}</div>
           <CardView
             data={state.cards[state.mastermind.cardId]}
             onClick={() => act(fightMastermind)}
@@ -380,7 +384,7 @@ function GameScreen({
           )}
         </div>
         {state.city.map((instance, i) => (
-          <div className="city-space" key={i} style={{ gridColumn: i + 2 }}>
+          <div className="city-space" key={i} style={{ gridColumn: i + 4 }}>
             {state.cityDestroyed?.[i] ? (
               <div className="destroyed-city-token" title="Destroyed City">
                 <img
@@ -413,7 +417,7 @@ function GameScreen({
       {/* ===== Board zone: Sidekicks, Officers, HQ, and Hero deck ===== */}
       <section className="hq-zone">
         <h2 className="section-heading hq-heading">HQ</h2>
-        <div className="hq-support-column">
+        <div className="sidekick-column">
           {state.sidekickCardId && (
             <div className="sidekick-slot">
               <DeckPile
@@ -427,17 +431,17 @@ function GameScreen({
               <div>Sidekicks · Recruit 2</div>
             </div>
           )}
-          <div className="officer-slot">
-            {state.officerDeck.length > 0 && (
-              <CardView
-                data={state.cards[state.officerCardId]}
-                flipId={state.officerDeck[state.officerDeck.length - 1].instanceId}
-                onClick={() => act((s) => recruitOfficer(s))}
-                highlight={canAffordOfficer(state) ? 'buy' : undefined}
-              />
-            )}
-            <div>Officers · {state.officerDeck.length}</div>
-          </div>
+        </div>
+        <div className="officer-slot">
+          {state.officerDeck.length > 0 && (
+            <CardView
+              data={state.cards[state.officerCardId]}
+              flipId={state.officerDeck[state.officerDeck.length - 1].instanceId}
+              onClick={() => act((s) => recruitOfficer(s))}
+              highlight={canAffordOfficer(state) ? 'buy' : undefined}
+            />
+          )}
+          <div>Officers · {state.officerDeck.length}</div>
         </div>
         {state.hq.map((instance, i) => {
           const explosions = state.hqExplosions?.[i] ?? 0
@@ -449,7 +453,7 @@ function GameScreen({
             <div
               className="hq-space"
               key={instance?.instanceId ?? `hq-${i}`}
-              style={{ gridColumn: i + 2 }}
+              style={{ gridColumn: i + 4 }}
             >
               {instance ? (
                 <CardView
