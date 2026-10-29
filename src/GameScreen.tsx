@@ -376,7 +376,7 @@ function GameScreen({
           )}
         </div>
         {state.city.map((instance, i) => (
-          <div className="city-space" key={i}>
+          <div className="city-space" key={i} style={{ gridColumn: i + 2 }}>
             {state.cityDestroyed?.[i] ? (
               <div className="destroyed-city-token" title="Destroyed City">
                 <img
@@ -442,7 +442,11 @@ function GameScreen({
           const hqVillain = scheme.canFightVillainsInHq === true && !!hqData &&
             (hqData.villainGroup !== undefined || hqData.henchman === true)
           return (
-            <div className="hq-space" key={instance?.instanceId ?? `hq-${i}`}>
+            <div
+              className="hq-space"
+              key={instance?.instanceId ?? `hq-${i}`}
+              style={{ gridColumn: i + 2 }}
+            >
               {instance ? (
                 <CardView
                   data={state.cards[instance.cardId]}
