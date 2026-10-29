@@ -21,7 +21,7 @@
 .additional-masterminds {
   position: absolute;
   z-index: 3;
-  top: 54px;
+  top: 33px;
   right: calc(100% + 10px);
   display: flex;
   flex-direction: row-reverse;
