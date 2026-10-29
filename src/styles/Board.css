@@ -72,6 +72,11 @@
   aspect-ratio: 5 / 7;
 }
 
+.board-zones .slot-empty,
+.board-zones .deck-pile {
+  width: var(--board-card-width);
+}
+
 .city-title {
   position: absolute;
   top: 10px;
@@ -322,9 +327,8 @@
   .city-space .card,
   .hq-space .card,
   .additional-mastermind-column .card,
-  .mastermind-slot > .card,
-  .additional-mastermind-empty {
-    width: 96px;
+  .mastermind-slot > .card {
+    width: var(--board-card-width);
   }
 
   .hq-heading {
@@ -339,10 +343,6 @@
     font-size: 8px;
   }
 
-  .sidekick-slot .deck-pile {
-    width: 60px;
-  }
-
   .officer-slot .card {
     width: 60px;
   }
@@ -351,11 +351,6 @@
     flex-direction: column;
     align-items: center;
     gap: 4px;
-  }
-
-  .villain-deck-column > .deck-pile,
-  .hero-deck-column > .deck-pile {
-    width: 96px;
   }
 
   .nega-bomb-pile {
