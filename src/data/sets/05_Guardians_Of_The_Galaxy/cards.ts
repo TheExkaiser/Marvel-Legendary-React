@@ -86,7 +86,7 @@ function infinityGemCard(id: string, name: string, strength: number, count: numb
     card: {
       id: `villain-infinity-gems-${id}`,
       name,
-      img: '',
+      img: 'villain-infinity-gems-${id}.webp',
       strength,
       vp: 0,
       villainGroup: 'Infinity Gems',
