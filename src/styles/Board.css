@@ -54,6 +54,22 @@
   font-size: 13px;
 }
 
+.sidekick-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-right: 10px;
+  margin-right: 4px;
+  border-right: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.sidekick-slot .deck-pile {
+  width: 76px;
+}
+
 /* Miasto zajmuje resztę szerokości panelu; talia villainów jest dosunięta do prawej */
 .city-slot {
   flex: 1;
@@ -164,6 +180,16 @@
     padding-right: 6px;
     margin-right: 4px;
     font-size: 8px;
+  }
+
+  .sidekick-slot {
+    padding-right: 4px;
+    margin-right: 2px;
+    font-size: 8px;
+  }
+
+  .sidekick-slot .deck-pile {
+    width: 40px;
   }
 
   .board-top,

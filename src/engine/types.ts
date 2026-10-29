@@ -75,6 +75,9 @@ export interface GameState {
 
   officerDeck: CardInstance[]
   officerCardId: string
+  sidekickStack: CardInstance[]
+  sidekickCardId?: string
+  sidekicksRecruitedThisTurn: boolean
 
   villainDeck: CardInstance[]
   city: (CardInstance | null)[]
@@ -134,6 +137,7 @@ export interface GameState {
   mindControlThisTurn?: boolean // Professor X (Mind Control): po pokonaniu Villaina możesz go zdobyć
   instanceOverrides?: Record<string, InstanceOverride> // instanceId -> nadpisane dane karty
   focusUsesThisTurn?: Record<string, number> // cardId -> ile razy użyto Focusa tej karty w tej turze, łącznie ze wszystkich kopii (reset w endTurn)
+  oncePerTurnAbilitiesUsed?: string[] // cardId -> karta z jednorazową zdolnością już użyła jej w tej turze
   artifacts?: CardInstance[] // Artifacty pod kontrolą gracza: zostają w grze między turami (nie wchodzą do played ani discardu przy końcu tury)
   artifactUsesThisTurn?: Record<string, number> // `${instanceId}:${abilityId}` -> ile razy użyto zdolności artefaktu w tej turze (reset w endTurn)
   shards?: number // Shardy gracza, każdy = +1 Attack po wydaniu (brak = 0)
@@ -146,6 +150,7 @@ export interface GameState {
   cosmicThreatReduction?: number // Cosmic Threat Galactusa: obniżenie jego siły na czas jednej walki (czyszczone po walce)
   newHandDiscardCount?: number // Force of Eternity: ile kart odrzucić po dobraniu nowej ręki na koniec tury
   hqRecruitBonuses?: Record<string, number> // Underground Riches: jednorazowa pula Recruit do wydania na Bohaterów w polu HQ pod daną lokacją (klucz: nazwa z CITY_NAMES, reset w endTurn)
+  hqCardCostReductions?: Record<string, number> // Infiltrate HQ: discount tied to the replacement Hero instance
   schemeTwists?: CardInstance[] // Twisty odłożone obok Scheme'u
   mastermindSchemeTwists?: CardInstance[] // Twisty odłożone obok Masterminda przez Scheme
   burrowingVillainId?: string // Burrow: instanceId Villaina, który po tej walce wraca do Streets zamiast do Victory Pile (ustawia onFight, czyta combat.ts)
@@ -170,6 +175,7 @@ export interface GameSetup {
   startingCards: DeckEntry[]
   heroCards: DeckEntry[]
   officerCards: DeckEntry
+  sidekickCards?: DeckEntry
   villainCards: DeckEntry[]
   villainDeckHeroCards: DeckEntry[] // bohaterowie wrzuceni do talii złoczyńców (Transform Citizens Into Demons, X-Cutioner's Song)
   mastermind: MastermindData
@@ -284,6 +290,7 @@ export interface SetData {
   villainGroups: CardGroup[]
   henchmenGroups: CardGroup[]
   bystanderGroups: CardGroup[] // grupy Bystanderów do wyboru w setupie (zwykli w Core Set, specjalni w dodatkach)
+  sidekickCards?: DeckEntry
   masterminds: MastermindData[]
   shared?: SharedCards   // tylko zestawy, które je dostarczają (Core Set)
   icon?: string // np. 'icons/heroes/spider-man.png' (plik w folderze public/)
@@ -315,6 +322,7 @@ export interface SetupChoices {
   villainGroupIds: string[]
   henchmenGroupIds: string[]
   excludedBystanderGroupIds: string[] // wyłączone grupy Bystanderów; domyślnie (pusta lista) wybrane są wszystkie z aktywnych zestawów
+  sidekicksEnabled?: boolean
   heroSelectionMode?: HeroSelectionMode
   /** Prevents two selected Hero groups from sharing the same real identity. */
   uniqueHeroRealNames?: boolean

@@ -24,6 +24,11 @@ export function refillHq(state: GameState): void {
       state.hq[i] = state.heroDeck.pop() ?? null
     }
   }
+  for (const instanceId of Object.keys(state.hqCardCostReductions ?? {})) {
+    if (!state.hq.some((card) => card?.instanceId === instanceId)) {
+      delete state.hqCardCostReductions?.[instanceId]
+    }
+  }
 }
 
 /** KO bohatera z HQ. Miejsce zostaje puste (uzupełnia je wywołujący przez refillHq).
@@ -32,6 +37,7 @@ export function koFromHq(state: GameState, index: number): CardInstance | undefi
   const card = state.hq[index]
   if (!card) return undefined
   state.hq[index] = null
+  if (state.hqCardCostReductions) delete state.hqCardCostReductions[card.instanceId]
   returnShardsOn(state, card) // Shatterax: Bohater opuszcza HQ w inny sposób niż rekrutacja, Shardy wracają do zapasu
 
   const scheme = getScheme(state)
@@ -62,7 +68,8 @@ export function hqCardCost(state: GameState, index: number): number {
   if (data.kind === 'bystander') return BYSTANDER_RESCUE_COST
   if (!data.hero) return data.cost ?? 0
   const bonus = state.hqRecruitBonuses?.[CITY_NAMES[index]] ?? 0
-  return Math.max(0, (data.cost ?? 0) - bonus)
+  const cardReduction = state.hqCardCostReductions?.[instance.instanceId] ?? 0
+  return Math.max(0, (data.cost ?? 0) - bonus - cardReduction)
 }
 
 /** Czy gracza stać na kartę w polu HQ o danym indeksie. Te same warunki co w recruitHero, ale bez wykonywania akcji (podświetlanie w UI). */
@@ -81,6 +88,28 @@ export function canAffordOfficer(state: GameState): boolean {
   const cost = state.cards[state.officerCardId].cost ?? 0
   const available = heroesCostAttack(state) ? state.attack : state.recruit
   return available >= cost
+}
+
+export function canAffordSidekick(state: GameState): boolean {
+  return state.status === 'playing' &&
+    state.sidekickStack.length > 0 &&
+    !state.sidekicksRecruitedThisTurn &&
+    state.recruit >= (state.cards[state.sidekickCardId ?? '']?.cost ?? 0)
+}
+
+export function recruitSidekick(state: GameState): void {
+  assertPlaying(state)
+  if (state.sidekicksRecruitedThisTurn) throw new Error('You have already recruited a Sidekick this turn')
+  const cost = state.cards[state.sidekickCardId ?? '']?.cost
+  if (cost === undefined || state.sidekickStack.length === 0) throw new Error('No Sidekicks are available')
+  if (state.recruit < cost) throw new Error(`Not enough recruit: you have ${state.recruit}, cost ${cost}`)
+
+  const sidekick = state.sidekickStack.pop()
+  if (!sidekick) throw new Error('No Sidekicks are available')
+  state.recruit -= cost
+  state.sidekicksRecruitedThisTurn = true
+  state.discard.push(sidekick)
+  logEvent(state, 'Recruited: Sidekick')
 }
 
 /** Kupuje bohatera z HQ (płaci recruit), karta trafia do stosu odrzuconych.
@@ -116,6 +145,7 @@ export function recruitHero(state: GameState, instanceId: string): void {
     gainShards(state, baseCost) // I Am Groot: Shardy równe (drukowanemu) kosztowi zrekrutowanego Bohatera
   }
   state.hq[index] = null
+  if (state.hqCardCostReductions) delete state.hqCardCostReductions[instance.instanceId]
   if (!isBystander) placeRecruitedCard(state, instance) // Bystandera ratuje recruitHeroWithUi: rescueCard jest async i wymaga ui
   logEvent(state, isBystander ? `Rescued: ${data.name}` : `Recruited: ${data.name}`)
   refillHq(state)

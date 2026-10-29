@@ -124,12 +124,17 @@ export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: Ga
   // Na razie bierzemy karty wspólne z pierwszego zestawu, który je ma (Core Set)
   const shared = sets.map((s) => s.shared).find((s) => s !== undefined)
   if (!shared) throw new Error('None of the selected sets contains shared cards (wounds, officers...)')
+  const sidekickCards =
+    choices.sidekicksEnabled === false
+      ? undefined
+      : sets.find((set) => set.sidekickCards)?.sidekickCards
 
   return {
     startingCards: shared.startingCards,
     heroCards: heroes.flatMap((g) => g.cards),
     villainDeckHeroCards: villainDeckHeroes.flatMap((g) => g.cards),
     officerCards: shared.officer,
+    sidekickCards,
     villainCards: [
       ...villains.flatMap((g) => g.cards),
       ...henchmen.flatMap((g) => capCounts(g.cards, rules.henchmenCopiesPerGroup)),

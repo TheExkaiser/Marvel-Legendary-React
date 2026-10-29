@@ -46,7 +46,7 @@ import { hasTeleport } from './engine/turn'
 import { fightDemonGoblin, canAffordVillain, canAffordMastermind, canAffordDemonGoblin } from './engine/combat'
 import { SchemeToken } from './components/SchemeToken'
 import { canFocus, activateFocus } from './engine/focus'
-import { hqCardCost, canAffordHqCard, canAffordOfficer } from './engine/recruit'
+import { hqCardCost, canAffordHqCard, canAffordOfficer, canAffordSidekick, recruitSidekick } from './engine/recruit'
 
 
 // ---------- Stałe ----------
@@ -384,6 +384,19 @@ function GameScreen({
       <section className="section-block section-block-hq">
         <h2 className="section-heading">HQ</h2>
         <div className="row recruit-row">
+        {state.sidekickCardId && (
+          <div className="sidekick-slot">
+            <DeckPile
+              count={state.sidekickStack.length}
+              deckId="sidekick-stack"
+              topCard={state.cards[state.sidekickCardId]}
+              label="Sidekicks"
+              highlight={canAffordSidekick(state) ? 'buy' : undefined}
+              onClick={state.sidekickStack.length > 0 ? () => act((s) => recruitSidekick(s)) : undefined}
+            />
+            <div>Recruit: 2</div>
+          </div>
+        )}
         <div className="officer-slot">
           {state.officerDeck.length > 0 && (
             <CardView

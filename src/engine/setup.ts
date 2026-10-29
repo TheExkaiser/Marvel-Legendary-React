@@ -24,6 +24,7 @@ function buildCardIndex(setup: GameSetup): Record<string, CardData> {
   const allCards: CardData[] = [
     ...[...startingCards, ...heroCards, ...villainCards, ...villainDeckHeroCards].map((e) => e.card),
     setup.officerCards.card,
+    ...(setup.sidekickCards ? [setup.sidekickCards.card] : []),
     setup.wounds.card,
     ...setup.bystanders.map((e) => e.card),
     setup.twist,
@@ -72,12 +73,16 @@ export function createGameState(setup: GameSetup): GameState {
     played: [],
     discard: [],
     cardsPlayedThisTurn: [],
+    oncePerTurnAbilitiesUsed: [],
 
     // Rekrutacja
     heroDeck: shuffle([...buildDeck(heroCards), ...bystandersForHeroDeck]),
     hq: [null, null, null, null, null],
     officerDeck: shuffle(buildDeck([setup.officerCards])),
     officerCardId: setup.officerCards.card.id,
+    sidekickStack: setup.sidekickCards ? shuffle(buildDeck([setup.sidekickCards])) : [],
+    sidekickCardId: setup.sidekickCards?.card.id,
+    sidekicksRecruitedThisTurn: false,
 
     // Złoczyńcy i miasto
     villainDeck: shuffle([

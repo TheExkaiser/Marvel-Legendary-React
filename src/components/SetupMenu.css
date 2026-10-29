@@ -598,6 +598,11 @@
   font-weight: 700;
 }
 
+.extra-block .setup-option {
+  margin: 0;
+  padding: 0 4px;
+}
+
 /* ===== Stopka ===== */
 
 .setup-footer {

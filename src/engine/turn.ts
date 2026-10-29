@@ -161,6 +161,7 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.masterStrikeAutoDrawUsedThisTurn = false
   state.teleportGrantedThisTurn = []
   state.focusUsesThisTurn = {}
+  state.oncePerTurnAbilitiesUsed = []
   state.artifactUsesThisTurn = {}
   state.shardAttackSuppressedThisTurn = []
   state.shardsAsRecruitThisTurn = false
@@ -168,6 +169,8 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.cancelFightEffectsThisTurn = false
   state.cosmicThreatUsedThisTurn = false
   state.hqRecruitBonuses = {}
+  state.hqCardCostReductions = {}
+  state.sidekicksRecruitedThisTurn = false
 
   const drawAmount = HAND_SIZE + state.bonusDrawNextTurn
   state.bonusDrawNextTurn = 0
