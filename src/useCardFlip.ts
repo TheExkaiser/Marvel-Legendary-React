@@ -7,7 +7,7 @@ import { useLayoutEffect, useRef } from 'react'
 
 const COARSE = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
 
-const DURATION = COARSE ? 320 : 500 // ms — na dotyku krócej, bo mniej klatek do narysowania
+const DURATION = COARSE ? 320 : 300 // ms
 const EASING = 'cubic-bezier(0.2, 0.8, 0.2, 1)'
 const MIN_MOVE = 2 // px: mniejsze przesunięcia ignorujemy
 const FLYING_Z_INDEX = '60' // karty lecące w ręce i kopie schodzące na discard: nad ręką (50), pod oknami modalnymi (100)
@@ -27,6 +27,8 @@ interface Frame {
   cards: Map<string, Snapshot>
   scrollX: number
   scrollY: number
+  sidekickStackIds: Set<string>
+  sidekickPileSnapshot: HTMLElement | null
 }
 
 interface PlannedFlight {
@@ -43,8 +45,18 @@ interface PlannedGhost {
   startY: number
 }
 
-export function useCardFlip(discardIds: ReadonlySet<string>): void {
-  const previous = useRef<Frame>({ cards: new Map(), scrollX: 0, scrollY: 0 })
+export function useCardFlip(
+  discardIds: ReadonlySet<string>,
+  sidekickStackIds: ReadonlySet<string>,
+  deckIds: ReadonlySet<string>,
+): void {
+  const previous = useRef<Frame>({
+    cards: new Map(),
+    scrollX: 0,
+    scrollY: 0,
+    sidekickStackIds: new Set(),
+    sidekickPileSnapshot: null,
+  })
   // Karty, które aktualnie lecą. Własny rejestr zamiast el.getAnimations(), bo getAnimations()
   // wymusza przeliczenie stylów przy każdym wywołaniu (a wołaliśmy je dla każdej karty po kilka razy).
   const flying = useRef(new WeakSet<HTMLElement>())
@@ -138,6 +150,62 @@ export function useCardFlip(discardIds: ReadonlySet<string>): void {
             startY: before.fixed ? before.y : before.y - scrolledY,
           })
         }
+
+      }
+
+      const sidekickStack = document.querySelector<HTMLElement>('[data-deck-id="sidekick-stack"]')
+      if (previous.current.sidekickStackIds.size > 0 && sidekickStack) {
+        const source = sidekickStack.querySelector('.deck-face')
+          ? sidekickStack.cloneNode(true) as HTMLElement
+          : previous.current.sidekickPileSnapshot?.cloneNode(true)
+        if (source) {
+          const sourceRect = sidekickStack.getBoundingClientRect()
+          const destinations = [
+            { ids: discardIds, deckId: 'discard' },
+            { ids: deckIds, deckId: 'deck' },
+          ]
+          const gained = [...previous.current.sidekickStackIds].filter(
+            (id) => !sidekickStackIds.has(id) && destinations.some(({ ids }) => ids.has(id)),
+          )
+
+          for (const [index, instanceId] of gained.entries()) {
+            const destinationId = destinations.find(({ ids }) => ids.has(instanceId))?.deckId
+            const destination = destinationId
+              ? document.querySelector<HTMLElement>(`[data-deck-id="${destinationId}"]`)
+              : null
+            if (!destination) continue
+            const targetRect = destination.getBoundingClientRect()
+            const ghost = source.cloneNode(true) as HTMLElement
+            ghost.removeAttribute('data-deck-id')
+            ghost.querySelectorAll('.deck-count, .deck-label').forEach((el) => el.remove())
+            Object.assign(ghost.style, {
+              position: 'fixed',
+              left: `${sourceRect.left}px`,
+              top: `${sourceRect.top}px`,
+              width: `${sourceRect.width}px`,
+              height: `${sourceRect.height}px`,
+              margin: '0',
+              zIndex: FLYING_Z_INDEX,
+              pointerEvents: 'none',
+              boxShadow: 'none',
+              filter: 'none',
+              transition: 'none',
+            })
+            ghost.querySelector<HTMLElement>('.deck-face')?.style.setProperty('box-shadow', 'none')
+            document.body.appendChild(ghost)
+            const flight = ghost.animate(
+              [
+                { transform: 'translate(0, 0)' },
+                {
+                  transform: `translate(${targetRect.left + targetRect.width / 2 - sourceRect.left - sourceRect.width / 2}px, ${targetRect.top + targetRect.height / 2 - sourceRect.top - sourceRect.height / 2}px) scale(0.85)`,
+                },
+              ],
+              { duration: DURATION, delay: index * 55, easing: EASING, fill: 'forwards' },
+            )
+            flight.onfinish = () => ghost.remove()
+            flight.oncancel = () => ghost.remove()
+          }
+        }
       }
 
       // 3. Same ZAPISY: odpal zaplanowane animacje
@@ -195,10 +263,13 @@ export function useCardFlip(discardIds: ReadonlySet<string>): void {
     }
 
     // 4. Zapamiętaj układ na następny render
+    const sidekickPile = document.querySelector<HTMLElement>('[data-deck-id="sidekick-stack"]')
     previous.current = {
       cards: current,
       scrollX: window.scrollX,
       scrollY: window.scrollY,
+      sidekickStackIds: new Set(sidekickStackIds),
+      sidekickPileSnapshot: sidekickPile ? sidekickPile.cloneNode(true) as HTMLElement : null,
     }
   })
 }

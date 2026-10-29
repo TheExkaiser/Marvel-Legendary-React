@@ -16,6 +16,12 @@ function hasNoRulesText(state: GameState, instance: CardInstance): boolean {
   return !card.text?.trim() && !card.conditionText?.trim()
 }
 
+function hasPlayedEachType(state: GameState, types: string[]): boolean {
+  return types.every((type) =>
+    countPlayedThisTurn(state, { type }) > 0,
+  )
+}
+
 registerCardAbility('secret-wars-apocalyptic-kitty-pryde-phase-out', async (state, { ui }) => {
   const chosen = await ui.choose([...state.hand, ...state.discard], {
     prompt: 'Phase Out: KO a card from your hand or discard pile to get +1 Attack?',
@@ -80,7 +86,10 @@ registerCardAbility('secret-wars-black-bolt-destructive-whisper', async (state) 
 registerCardAbility('secret-wars-black-bolt-silence-is-golden', async (state, { ui }) => {
   const cards = state.cardsPlayedThisTurn.filter((card) => hasNoRulesText(state, card))
   if (cards.length === 0) return
-  const chosen = await chooseOneCard(ui, cards, 'Silence is Golden: choose a card you played this turn with no rules text.')
+  const chosen = await ui.choose(cards, {
+    prompt: 'Silence is Golden: choose a card you played this turn with no rules text.',
+    optional: false,
+  })
   if (!chosen) return
   const data = state.cards[chosen.cardId]
   addRecruit(state, data.recruit ?? 0)
@@ -250,12 +259,7 @@ registerCardAbility('secret-wars-lady-thor-living-thunderstorm', async (state) =
 })
 
 registerCardAbility('secret-wars-lady-thor-heir-to-the-hammer', async (state) => {
-  if (
-    countPlayedThisTurn(state, { type: 'ranged' }) > 0 &&
-    countPlayedThisTurn(state, { type: 'strength' }) > 0
-  ) {
-    addAttack(state, 2)
-  }
+  if (hasPlayedEachType(state, ['ranged', 'strength'])) addAttack(state, 2)
 })
 
 registerCardAbility('secret-wars-magik-rally-the-new-mutants', async (state) => {
