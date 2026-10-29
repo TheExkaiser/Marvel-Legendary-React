@@ -35,10 +35,6 @@
   text-align: center;
 }
 
-.additional-mastermind .card {
-  width: 88px;
-}
-
 .zone-title {
   min-height: 44px; /* wspólna wysokość, żeby karty były na tym samym poziomie */
   margin: 0 0 10px;
@@ -184,9 +180,6 @@
     gap: 3px;
   }
 
-  .additional-mastermind .card {
-    width: 62px;
-  }
 }
 
 @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {

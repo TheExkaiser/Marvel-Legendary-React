@@ -525,6 +525,7 @@ export async function fightMastermind(
     claimShardFrom(state, mastermind)
     if (singleFight) {
       state.defeatedMastermindIds = [...(state.defeatedMastermindIds ?? []), mastermind.instanceId]
+      state.defeated.push(mastermind)
       addRecruit(state, state.defeatRecruitBonus ?? 0)
       for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) await rescueBystander(state, ui)
       if (!rule?.captivesSurviveFight) await resolveMastermindCaptives(state, ui, mastermind)
