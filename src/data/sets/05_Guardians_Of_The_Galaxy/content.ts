@@ -6,6 +6,7 @@ import {
   ROCKET_RACCOON_CARDS,
   STAR_LORD_CARDS,
   KREE_STARFORCE_CARDS,
+  INFINITY_GEMS_CARDS,
 } from './cards'
 
 export const GUARDIANS_OF_THE_GALAXY_HEROES: CardGroup[] = [
@@ -17,6 +18,7 @@ export const GUARDIANS_OF_THE_GALAXY_HEROES: CardGroup[] = [
 ]
 export const GUARDIANS_OF_THE_GALAXY_VILLAIN_GROUPS: CardGroup[] = [
   { id: 'gotg_kree_starforce', name: 'Kree Starforce', cards: KREE_STARFORCE_CARDS },
+  { id: 'gotg_infinity_gems', name: 'Infinity Gems', cards: INFINITY_GEMS_CARDS },
 ]
 export const GUARDIANS_OF_THE_GALAXY_HENCHMEN_GROUPS: CardGroup[] = []
 export const GUARDIANS_OF_THE_GALAXY_BYSTANDER_GROUPS: CardGroup[] = []

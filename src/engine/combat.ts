@@ -16,6 +16,7 @@ import { refillHq } from './recruit'
 import { getMastermindRule } from './mastermindRules'
 import { isCityDestroyed } from './cityLayout'
 import { claimShardFrom } from './shards'
+import { runArtifactReactions } from './artifacts'
 
 /** Czy Recruit płaci za tę kartę jak Attack: God of Thunder (cała tura) albo Bribe (tylko ta karta). */
 function recruitPays(state: GameState, cardId: string): boolean {
@@ -108,7 +109,12 @@ async function fightEffectCancelled(state: GameState, ui: UiAdapter, enemy: Card
   return choice === 'cancel'
 }
 
-async function removeVillainFromCity(state: GameState, index: number, ui: UiAdapter): Promise<void> {
+async function removeVillainFromCity(
+  state: GameState,
+  index: number,
+  ui: UiAdapter,
+  asArtifact = false,
+): Promise<void> {
   const villain = state.city[index]!
   const location = CITY_NAMES[index]
   state.city[index] = null
@@ -129,6 +135,8 @@ async function removeVillainFromCity(state: GameState, index: number, ui: UiAdap
 
   if (burrows && !isCityDestroyed(state, streetsIndex) && state.city[streetsIndex] === null) {
     state.city[streetsIndex] = villain
+  } else if (asArtifact) {
+    state.discard.push(villain)
   } else if (scheme.onVillainDefeated) {
     scheme.onVillainDefeated(state, villain)
   } else {
@@ -168,9 +176,10 @@ async function resolveVillainFightEffects(
 ): Promise<boolean> {
   const data = state.cards[villain.cardId]
   const abilities = getVillainAbilities(villain.cardId)
+  const isVillainArtifact = (data.keywords ?? []).includes('villain-artifact')
   // Feast is a generic Fight effect. The card may have no additional onFeast
   // hook (for example Demogoblin), but it must still KO the top card.
-  if (!abilities?.onFight && !(data.keywords ?? []).includes('feast')) return true
+  if (!abilities?.onFight && !(data.keywords ?? []).includes('feast') && !isVillainArtifact) return true
   if (await fightEffectCancelled(state, ui, villain)) return false
 
   await asEnemyEffect(state, async () => {
@@ -228,14 +237,20 @@ export async function defeatVillainFromDeck(
 
   state.villainDeck.pop()
 
-  await resolveVillainFightEffects(state, ui, villain)
+  const fightEffectsResolved = await resolveVillainFightEffects(state, ui, villain)
+  const asArtifact = fightEffectsResolved && (state.cards[villain.cardId].keywords ?? []).includes('villain-artifact')
   state.burrowingVillainId = undefined // Villain z talii nie stoi w mieście, więc nie ma gdzie się zakopać
+
+  await runArtifactReactions(state, ui, 'villain-defeated')
+  if (asArtifact) claimShardFrom(state, villain)
 
   addRecruit(state, state.defeatRecruitBonus ?? 0)
   for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) await rescueBystander(state, ui)
 
   const scheme = getScheme(state)
-  if (scheme.onVillainDefeated) {
+  if (asArtifact) {
+    state.discard.push(villain)
+  } else if (scheme.onVillainDefeated) {
     scheme.onVillainDefeated(state, villain)
   } else {
     state.defeated.push(villain)
@@ -274,7 +289,8 @@ export async function fightVillain(
 
   await spendAttack(state, strength, ui, villain.cardId)
 
-  await resolveVillainFightEffects(state, ui, villain)
+  const fightEffectsResolved = await resolveVillainFightEffects(state, ui, villain)
+  const asArtifact = fightEffectsResolved && (state.cards[villain.cardId].keywords ?? []).includes('villain-artifact')
 
   if (state.returnVillainToCity?.instanceId === villain.instanceId) {
     const returnIndex = state.returnVillainToCity.cityIndex
@@ -284,6 +300,8 @@ export async function fightVillain(
     return
   }
 
+  await runArtifactReactions(state, ui, 'villain-defeated')
+
   if (isHqVillain) {
     state.hq[hqIndex] = null
     claimShardFrom(state, villain)
@@ -291,13 +309,14 @@ export async function fightVillain(
     const rescued = scheme.onCaptivesRescued?.(state, villain, captives) ?? captives
     delete state.captives[villain.instanceId]
     delete state.attachedCards[villain.instanceId]
-    if (scheme.onVillainDefeated) scheme.onVillainDefeated(state, villain)
+    if (asArtifact) state.discard.push(villain)
+    else if (scheme.onVillainDefeated) scheme.onVillainDefeated(state, villain)
     else state.defeated.push(villain)
     for (const card of rescued) await rescueCard(state, card, ui)
     refillHq(state)
     await scheme.afterVillainDefeated?.(state, villain, ui)
   } else {
-    await removeVillainFromCity(state, cityIndex, ui)
+    await removeVillainFromCity(state, cityIndex, ui, asArtifact)
     await scheme.afterVillainDefeated?.(state, villain, ui)
   }
   logEvent(state, `Defeated: ${state.cards[villain.cardId].name}`)
@@ -313,6 +332,7 @@ export async function defeatVillainFree(state: GameState, instanceId: string, ui
     throw new Error('Nie możesz teraz pokonać tego złoczyńcy (niespełniony warunek)')
   }
 
+  await runArtifactReactions(state, ui, 'villain-defeated')
   await removeVillainFromCity(state, index, ui)
   await getScheme(state).afterVillainDefeated?.(state, villain, ui)
   logEvent(state, `Defeated for free: ${state.cards[villain.cardId].name}`)

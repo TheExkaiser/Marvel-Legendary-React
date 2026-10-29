@@ -100,7 +100,11 @@ export async function activateArtifactAbility(
 // ---------- Reakcje artefaktów na zdarzenia silnika ("Whenever ...") ----------
 
 /** Zdarzenia, na które artefakt może zareagować. Silnik woła runArtifactReactions w odpowiednim miejscu. */
-export type ArtifactTrigger = 'master-strike-completed' | 'ambush-completed'
+export type ArtifactTrigger =
+  | 'master-strike-completed'
+  | 'ambush-completed'
+  | 'before-villain-card'
+  | 'villain-defeated'
 
 const reactions = new Map<string, Partial<Record<ArtifactTrigger, ArtifactEffect>>>()
 

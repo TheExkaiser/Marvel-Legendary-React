@@ -19,7 +19,9 @@ export async function resolveVillainDeckCard(
   state: GameState,
   card: CardInstance,
   ui: UiAdapter,
+  prePlayReactionsResolved = false,
 ): Promise<void> {
+  if (!prePlayReactionsResolved) await runArtifactReactions(state, ui, 'before-villain-card')
   const data = state.cards[card.cardId]
   logEvent(state, `Turn ${state.turn}: Drawn from Villain Deck — ${data.name}`)
 
@@ -45,9 +47,11 @@ export function drawVillainDeckCard(state: GameState): CardInstance | undefined 
 }
 
 /** "Play another card from the Villain Deck": zdejmij i rozpatrz wierzchnią kartę. */
-export async function playTopVillainCard(state: GameState, ui: UiAdapter): Promise<void> {
+export async function playTopVillainCard(state: GameState, ui: UiAdapter): Promise<CardInstance | undefined> {
+  if (state.villainDeck.length > 0) await runArtifactReactions(state, ui, 'before-villain-card')
   const card = drawVillainDeckCard(state)
-  if (card) await resolveVillainDeckCard(state, card, ui)
+  if (card) await resolveVillainDeckCard(state, card, ui, true)
+  return card
 }
 
 /** Zdejmuje górne `count` kart talii złoczyńców i pokazuje je graczowi. Pusta talia NIE kończy gry (odkrycie to nie dobranie). Zwraca karty od wierzchu. */
