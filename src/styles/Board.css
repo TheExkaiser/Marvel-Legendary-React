@@ -1,11 +1,5 @@
 /* The City and HQ are two rows of one shared eight-column grid. */
 
-.board-zone-scroll {
-  width: 100%;
-  overflow-x: auto;
-  padding: 10px 0 8px;
-  scrollbar-width: thin;
-}
 
 .board-zones {
   --board-card-width: 120px;
@@ -16,7 +10,7 @@
   grid-auto-rows: auto;
   gap: var(--board-gap);
   width: max-content;
-  margin-inline: auto;
+  margin-inline: 17vw;
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -180,7 +174,7 @@
 }
 
 .sidekick-slot .deck-pile {
-  width: 100%;
+  width: 130%;
   margin-left: 0;
 }
 
@@ -286,13 +280,13 @@
 @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
   .board-zone-scroll {
     width: calc(100vw - 16px);
-    margin-inline: -8px;
+    margin-inline: 15vw;
     padding-inline: 8px;
   }
 
   .board-zones {
-    --board-card-width: 96px;
-    --board-gap: 6px;
+    --board-card-width: 80px;
+    --board-gap: 10px;
     grid-template-columns: repeat(8, var(--board-card-width));
     margin-inline: 0;
     padding: 8px;
@@ -343,9 +337,11 @@
     font-size: 8px;
   }
 
-  .officer-slot .card {
-    width: 60px;
-  }
+  .sidekick-slot .deck-pile {
+  width: var(--board-card-width);
+  margin-left: 0;
+}
+
 
   .villain-decks {
     flex-direction: column;
@@ -354,7 +350,7 @@
   }
 
   .nega-bomb-pile {
-    width: 46px;
+    width: 20px;
     margin-top: 6px;
   }
 
@@ -373,21 +369,25 @@
   .section-block-played {
     width: calc(100vw - 16px);
     overflow-x: auto;
+    padding-left: 17vw;
   }
 
   .row-with-deck {
-    min-width: 760px;
+    min-width: 500px;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px;
   }
-
+    
   .played-grid {
-    grid-template-columns: repeat(4, 96px);
-    gap: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-content: flex-start;
   }
 
   .player-piles {
     gap: 4px;
+    padding-right: 4vw;
   }
 
   .player-piles > .deck-pile {
