@@ -314,7 +314,7 @@ function GameScreen({
           )}
         </div>
         <div className="mastermind-slot">
-          <div className="zone-title">Tactics: {state.tactics.length}</div>
+          <div className="zone-title">Mastermind · Tactics: {state.tactics.length}</div>
           <CardView
             data={state.cards[state.mastermind.cardId]}
             onClick={() => act(fightMastermind)}
