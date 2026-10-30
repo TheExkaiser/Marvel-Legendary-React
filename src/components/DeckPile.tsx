@@ -14,7 +14,6 @@ export function DeckPile({
   label,
   highlight,
   className,
-  showCount = true,
 }: {
   count: number
   deckId?: string
@@ -23,7 +22,6 @@ export function DeckPile({
   label?: string
   highlight?: 'buy' | 'attack' // obrys: złoty = stać nas na kupno, czerwony = stać nas na atak
   className?: string
-  showCount?: boolean
 }) {
   const [srcIndex, setSrcIndex] = useState(0)
 
@@ -35,7 +33,7 @@ export function DeckPile({
         data-deck-id={deckId}
         onClick={onClick}
       >
-        {showCount && <span className="deck-count">0</span>}
+        <span className="deck-count">0</span>
         {label && <div className="deck-label">{label}</div>}
       </div>
     )
@@ -75,7 +73,7 @@ export function DeckPile({
 ) : (
   <div className="deck-back-fallback" />
 )}
-        {showCount && <span className="deck-count">{count}</span>}
+        <span className="deck-count">{count}</span>
       </div>
       {label && <div className="deck-label">{label}</div>}
     </div>

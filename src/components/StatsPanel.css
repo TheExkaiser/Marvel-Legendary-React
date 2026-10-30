@@ -51,14 +51,12 @@
   max-height: 0;
   overflow: hidden;
   opacity: 0;
-  pointer-events: none;
   transition: max-height 0.25s ease, opacity 0.2s ease;
 }
 
 .stats-panel:hover .stats-panel-extra {
   max-height: 420px;
   opacity: 1;
-  pointer-events: auto;
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid var(--line);
@@ -78,8 +76,8 @@
 }
 
 .stat-icon {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
 }
 
@@ -90,7 +88,7 @@
 
 .stat-value {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 900;
   line-height: 1;
 }
@@ -174,19 +172,12 @@
   .stats-panel {
     top: 4px;
     left: 4px;
-    max-width: calc(100vw - 56px);
     padding: 4px 6px;
     gap: 3px;
   }
 
   .stat-row {
     gap: 6px;
-    max-width: calc(100vw - 68px);
-    flex-wrap: wrap;
-  }
-
-  .stat-row > .stat:last-child:nth-child(5) {
-    flex-basis: 100%;
   }
 
   .stat-icon {

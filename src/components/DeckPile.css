@@ -2,7 +2,6 @@
 
 .deck-pile {
   position: relative;
-  transform-origin: left bottom;
   width: 120px;
   aspect-ratio: 5 / 7;
   flex-shrink: 0;
@@ -74,6 +73,13 @@
   position: relative;
 }
 
+.deck-group > .deck-pile:nth-child(2) {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin-left: 32px;
+}
+
 .deck-pile.clickable {
   cursor: pointer;
 }
@@ -94,6 +100,10 @@
 @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
   .deck-pile {
     width: 80px;
+  }
+
+  .deck-group > .deck-pile:nth-child(2) {
+    margin-left: 10px;
   }
 
   .deck-count {

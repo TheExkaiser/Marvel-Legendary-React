@@ -43,10 +43,10 @@ import { KeywordsMenu } from './components/KeywordsMenu'
 import { NumberPrompt } from './components/NumberPrompt'
 import { StackedMasterStrikes } from './components/StackedMasterStrikes'
 import { hasTeleport } from './engine/turn'
-import { fightDemonGoblin, canAffordVillain, canAffordMastermind, canAffordMastermindTarget, canAffordDemonGoblin } from './engine/combat'
+import { fightDemonGoblin, canAffordVillain, canAffordMastermind, canAffordDemonGoblin } from './engine/combat'
 import { SchemeToken } from './components/SchemeToken'
 import { canFocus, activateFocus } from './engine/focus'
-import { hqCardCost, canAffordHqCard, canAffordOfficer, canAffordSidekick, recruitSidekick } from './engine/recruit'
+import { hqCardCost, canAffordHqCard, canAffordOfficer } from './engine/recruit'
 
 
 // ---------- Stałe ----------
@@ -92,11 +92,7 @@ function GameScreen({
     toast,
  } = useGame(setup, settings)
     const discardIds = new Set(state.discard.map((c) => c.instanceId))
-  useCardFlip(
-    discardIds,
-    new Set(state.sidekickStack.map((card) => card.instanceId)),
-    new Set(state.deck.map((card) => card.instanceId)),
-  )
+  useCardFlip(discardIds)
 
   useEffect(() => {
   if (state.status === 'playing') return
@@ -171,20 +167,6 @@ function GameScreen({
   }, [state.attack, state.recruit, victoryPoints, playerShards])
   
   const mastermindCaptives = state.captives[state.mastermind.instanceId]?.length ?? 0
-  const additionalMasterminds = (state.masterminds ?? []).filter((mastermind) =>
-    mastermind.instanceId !== state.mastermind.instanceId &&
-    !(state.defeatedMastermindIds ?? []).includes(mastermind.instanceId),
-  )
-  const hasSidekickPile = !!state.sidekickCardId
-  const hasLeftBoardColumn = additionalMasterminds.length > 0 || hasSidekickPile
-  const hasNegaBombPile = scheme.id === 'gotg_intergalactic_kree_nega_bomb'
-  const hasDemonGoblinPile = (state.demonGoblins?.length ?? 0) > 0
-  const hasAdditionalDecks = hasNegaBombPile || hasDemonGoblinPile
-  const boardLeftColumns = hasLeftBoardColumn ? 1 : 0
-  const boardColumnCount = 7 + boardLeftColumns + (hasAdditionalDecks ? 1 : 0)
-  const mastermindColumn = boardLeftColumns + 1
-  const cityStartColumn = boardLeftColumns + 2
-  const villainDeckColumn = boardLeftColumns + 7
   
   const discardTop =
     state.discard.length > 0
@@ -293,36 +275,9 @@ function GameScreen({
         onSchemeIntroClose={beginGame}
       />
 
-      <div className="board-zone-scroll">
-        <div
-          className="board-zones"
-          style={{ '--board-column-count': boardColumnCount } as CSSProperties}
-        >
-      {/* ===== Board zone: Masterminds, city, and villain deck ===== */}
+      {/* ===== Mastermind (po lewej) + Miasto + talia villainów (po prawej) ===== */}
       <div className="board-top">
-        {additionalMasterminds.length > 0 && (
-          <div className="additional-mastermind-column">
-            {additionalMasterminds.map((mastermind) => (
-              <div className="additional-mastermind" key={mastermind.instanceId}>
-                <div className="markers">
-                  {state.singleFightMasterminds?.includes(mastermind.instanceId)
-                    ? 'Mastermind'
-                    : `Tactics: ${state.mastermindTactics?.[mastermind.instanceId]?.length ?? 0}`}
-                </div>
-                <CardView
-                  data={state.cards[mastermind.cardId]}
-                  onClick={() => act((s, ui) => fightMastermind(s, ui, mastermind.instanceId))}
-                  highlight={canAffordMastermindTarget(state, mastermind) ? 'attack' : undefined}
-                  effectiveStrength={getEffectiveStrength(state, mastermind)}
-                  strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
-                  capturedCards={getCapturedCards(state, mastermind.instanceId)}
-                  shards={shardsOn(state, mastermind)}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-        <div className="mastermind-slot" style={{ gridColumn: mastermindColumn }}>
+        <div className="mastermind-slot">
           <div className="zone-title">Tactics: {state.tactics.length}</div>
           <CardView
             data={state.cards[state.mastermind.cardId]}
@@ -350,71 +305,69 @@ function GameScreen({
             cardIndex={state.cards}
           />          
         </div>
-        <div
-          className="city-title zone-title"
-          style={{ gridColumn: `${cityStartColumn} / span 5`, gridRow: 1 }}
-        >
-          City (<span
-            className="escaped-count"
-            onClick={() => setViewingPile('escaped')}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault()
-                setViewingPile('escaped')
-              }
-            }}
-            role="button"
-            tabIndex={0}
-          >
-            Escaped: {state.escaped.length}
-          </span>)
-          {(state.schemeTokens ?? []).map((t) => (
-            <SchemeToken key={t.instanceId} data={state.cards[t.cardId]} />
-          ))}
-        </div>
-        <div className="villain-deck-column" style={{ gridColumn: villainDeckColumn }}>
-          <div className="zone-title">Villain Deck</div>
-          <DeckPile count={state.villainDeck.length} />
-        </div>
-        {state.city.map((instance, i) => (
-          <div className="city-space" key={i} style={{ gridColumn: i + cityStartColumn, gridRow: 1 }}>
-            {state.cityDestroyed?.[i] ? (
-              <div className="destroyed-city-token" title="Destroyed City">
-                <img
-                  src={`${import.meta.env.BASE_URL}tokens/destroyed_city_token.jpg`}
-                  alt="Destroyed City"
-                />
-              </div>
-            ) : instance ? (
-              <CardView
-                data={state.cards[instance.cardId]}
-                flipId={instance.instanceId}
-                onClick={() => act((s, ui) => fightVillain(s, instance.instanceId, ui))}
-                highlight={canAffordVillain(state, instance) ? 'attack' : undefined}
-                effectiveStrength={getEffectiveStrength(state, instance)}
-                strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
-                capturedCards={getCapturedCards(state, instance.instanceId)}
-                shards={shardsOn(state, instance)}
-              />
-            ) : (
-              <div className="slot-empty" />
-            )}
-            <div className="city-space-label">{CITY_NAMES[i]}</div>
-            {state.cityMarkers[i].length > 0 && (
-              <div className="markers">{state.cityMarkers[i].join(', ')}</div>
-            )}
+
+        <div className="city-slot">
+          <div className="zone-title">
+            City (<span
+              className="escaped-count"
+              onClick={() => setViewingPile('escaped')}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  setViewingPile('escaped')
+                }
+              }}
+              role="button"
+              tabIndex={0}
+            >
+              Escaped: {state.escaped.length}
+            </span>)
+            {(state.schemeTokens ?? []).map((t) => (
+              <SchemeToken key={t.instanceId} data={state.cards[t.cardId]} />
+            ))}
           </div>
-        ))}
-        {hasAdditionalDecks && (
-          <div className="additional-decks-column" style={{ gridColumn: villainDeckColumn + 1, gridRow: '1 / span 2' }}>
-            {hasNegaBombPile && (
-              <DeckPile
-                count={state.negaBombDeck?.length ?? 0}
-                label="Nega-Bomb"
-                className="nega-bomb-pile"
-              />
-            )}
-            {hasDemonGoblinPile && (
+          <div className="city-row">
+            <div className="row">
+              {state.city.map((instance, i) => (
+                <div key={i}>
+                  {state.cityDestroyed?.[i] ? (
+                    <div className="destroyed-city-token" title="Destroyed City">
+                      <img
+                        src={`${import.meta.env.BASE_URL}tokens/destroyed_city_token.jpg`}
+                        alt="Destroyed City"
+                      />
+                    </div>
+                  ) : instance ? (
+                    <CardView
+                      data={state.cards[instance.cardId]}
+                      flipId={instance.instanceId}
+                      onClick={() => act((s, ui) => fightVillain(s, instance.instanceId, ui))}
+                      highlight={canAffordVillain(state, instance) ? 'attack' : undefined}
+                      effectiveStrength={getEffectiveStrength(state, instance)}
+                      strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
+                      capturedCards={getCapturedCards(state, instance.instanceId)}
+                      shards={shardsOn(state, instance)}
+                    />
+                  ) : (
+                    <div className="slot-empty">{CITY_NAMES[i]}</div>
+                  )}
+                  {state.cityMarkers[i].length > 0 && (
+                    <div className="markers">{state.cityMarkers[i].join(', ')}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="city-deck-group">
+              <DeckPile count={state.villainDeck.length} />
+              {scheme.id === 'gotg_intergalactic_kree_nega_bomb' && (
+                <DeckPile
+                  count={state.negaBombDeck?.length ?? 0}
+                  label="Nega-Bomb"
+                  className="nega-bomb-pile"
+                />
+              )}
+            </div>
+            {(state.demonGoblins?.length ?? 0) > 0 && (
               <DeckPile
                 count={state.demonGoblins!.length}
                 deckId="demon-goblins"
@@ -424,27 +377,14 @@ function GameScreen({
               />
             )}
           </div>
-        )}
+        </div>
       </div>
 
-      {/* ===== Board zone: Sidekicks, Officers, HQ, and Hero deck ===== */}
-      <section className="hq-zone">
-        {hasSidekickPile && (
-          <div className="sidekick-column">
-            <div className="sidekick-slot">
-              <DeckPile
-                count={state.sidekickStack.length}
-                deckId="sidekick-stack"
-                topCard={state.cards[state.sidekickCardId]}
-                showCount={false}
-                highlight={canAffordSidekick(state) ? 'buy' : undefined}
-                onClick={state.sidekickStack.length > 0 ? () => act((s) => recruitSidekick(s)) : undefined}
-              />
-              <div>Sidekicks · Recruit 2</div>
-            </div>
-          </div>
-        )}
-        <div className="officer-slot" style={{ gridColumn: mastermindColumn }}>
+      {/* ===== Rekrutacja: oficer + HQ + talia bohaterów (po prawej) ===== */}
+      <section className="section-block section-block-hq">
+        <h2 className="section-heading">HQ</h2>
+        <div className="row recruit-row">
+        <div className="officer-slot">
           {state.officerDeck.length > 0 && (
             <CardView
               data={state.cards[state.officerCardId]}
@@ -453,7 +393,7 @@ function GameScreen({
               highlight={canAffordOfficer(state) ? 'buy' : undefined}
             />
           )}
-          <div>Officers · {state.officerDeck.length}</div>
+          <div>Remaining: {state.officerDeck.length}</div>
         </div>
         {state.hq.map((instance, i) => {
           const explosions = state.hqExplosions?.[i] ?? 0
@@ -462,11 +402,7 @@ function GameScreen({
           const hqVillain = scheme.canFightVillainsInHq === true && !!hqData &&
             (hqData.villainGroup !== undefined || hqData.henchman === true)
           return (
-            <div
-              className="hq-space"
-              key={instance?.instanceId ?? `hq-${i}`}
-              style={{ gridColumn: i + cityStartColumn, gridRow: 2 }}
-            >
+            <div key={instance?.instanceId ?? `hq-${i}`}>
               {instance ? (
                 <CardView
                   data={state.cards[instance.cardId]}
@@ -505,19 +441,17 @@ function GameScreen({
             </div>
           )
         })}
-        <div className="hero-deck-column" style={{ gridColumn: villainDeckColumn }}>
-          <div className="zone-title">Hero Deck</div>
+        <div className="deck-end">
           <DeckPile count={state.heroDeck.length} deckId="hero-deck" />
         </div>
-      </section>
         </div>
-      </div>
+      </section>
 
-      {/* ===== Player zone: played grid and player piles ===== */}
-      <section className="section-block section-block-played player-zone">
+      {/* ===== Zagrane karty + talia gracza (po prawej) ===== */}
+      <section className="section-block section-block-played">
         <h2 className="section-heading">Played ({playedRow.length})</h2>
         <div className="row-with-deck">
-        <div className="played-grid">
+        <div className="row">
           {playedRow.map((c) => {
             const data = getCardData(state, c)
             const artifact = isArtifactData(data)
@@ -548,7 +482,7 @@ function GameScreen({
             )
           })}
         </div>
-        <div className="deck-group player-piles">
+        <div className="deck-group">
           <DeckPile count={state.deck.length} deckId="deck" />
           <DeckPile
             count={state.discard.length}
