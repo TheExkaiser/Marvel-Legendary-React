@@ -174,12 +174,19 @@
   .stats-panel {
     top: 4px;
     left: 4px;
+    max-width: calc(100vw - 56px);
     padding: 4px 6px;
     gap: 3px;
   }
 
   .stat-row {
     gap: 6px;
+    max-width: calc(100vw - 68px);
+    flex-wrap: wrap;
+  }
+
+  .stat-row > .stat:last-child:nth-child(5) {
+    flex-basis: 100%;
   }
 
   .stat-icon {
