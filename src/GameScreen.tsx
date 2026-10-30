@@ -300,9 +300,10 @@ function GameScreen({
         >
       {/* ===== Board zone: Masterminds, city, and villain deck ===== */}
       <div className="board-top">
-        {additionalMasterminds.length > 0 && (
+        {hasLeftBoardColumn && (
           <div className="additional-mastermind-column">
-            {additionalMasterminds.map((mastermind) => (
+            {additionalMasterminds.length > 0 ? (
+              additionalMasterminds.map((mastermind) => (
               <div className="additional-mastermind" key={mastermind.instanceId}>
                 <div className="markers">
                   {state.singleFightMasterminds?.includes(mastermind.instanceId)
@@ -319,7 +320,10 @@ function GameScreen({
                   shards={shardsOn(state, mastermind)}
                 />
               </div>
-            ))}
+              ))
+            ) : (
+              <div className="slot-empty additional-mastermind-empty" aria-label="Empty additional Mastermind slot" />
+            )}
           </div>
         )}
         <div className="mastermind-slot" style={{ gridColumn: mastermindColumn }}>
