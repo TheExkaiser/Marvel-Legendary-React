@@ -41,8 +41,8 @@ interface PlannedFlight {
 
 interface PlannedGhost {
   before: Snapshot
-  startLeft: number
-  startTop: number
+  startX: number
+  startY: number
 }
 
 export function useCardFlip(
@@ -138,16 +138,16 @@ export function useCardFlip(
       const pile = document.querySelector<HTMLElement>('[data-deck-id="discard"]')
       if (pile) {
         const target = pile.getBoundingClientRect()
-        targetX = target.left
-        targetY = target.bottom
+        targetX = target.left + target.width / 2
+        targetY = target.top + target.height / 2
 
         for (const [id, before] of previous.current.cards) {
           if (current.has(id) || !discardIds.has(id)) continue
           if (ghosts.length >= MAX_GHOSTS) break // nadmiarowe karty znikają bez animacji
           ghosts.push({
             before,
-            startLeft: (before.fixed ? before.x : before.x - scrolledX) - before.width / 2,
-            startTop: (before.fixed ? before.y : before.y - scrolledY) - before.height / 2,
+            startX: before.fixed ? before.x : before.x - scrolledX,
+            startY: before.fixed ? before.y : before.y - scrolledY,
           })
         }
 
@@ -187,7 +187,6 @@ export function useCardFlip(
               margin: '0',
               zIndex: FLYING_Z_INDEX,
               pointerEvents: 'none',
-              transformOrigin: 'left bottom',
               boxShadow: 'none',
               filter: 'none',
               transition: 'none',
@@ -198,7 +197,7 @@ export function useCardFlip(
               [
                 { transform: 'translate(0, 0)' },
                 {
-                  transform: `translate(${targetRect.left - sourceRect.left}px, ${targetRect.bottom - sourceRect.height - sourceRect.top}px) scale(0.85)`,
+                  transform: `translate(${targetRect.left + targetRect.width / 2 - sourceRect.left - sourceRect.width / 2}px, ${targetRect.top + targetRect.height / 2 - sourceRect.top - sourceRect.height / 2}px) scale(0.85)`,
                 },
               ],
               { duration: DURATION, delay: index * 55, easing: EASING, fill: 'forwards' },
@@ -231,14 +230,14 @@ export function useCardFlip(
         animation.oncancel = cleanup
       }
 
-      for (const { before, startLeft, startTop } of ghosts) {
+      for (const { before, startX, startY } of ghosts) {
         const ghost = before.el.cloneNode(true) as HTMLElement
         ghost.removeAttribute('data-flip-id') // żeby hook nie brał kopii za prawdziwą kartę
         ghost.removeAttribute('data-flip-from')
         Object.assign(ghost.style, {
           position: 'fixed',
-          left: `${startLeft}px`,
-          top: `${startTop}px`,
+          left: `${startX - before.width / 2}px`,
+          top: `${startY - before.height / 2}px`,
           width: `${before.width}px`,
           height: `${before.height}px`,
           margin: '0',
@@ -248,14 +247,13 @@ export function useCardFlip(
           boxShadow: 'none',
           filter: 'none',
           transition: 'none',
-          transformOrigin: 'left bottom',
         })
         document.body.appendChild(ghost)
 
         const flight = ghost.animate(
           [
             { transform: 'translate(0, 0)' },
-            { transform: `translate(${targetX - startLeft}px, ${targetY - before.height - startTop}px) scale(0.9)` },
+            { transform: `translate(${targetX - startX}px, ${targetY - startY}px) scale(0.9)` },
           ],
           { duration: DURATION, easing: EASING, fill: 'forwards' },
         )
