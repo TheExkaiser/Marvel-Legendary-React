@@ -10,7 +10,12 @@ export interface VillainAbilities {
   ) => Promise<void>
   onFeast?: (state: GameState, ui: UiAdapter, self: CardInstance, feasted: CardInstance) => Promise<void>
   onFight?: (state: GameState, ui: UiAdapter, self: CardInstance) => Promise<void>
-  onEscape?: (state: GameState, ui: UiAdapter, self: CardInstance) => Promise<void>
+  onEscape?: (
+    state: GameState,
+    ui: UiAdapter,
+    self: CardInstance,
+    lostCaptives: CardInstance[],
+  ) => Promise<void>
 }
 
 const registry = new Map<string, VillainAbilities>()

@@ -162,7 +162,7 @@ export async function escapeVillain(state: GameState, villain: CardInstance, ui:
 
   const escapeAbilities = getVillainAbilities(villain.cardId)
   if (escapeAbilities?.onEscape) {
-    await asEnemyEffect(state, () => escapeAbilities.onEscape!(state, ui, villain))
+    await asEnemyEffect(state, () => escapeAbilities.onEscape!(state, ui, villain, lost))
   }
 
   // Dopiero po efekcie Escape: Korath sprawdza, czy uciekinier "had any Shards"

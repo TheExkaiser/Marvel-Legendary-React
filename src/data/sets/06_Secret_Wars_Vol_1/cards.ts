@@ -182,3 +182,104 @@ export const DEADLANDS_CARDS: DeckEntry[] = [
     ['rise-of-the-living-dead'],
   ),
 ]
+
+function secretWarsVillain(
+  id: string,
+  name: string,
+  group: string,
+  count: number,
+  strength: number,
+  vp: number,
+  text: string,
+): DeckEntry {
+  return {
+    count,
+    card: {
+      id: `secret-wars-${id}`,
+      name,
+      img: img(id),
+      strength,
+      vp,
+      villainGroup: group,
+      text,
+    },
+  }
+}
+
+export const DOMAIN_OF_APOCALYPSE_CARDS: DeckEntry[] = [
+  secretWarsVillain(
+    'apocalyptic-blink',
+    'Apocalyptic Blink',
+    'Domain of Apocalypse',
+    3,
+    5,
+    3,
+    'Fight: Reveal the top card of your deck. Draw it or Teleport it.',
+  ),
+  secretWarsVillain(
+    'apocalyptic-magneto',
+    'Apocalyptic Magneto',
+    'Domain of Apocalypse',
+    1,
+    8,
+    6,
+    'Fight: Gain an X-Men Hero from the HQ for free.\nEscape: Magneto ascends to become a new Mastermind. He gains the ability, "Master Strike: Each player reveals an X-Men Hero or discards down to four cards."',
+  ),
+  secretWarsVillain(
+    'apocalyptic-rogue',
+    'Apocalyptic Rogue',
+    'Domain of Apocalypse',
+    2,
+    6,
+    4,
+    'Fight: Reveal the top card of the Hero Deck. The player of your choice gains it.\nEscape: Reveal the top card of the Hero Deck. Each player reveals their hand and discards a card of that class.',
+  ),
+  secretWarsVillain(
+    'apocalyptic-weapon-x',
+    'Apocalyptic Weapon X',
+    'Domain of Apocalypse',
+    2,
+    7,
+    5,
+    'Fight: KO one of your Heroes.\nEscape: Cross-Dimensional Wolverine Rampage.',
+  ),
+]
+
+export const LIMBO_CARDS: DeckEntry[] = [
+  secretWarsVillain(
+    'inferno-colossus',
+    'Inferno Colossus',
+    'Limbo',
+    2,
+    5,
+    3,
+    'Ambush: The Mastermind captures a Bystander.\nFight: KO one of your Heroes.',
+  ),
+  secretWarsVillain(
+    'inferno-cyclops',
+    'Inferno Cyclops',
+    'Limbo',
+    2,
+    6,
+    4,
+    'Ambush: Inferno Cyclops captures a Bystander.\nEscape: The Mastermind captures all the Bystanders this Villain had. Each player still discards a card for each Bystander carried away.',
+  ),
+  secretWarsVillain(
+    'inferno-darkchilde',
+    'Inferno Darkchilde',
+    'Limbo',
+    2,
+    5,
+    3,
+    'Fight: Reveal the top card of your deck. KO it or Teleport it.\nEscape: Each player Teleports a random card from their hand.',
+  ),
+  secretWarsVillain(
+    'inferno-nightcrawler',
+    'Inferno Nightcrawler',
+    'Limbo',
+    2,
+    4,
+    2,
+    'Fight: Up to two cards in your hand that have a Recruit icon gain Teleport this turn.',
+  ),
+]

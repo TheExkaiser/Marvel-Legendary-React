@@ -15,6 +15,8 @@ import {
   THANOS_CARDS,
   ULTIMATE_SPIDER_MAN_CARDS,
   DEADLANDS_CARDS,
+  DOMAIN_OF_APOCALYPSE_CARDS,
+  LIMBO_CARDS,
 } from './cards'
 
 export const SECRET_WARS_VOL_1_HEROES: CardGroup[] = [
@@ -48,6 +50,8 @@ export const SIDEKICK_CARD: DeckEntry = {
 
 export const SECRET_WARS_VOL_1_VILLAIN_GROUPS: CardGroup[] = [
   { id: 'secret-wars-the-deadlands', name: 'The Deadlands', cards: DEADLANDS_CARDS },
+  { id: 'secret-wars-domain-of-apocalypse', name: 'Domain of Apocalypse', cards: DOMAIN_OF_APOCALYPSE_CARDS },
+  { id: 'secret-wars-limbo', name: 'Limbo', cards: LIMBO_CARDS },
 ]
 export const SECRET_WARS_VOL_1_HENCHMEN_GROUPS: CardGroup[] = []
 export const SECRET_WARS_VOL_1_BYSTANDER_GROUPS: CardGroup[] = [
