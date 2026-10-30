@@ -16,7 +16,7 @@
   grid-auto-rows: auto;
   gap: var(--board-gap);
   width: max-content;
-  margin-inline: auto;
+  margin-inline: 17vw;
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -119,8 +119,9 @@
 
 .villain-decks {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
 .zone-title {
@@ -180,7 +181,7 @@
 }
 
 .sidekick-slot .deck-pile {
-  width: 100%;
+  width: 130%;
   margin-left: 0;
 }
 
@@ -217,9 +218,9 @@
   object-fit: contain;
 }
 
-.nega-bomb-pile {
-  width: 58px;
-  margin-top: 20px;
+.board-zones .nega-bomb-pile {
+  width: var(--board-card-width);
+  margin-top: 0;
 }
 
 .nega-bomb-pile.deck-empty {
@@ -284,18 +285,18 @@
 }
 
 @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
-  .board-zone-scroll {
-    width: calc(100vw - 16px);
-    margin-inline: -8px;
-    padding-inline: 8px;
-  }
-
   .board-zones {
-    --board-card-width: 96px;
-    --board-gap: 6px;
+    --board-card-width: 80px;
+    --board-gap: 10px;
     grid-template-columns: repeat(8, var(--board-card-width));
     margin-inline: 0;
     padding: 8px;
+  }
+
+  .board-zone-scroll {
+    width: calc(100% - 30vw);
+    margin-inline: 15vw;
+    padding-inline: 8px;
   }
 
   .additional-mastermind-column {
@@ -343,19 +344,13 @@
     font-size: 8px;
   }
 
-  .officer-slot .card {
-    width: 60px;
-  }
-
   .villain-decks {
-    flex-direction: column;
-    align-items: center;
     gap: 4px;
   }
 
-  .nega-bomb-pile {
-    width: 46px;
-    margin-top: 6px;
+  .board-zones .nega-bomb-pile {
+    width: var(--board-card-width);
+    margin-top: 0;
   }
 
   .nega-bomb-pile .deck-count {
@@ -373,25 +368,28 @@
   .section-block-played {
     width: calc(100vw - 16px);
     overflow-x: auto;
+    padding-left: 17vw;
   }
 
   .row-with-deck {
-    min-width: 760px;
+    min-width: 500px;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px;
   }
 
   .played-grid {
-    grid-template-columns: repeat(4, 96px);
-    gap: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 4px;
   }
 
   .player-piles {
     gap: 4px;
+    padding-right: 4vw;
   }
 
   .player-piles > .deck-pile {
     width: 78px;
   }
-
 }

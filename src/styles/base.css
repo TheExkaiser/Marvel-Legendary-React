@@ -90,9 +90,8 @@ body {
 }
 
 .app {
-  max-width: 1000px;
   margin: 0 auto;
-  padding: 60px 16px 280px; /* góra: pasek logu, dół: miejsce na stałe panele */
+  padding: 10px 16px 280px; /* góra: pasek logu, dół: miejsce na stałe panele */
   user-select: none;
 }
 
