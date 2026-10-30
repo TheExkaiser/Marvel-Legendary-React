@@ -1,140 +1,47 @@
-/* The City and HQ are two rows of one shared eight-column grid. */
+/* Plansza: Mastermind, miasto, HQ, sekcje (wydzielone z App.css) */
 
-.board-zone-scroll {
-  width: 100%;
-  overflow-x: auto;
-  padding: 10px 0 8px;
-  scrollbar-width: thin;
-}
-
-.board-zones {
-  --board-card-width: 120px;
-  --board-gap: 12px;
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(8, var(--board-card-width));
-  grid-auto-rows: auto;
-  gap: var(--board-gap);
-  width: max-content;
-  margin-inline: auto;
-  padding: 12px;
+.board-top {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  padding: 14px;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: linear-gradient(160deg, rgba(56, 225, 255, 0.07), rgba(255, 61, 87, 0.06));
 }
 
-.board-top,
-.hq-zone {
-  display: contents;
-}
-
-.additional-mastermind-column,
-.mastermind-slot,
-.villain-deck-column,
-.sidekick-column,
-.officer-slot,
-.hero-deck-column,
-.city-space,
-.hq-space {
+.mastermind-slot {
   position: relative;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 0;
-  width: var(--board-card-width);
 }
 
-.additional-mastermind-column {
-  grid-column: 1;
-  grid-row: 1;
-  gap: 8px;
-  padding-top: 54px;
-}
-
-.mastermind-slot {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-.additional-mastermind-column .card,
-.mastermind-slot > .card,
-.city-space .card,
-.hq-space .card {
-  width: var(--board-card-width);
+.additional-masterminds {
+  position: absolute;
+  z-index: 3;
+  top: 33px;
+  right: calc(100% + 10px);
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-start;
+  gap: 6px;
+  pointer-events: none;
 }
 
 .additional-mastermind {
+  pointer-events: auto;
   text-align: center;
-}
-
-.additional-mastermind-empty {
-  width: var(--board-card-width);
-  aspect-ratio: 5 / 7;
-}
-
-.board-zones .slot-empty,
-.board-zones .deck-pile {
-  width: var(--board-card-width);
-}
-
-.city-title {
-  position: absolute;
-  top: 10px;
-  left: calc(12px + 2 * (var(--board-card-width) + var(--board-gap)));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: calc(5 * var(--board-card-width) + 4 * var(--board-gap));
-  color: var(--text);
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 700;
-  text-align: center;
-}
-
-.city-space {
-  grid-row: 1;
-  padding-top: 54px;
-}
-
-.city-space-label {
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 700;
-  text-align: center;
-}
-
-.city-space .markers {
-  max-width: 100%;
-  text-align: center;
-}
-
-.villain-deck-column {
-  grid-column: 8;
-  grid-row: 1;
-  gap: 8px;
-}
-
-.villain-decks {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
 }
 
 .zone-title {
-  display: flex;
-  min-height: 44px;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+  min-height: 44px; /* wspólna wysokość, żeby karty były na tym samym poziomie */
   margin: 0 0 10px;
-  color: var(--text);
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
-  text-align: center;
+  color: var(--text);
 }
 
 .escaped-count {
@@ -153,71 +60,70 @@
   outline-offset: 2px;
 }
 
-.sidekick-column {
-  grid-column: 1;
-  grid-row: 2;
-  justify-content: flex-start;
-}
-
 .officer-slot {
-  grid-column: 2;
-  grid-row: 2;
-  gap: 5px;
-  color: var(--muted);
-  font-size: 10px;
-  text-align: center;
-}
-
-.sidekick-slot {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  min-width: 0;
+  gap: 6px;
+  padding-right: 14px;
+  margin-right: 8px;
+  border-right: 1px solid var(--line);
   color: var(--muted);
-  font-size: 10px;
-  text-align: center;
+  font-size: 13px;
+}
+
+.sidekick-slot {
+  position: absolute;
+  top: 0;
+  right: calc(100% + 12px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-right: 10px;
+  margin-right: 4px;
+  border-right: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .sidekick-slot .deck-pile {
-  width: 100%;
+  width: 76px;
+}
+
+/* Miasto zajmuje resztę szerokości panelu; talia villainów jest dosunięta do prawej */
+.city-slot {
+  flex: 1;
+  min-width: 0;
+}
+
+.city-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.city-row .row {
+  flex: 0 0 auto;
+}
+
+.city-row .deck-pile {
+  margin-left: auto;
+}
+
+.city-deck-group {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.city-deck-group > .deck-pile {
   margin-left: 0;
 }
 
-.officer-slot .card {
-  width: 100%;
-}
-
-.hq-space {
-  grid-row: 2;
-}
-
-.hero-deck-column {
-  grid-column: 8;
-  grid-row: 2;
-}
-
-.hero-deck-column .zone-title {
-  display: none;
-}
-
-.helicarrier-explosion-marker {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  margin-top: 4px;
-  color: var(--gold);
-  font-size: 12px;
-}
-
-.helicarrier-explosion-marker img {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-}
-
-.nega-bomb-pile {
+.city-deck-group > .nega-bomb-pile {
   width: 58px;
   margin-top: 20px;
 }
@@ -246,116 +152,138 @@
   white-space: normal;
 }
 
-/* Player zone: played cards fill rows left-to-right, piles stay alongside the first row. */
-.section-block-played {
-  width: min(100%, 1000px);
-  margin: 18px auto 0;
+/* Rekrutacja: prawa krawędź talii bohaterów = krawędź talii villainów */
+.recruit-row {
+  position: relative;
+  padding-right: var(--board-inset);
 }
 
-.section-block-played .section-heading {
-  margin-top: 10px;
-}
-
+/* Zagrane karty + talia gracza */
 .row-with-deck {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: start;
-  width: 100%;
-}
-
-.played-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 120px);
-  gap: 12px;
-  align-content: start;
-  min-width: 0;
-}
-
-.player-piles {
   display: flex;
+  gap: 12px;
   align-items: flex-start;
-  gap: 8px;
-  padding-top: 0;
+  padding-right: var(--board-inset);
 }
 
-.player-piles > .deck-pile {
-  margin-left: 4px;
+.row-with-deck .row {
+  flex: 1;
+}
+
+@media (max-width: 700px) {
+  .board-top {
+    flex-direction: column;
+  }
+
+  .additional-masterminds {
+    right: calc(100% + 4px);
+    gap: 3px;
+  }
+
 }
 
 @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
-  .board-zone-scroll {
-    width: calc(100vw - 16px);
-    margin-inline: -8px;
-    padding-inline: 8px;
+  .board-top,
+  .city-row,
+  .recruit-row,
+  .row-with-deck {
+    width: 100%;
+    max-width: 100%;
+    flex-wrap: wrap;
   }
 
-  .board-zones {
-    --board-card-width: 96px;
-    --board-gap: 6px;
-    grid-template-columns: repeat(8, var(--board-card-width));
-    margin-inline: 0;
-    padding: 8px;
+  .recruit-row,
+  .row-with-deck {
+    padding-left: 0;
+    padding-right: 0;
   }
 
-  .additional-mastermind-column {
-    padding-top: 32px;
+  .recruit-row {
+    gap: 4px;
   }
 
   .zone-title {
-    min-height: 26px;
-    margin-bottom: 6px;
-    font-size: 12px;
-  }
-
-  .city-space-label {
-    margin-top: 4px;
+    min-height: 20px;
+    margin-bottom: 4px;
     font-size: 10px;
   }
 
-  .city-space {
-    padding-top: 32px;
-  }
-
-  .city-title {
-    top: 6px;
-    left: calc(8px + 2 * (var(--board-card-width) + var(--board-gap)));
-    width: calc(5 * var(--board-card-width) + 4 * var(--board-gap));
-    font-size: 12px;
-  }
-
-  .city-space .card,
-  .hq-space .card,
-  .additional-mastermind-column .card,
-  .mastermind-slot > .card {
-    width: var(--board-card-width);
-  }
-
-  .hq-heading {
-    min-height: 22px;
-  }
-
   .officer-slot {
+    padding-right: 4px;
+    margin-right: 0;
     font-size: 8px;
   }
 
   .sidekick-slot {
+    position: static;
+    width: 40px;
+    padding-right: 0;
+    margin-right: 0;
     font-size: 8px;
   }
 
-  .officer-slot .card {
-    width: 60px;
+  .sidekick-slot .deck-pile {
+    width: 40px;
   }
 
-  .villain-decks {
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
+  .board-top,
+  .city-row,
+  .recruit-row,
+  .row-with-deck {
+    flex-wrap: wrap;
   }
 
-  .nega-bomb-pile {
-    width: 46px;
-    margin-top: 6px;
+  .city-slot,
+  .mastermind-slot {
+    min-width: 0;
+  }
+
+  .city-slot {
+    flex: 0 1 auto;
+  }
+
+  .row-with-deck .row {
+    flex: 0 1 auto;
+  }
+
+  .city-row .deck-pile {
+    margin-left: 0;
+  }
+
+  .board-top,
+  .row-with-deck {
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .recruit-row {
+    padding-left: 6px;
+  }
+
+  .row-with-deck {
+    padding-left: 6px;
+  }
+
+  .city-row .deck-pile {
+    margin-left: 6px;
+  }
+
+  .city-deck-group {
+    gap: 6px;
+    margin-left: 6px;
+  }
+
+  .city-deck-group > .deck-pile {
+    margin-left: 0;
+  }
+
+  .city-deck-group > .nega-bomb-pile {
+    width: 40px;
+    margin-top: 12px;
+  }
+
+  .nega-bomb-pile.deck-empty .deck-label {
+    margin-top: 0;
   }
 
   .nega-bomb-pile .deck-count {
@@ -369,29 +297,103 @@
     padding: 1px 2px;
     font-size: 8px;
   }
+}
+
+@media (min-width: 601px) and (max-height: 500px) and (orientation: landscape) {
+  .board-top {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+    gap: 10px;
+    padding: 8px;
+  }
+
+  .board-top,
+  .recruit-row {
+    justify-content: center;
+  }
+
+  .city-slot {
+    flex: 0 1 auto;
+  }
+
+  .city-row,
+  .recruit-row {
+    justify-content: center;
+  }
+
+  .section-block {
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
+  .section-block-hq {
+    width: fit-content;
+  }
 
   .section-block-played {
-    width: calc(100vw - 16px);
-    overflow-x: auto;
+    width: min(100%, 720px);
+  }
+
+  .section-heading {
+    width: 100%;
+    margin-inline: 0;
+  }
+
+  .section-block-hq .recruit-row {
+    width: fit-content;
+    margin-inline: 0;
+  }
+
+  .city-slot .zone-title {
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .city-slot .zone-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    margin-left: 8px;
+    background: linear-gradient(90deg, var(--line), transparent);
+  }
+
+  .city-row,
+  .recruit-row,
+  .row-with-deck,
+  .city-row .row {
+    flex-wrap: nowrap;
   }
 
   .row-with-deck {
-    min-width: 760px;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 8px;
+    width: min(100%, 720px);
+    max-width: 100%;
+    margin-inline: auto;
+    min-width: 0;
+    overflow: hidden;
   }
 
-  .played-grid {
-    grid-template-columns: repeat(4, 96px);
-    gap: 6px;
+  .row-with-deck .row {
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow: visible;
   }
 
-  .player-piles {
-    gap: 4px;
+  .row-with-deck .deck-group {
+    flex: 0 0 auto;
+    margin-left: auto;
   }
 
-  .player-piles > .deck-pile {
-    width: 78px;
+  .board-top {
+    margin-bottom: 0;
   }
 
+  .city-row .deck-pile {
+    margin-left: 6px;
+  }
 }
