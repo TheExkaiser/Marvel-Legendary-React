@@ -59,4 +59,13 @@ export const THEMATIC_SETUPS: ThematicSetup[] = [
     villainGroupIds: ['gotg_kree_starforce', 'gotg_infinity_gems'],
     henchmenGroupIds: [],
   },
+  {
+    id: 'secret-wars-vol-1-complete',
+    name: 'Secret Wars Vol. 1 — Complete Set',
+    schemeIds: [],
+    mastermindIds: [],
+    heroPoolIds: ['secret-wars-apocalyptic-kitty-pryde', 'secret-wars-black-bolt', 'secret-wars-black-panther', 'secret-wars-captain-marvel', 'secret-wars-dr-strange', 'secret-wars-lady-thor', 'secret-wars-magik', 'secret-wars-maximus', 'secret-wars-namor', 'secret-wars-old-man-logan', 'secret-wars-proxima-midnight', 'secret-wars-superior-iron-man', 'secret-wars-thanos', 'secret-wars-ultimate-spider-man'],
+    villainGroupIds: ['secret-wars-the-deadlands', 'secret-wars-domain-of-apocalypse', 'secret-wars-limbo', 'secret-wars-manhattan', 'secret-wars-sentinel-territories', 'secret-wars-wasteland'],
+    henchmenGroupIds: ['secret-wars-ghost-racers', 'secret-wars-modoks', 'secret-wars-thor-corps'],
+  },
 ]
