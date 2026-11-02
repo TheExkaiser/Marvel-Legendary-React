@@ -146,6 +146,10 @@ export interface GameState {
   enemyEffectDepth?: number // >0 w trakcie efektu Villaina / Master Strike'a / Taktyki (Impenetrable Ice Wall)
   mindControlThisTurn?: boolean // Professor X (Mind Control): po pokonaniu Villaina możesz go zdobyć
   instanceOverrides?: Record<string, InstanceOverride> // instanceId -> nadpisane dane karty
+  skipVillainCardNextTurn?: boolean // Colossus of Future Past: w następnej turze nie zagrywasz karty Villaina
+  nextTurnRecruitBonus?: number // Kate Pryde of Future Past: +Recruit na początku następnej tury
+  nextTurnEnemyAttackModifier?: number // Rachel Summers: modyfikator Attack wszystkich Villainów i Mastermindów w następnej turze
+  enemyAttackModifierThisTurn?: number // to samo w bieżącej turze (reset w endTurn)
   focusUsesThisTurn?: Record<string, number> // cardId -> ile razy użyto Focusa tej karty w tej turze, łącznie ze wszystkich kopii (reset w endTurn)
   oncePerTurnAbilitiesUsed?: string[] // cardId -> karta z jednorazową zdolnością już użyła jej w tej turze
   artifacts?: CardInstance[] // Artifacty pod kontrolą gracza: zostają w grze między turami (nie wchodzą do played ani discardu przy końcu tury)

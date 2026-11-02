@@ -2,7 +2,7 @@ import { registerCardAbility } from '../../../engine/cardAbilities'
 import { chooseOneCard, revealOneOr } from '../../../engine/abilityHelpers'
 import { getCardData } from '../../../engine/cardData'
 import { drawCards, drawRevealed, putCardsOnTop, revealTopAndDrawIf } from '../../../engine/deckOps'
-import { revealCards, koCard, discardCard, revealTopCards, isVillainCard, countPlayedThisTurn, matchesRampageCharacter, mostRecentHeroPlayed, getEffectiveStrength, countBystandersInPile, isShieldHero, koFromVictoryPile } from '../../../engine/keywords'
+import { revealCards, koCard, discardCard, revealTopCards, isVillainCard, countPlayedThisTurn, matchesRampageCharacter, mostRecentHeroPlayed, getEffectiveStrength, countBystandersInPile, isShieldHero, koFromVictoryPile, haveZone, countDistinctTypes } from '../../../engine/keywords'
 import { addAttack, addRecruit } from '../../../engine/resources'
 import { gainSidekicks } from '../../../engine/sidekicks'
 import { claimTacticFree, defeatVillainFree, defeatVillainFromDeck, registerFightEffectCancellation, registerLocationDefeatHook, registerVillainDefeatHook } from '../../../engine/combat'
@@ -128,7 +128,7 @@ registerCardAbility('secret-wars-black-panther-king-of-wakanda', async (state) =
 
 registerCardAbility('secret-wars-captain-marvel-absorb-energies', async (state) => {
   const rangedHeroes = state.cardsPlayedThisTurn.filter((card) => {
-    const data = state.cards[card.cardId]
+    const data = getCardData(state, card)
     return !!data.hero && (data.type ?? []).includes('ranged')
   }).length
   addRecruit(state, rangedHeroes)
@@ -140,7 +140,7 @@ registerCardAbility('secret-wars-captain-marvel-supersonic-flight', async (state
 
 registerCardAbility('secret-wars-captain-marvel-marvelous-strength', async (state) => {
   const strengthHeroes = state.cardsPlayedThisTurn.filter((card) => {
-    const data = state.cards[card.cardId]
+    const data = getCardData(state, card)
     return !!data.hero && (data.type ?? []).includes('strength')
   }).length
   addAttack(state, strengthHeroes)
@@ -327,7 +327,7 @@ registerCardAbility('secret-wars-maximus-pieces-on-a-chessboard', async (state, 
 
 registerCardAbility('secret-wars-maximus-inhuman-mastery', async (state, { ui }) => {
   const techHeroes = revealCards(state, { type: 'tech' }).filter(
-    (card) => !!state.cards[card.cardId].hero,
+    (card) => !!getCardData(state, card).hero,
   )
   await revealOneOr(
     ui,
@@ -456,7 +456,7 @@ registerCardAbility('secret-wars-old-man-logan-no-more-heroes', async (state, { 
 registerCardAbility('secret-wars-proxima-midnight-master-combatant', async (state) => {
   const latestHero = mostRecentHeroPlayed(state)
   if (!latestHero) return
-  const data = state.cards[latestHero.cardId]
+  const data = getCardData(state, latestHero)
   if (data.recruit !== undefined) addRecruit(state, 2)
   if (data.attack !== undefined) addAttack(state, 2)
 })
@@ -532,7 +532,7 @@ registerCardAbility('secret-wars-thanos-transdimensional-overlord', async (state
 registerCardAbility('secret-wars-thanos-galactic-domination', async (state, { ui }) => {
   if (countPlayedThisTurn(state, { type: 'ranged' }) === 0) return
   const rangedHeroes = revealCards(state, { type: 'ranged' }).filter(
-    (card) => !!state.cards[card.cardId].hero,
+    (card) => !!getCardData(state, card).hero,
   )
   await revealOneOr(
     ui,
@@ -614,4 +614,19 @@ registerCardAbility('secret-wars-ultimate-spider-man-hero-from-another-dimension
     return cost === 1 || cost === 2
   }).length
   addAttack(state, count * 2)
+})
+
+// ---------- Manhattan (Earth-1610): Ultimate Avengers po zdobyciu jako Hero ----------
+
+registerCardAbility('secret-wars-ultimate-captain-america', async (state) => {
+  const heroes = haveZone(state).filter((card) => !!getCardData(state, card).hero)
+  addAttack(state, countDistinctTypes(state, heroes))
+})
+
+registerCardAbility('secret-wars-ultimate-thor', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'ranged' }) > 0) addAttack(state, 3)
+})
+
+registerCardAbility('secret-wars-ultimate-wasp', async (state) => {
+  if (countPlayedThisTurn(state, { type: 'covert' }) > 0) addAttack(state, 2)
 })

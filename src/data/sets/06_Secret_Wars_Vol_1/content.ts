@@ -17,6 +17,9 @@ import {
   DEADLANDS_CARDS,
   DOMAIN_OF_APOCALYPSE_CARDS,
   LIMBO_CARDS,
+  MANHATTAN_CARDS,
+  SENTINEL_TERRITORIES_CARDS,
+  WASTELAND_CARDS,
 } from './cards'
 
 export const SECRET_WARS_VOL_1_HEROES: CardGroup[] = [
@@ -52,6 +55,9 @@ export const SECRET_WARS_VOL_1_VILLAIN_GROUPS: CardGroup[] = [
   { id: 'secret-wars-the-deadlands', name: 'The Deadlands', cards: DEADLANDS_CARDS },
   { id: 'secret-wars-domain-of-apocalypse', name: 'Domain of Apocalypse', cards: DOMAIN_OF_APOCALYPSE_CARDS },
   { id: 'secret-wars-limbo', name: 'Limbo', cards: LIMBO_CARDS },
+  { id: 'secret-wars-manhattan', name: 'Manhattan (Earth-1610)', cards: MANHATTAN_CARDS },
+  { id: 'secret-wars-sentinel-territories', name: 'Sentinel Territories', cards: SENTINEL_TERRITORIES_CARDS },
+  { id: 'secret-wars-wasteland', name: 'Wasteland', cards: WASTELAND_CARDS },
 ]
 export const SECRET_WARS_VOL_1_HENCHMEN_GROUPS: CardGroup[] = []
 export const SECRET_WARS_VOL_1_BYSTANDER_GROUPS: CardGroup[] = [

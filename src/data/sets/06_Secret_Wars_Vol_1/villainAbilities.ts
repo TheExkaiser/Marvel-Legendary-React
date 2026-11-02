@@ -1,9 +1,9 @@
 import { registerCardAbility } from '../../../engine/cardAbilities'
-import { chooseOneCard, revealOneOr } from '../../../engine/abilityHelpers'
+import { chooseOneCard } from '../../../engine/abilityHelpers'
 import { registerDefeatRequirement } from '../../../engine/villainRequirements'
 import { registerVillainAbilities } from '../../../engine/villainAbilities'
 import { drawCards, drawRevealed, putCardsOnTop } from '../../../engine/deckOps'
-import { discardCard, koCard, matchesRampageCharacter, revealCards, revealTopCards } from '../../../engine/keywords'
+import { discardCard, koCard, revealCards, revealTopCards } from '../../../engine/keywords'
 import { gainWound, rescueCard } from '../../../engine/wounds'
 import { ascendVillainToMastermind } from '../../../engine/ascension'
 import { enterCity } from '../../../engine/villainPhase'
@@ -11,6 +11,9 @@ import { refillHq } from '../../../engine/recruit'
 import { claimShardsOn } from '../../../engine/shards'
 import { hasTeleport, teleportCard } from '../../../engine/turn'
 import { shuffle } from '../../../engine/random'
+import { getCardData, registerVillainHeroSide } from '../../../engine/cardData'
+import { addRecruit } from '../../../engine/resources'
+import { crossDimensionalRampage } from '../../../engine/rampage'
 import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
 
@@ -43,10 +46,10 @@ for (const suffix of [
 registerVillainAbilities(`${ID}baron-zemo`, {
   onAmbush: (state, ui) => riseOfTheLivingDead(state, ui),
   onFight: async (state, ui) => {
-    const avengers = state.cardsPlayedThisTurn.filter((card) =>
-      !!state.cards[card.cardId].hero &&
-      (state.cards[card.cardId].team ?? []).some((team) => team.toLowerCase() === 'avengers'),
-    )
+    const avengers = state.cardsPlayedThisTurn.filter((card) => {
+      const data = getCardData(state, card)
+      return !!data.hero && (data.team ?? []).some((team) => team.toLowerCase() === 'avengers')
+    })
     for (let i = 0; i < avengers.length; i++) {
       const bystander = state.bystanders.pop()
       if (!bystander) break
@@ -78,7 +81,7 @@ registerVillainAbilities(`${ID}modok`, {
   onAmbush: (state, ui) => riseOfTheLivingDead(state, ui),
   onFight: async (state, ui, self) => {
     const targets = [...state.hand, ...state.discard].filter((card) => {
-      const data = state.cards[card.cardId]
+      const data = getCardData(state, card)
       return !!data.hero && data.recruit !== undefined
     })
     const chosen = await ui.choose(targets, {
@@ -95,7 +98,7 @@ registerVillainAbilities(`${ID}venom`, {
 })
 
 registerDefeatRequirement(`${ID}venom`, (state) =>
-  revealCards(state, { type: 'covert' }).some((card) => !!state.cards[card.cardId].hero),
+  revealCards(state, { type: 'covert' }).some((card) => !!getCardData(state, card).hero),
 )
 
 const ascensionEffects: Record<string, { strikeId: string; strikeText: string }> = {
@@ -141,7 +144,7 @@ registerVillainAbilities(`${ID}mysterio`, {
 })
 
 registerCardAbility('secret-wars-zombie-loki-master-strike', async (state, { ui }) => {
-  if (revealCards(state, { type: 'strength' }).some((card) => !!state.cards[card.cardId].hero)) return
+  if (revealCards(state, { type: 'strength' }).some((card) => !!getCardData(state, card).hero)) return
   await gainWound(state, ui)
 })
 
@@ -162,7 +165,7 @@ registerCardAbility('secret-wars-zombie-sinister-master-strike', async (state, {
     )
   }
   if (state.hand.length !== 6) return
-  if (revealCards(state, { type: 'covert' }).some((card) => !!state.cards[card.cardId].hero)) return
+  if (revealCards(state, { type: 'covert' }).some((card) => !!getCardData(state, card).hero)) return
   const count = (state.captives[mastermind.instanceId] ?? []).filter(
     (card) => state.cards[card.cardId].kind === 'bystander',
   ).length
@@ -178,7 +181,7 @@ registerCardAbility('secret-wars-zombie-sinister-master-strike', async (state, {
 
 registerCardAbility('secret-wars-zombie-thanos-master-strike', async (state, { ui }) => {
   const targets = state.hand.filter((card) => {
-    const data = state.cards[card.cardId]
+    const data = getCardData(state, card)
     return !!data.hero && (data.type?.length ?? 0) > 0
   })
   if (state.hand.length > 0) await ui.showCards(state.hand, 'Zombie Thanos Master Strike: reveal your hand')
@@ -297,22 +300,11 @@ registerVillainAbilities(`${APOCALYPSE_ID}rogue`, {
 registerVillainAbilities(`${APOCALYPSE_ID}weapon-x`, {
   onFight: async (state, ui, self) => {
     const heroes = [...state.hand, ...state.played, ...state.discard, ...(state.artifacts ?? [])]
-      .filter((card) => !!state.cards[card.cardId].hero)
+      .filter((card) => !!getCardData(state, card).hero)
     const chosen = await chooseOneCard(ui, heroes, `${state.cards[self.cardId].name}: KO one of your Heroes`)
     if (chosen) koCard(state, chosen.instanceId)
   },
-  onEscape: async (state, ui, self) => {
-    const wolverine = [...revealCards(state), ...state.defeated].find((card) =>
-      card.instanceId !== self.instanceId && matchesRampageCharacter(state, card, 'Wolverine'),
-    )
-    await revealOneOr(
-      ui,
-      wolverine ? [wolverine] : [],
-      'Cross-Dimensional Wolverine Rampage: reveal a Wolverine card.',
-      'Cross-Dimensional Wolverine Rampage: revealed a Wolverine card',
-      async () => gainWound(state, ui),
-    )
-  },
+  onEscape: (state, ui) => crossDimensionalRampage(state, ui, 'Wolverine'),
 })
 
 registerVillainAbilities(`${LIMBO_ID}colossus`, {
@@ -322,7 +314,7 @@ registerVillainAbilities(`${LIMBO_ID}colossus`, {
   },
   onFight: async (state, ui, self) => {
     const heroes = [...state.hand, ...state.played, ...state.discard, ...(state.artifacts ?? [])]
-      .filter((card) => !!state.cards[card.cardId].hero)
+      .filter((card) => !!getCardData(state, card).hero)
     const chosen = await chooseOneCard(ui, heroes, `${state.cards[self.cardId].name}: KO one of your Heroes`)
     if (chosen) koCard(state, chosen.instanceId)
   },
@@ -377,7 +369,7 @@ registerVillainAbilities(`${LIMBO_ID}darkchilde`, {
 registerVillainAbilities(`${LIMBO_ID}nightcrawler`, {
   onFight: async (state, ui, self) => {
     let targets = state.hand.filter((card) =>
-      state.cards[card.cardId].recruit !== undefined && !hasTeleport(state, card),
+      getCardData(state, card).recruit !== undefined && !hasTeleport(state, card),
     )
     for (let i = 0; i < 2 && targets.length > 0; i++) {
       const chosen = await ui.choose(targets, {
@@ -388,5 +380,125 @@ registerVillainAbilities(`${LIMBO_ID}nightcrawler`, {
       state.teleportGrantedThisTurn = [...(state.teleportGrantedThisTurn ?? []), chosen.instanceId]
       targets = targets.filter((card) => card.instanceId !== chosen.instanceId)
     }
+  },
+})
+
+// ---------- Manhattan (Earth-1610): strona Hero po pokonaniu ----------
+
+registerVillainHeroSide('secret-wars-ultimate-captain-america', {
+  attack: 0,
+  type: ['strength'],
+  team: ['avengers'],
+  text: 'You get +1 Attack for each color of Hero you have',
+})
+
+registerVillainHeroSide('secret-wars-ultimate-captain-marvel', {
+  recruit: 2,
+  type: ['ranged'],
+  team: ['avengers'],
+  keywords: ['teleport'],
+  text: 'Teleport.',
+})
+
+registerVillainHeroSide('secret-wars-ultimate-thor', {
+  attack: 3,
+  type: ['ranged'],
+  team: ['avengers'],
+  conditionIcons: ['ranged'],
+  conditionText: 'You get +3 Attack.',
+})
+
+registerVillainHeroSide('secret-wars-ultimate-wasp', {
+  attack: 2,
+  type: ['covert'],
+  team: ['avengers'],
+  conditionIcons: ['covert'],
+  conditionText: 'You get +2 Attack.',
+})
+
+registerVillainAbilities('secret-wars-ultimate-thor', {
+  onEscape: (state, ui) => crossDimensionalRampage(state, ui, 'Thor'),
+})
+
+// ---------- Sentinel Territories ----------
+
+registerVillainAbilities('secret-wars-colossus-of-future-past', {
+  onFight: async (state) => {
+    state.skipVillainCardNextTurn = true
+  },
+})
+
+registerVillainAbilities('secret-wars-kate-pryde-of-future-past', {
+  onFight: async (state) => {
+    addRecruit(state, 1)
+    state.nextTurnRecruitBonus = (state.nextTurnRecruitBonus ?? 0) + 1
+  },
+})
+
+registerVillainAbilities('secret-wars-rachel-summers-of-future-past', {
+  onFight: async (state) => {
+    state.nextTurnEnemyAttackModifier = (state.nextTurnEnemyAttackModifier ?? 0) - 1
+  },
+  onEscape: async (state) => {
+    state.enemyAttackModifierThisTurn = (state.enemyAttackModifierThisTurn ?? 0) + 1
+  },
+})
+
+registerVillainAbilities('secret-wars-wolverine-of-future-past', {
+  onFight: async (state) => {
+    state.bonusDrawNextTurn += 2 // "you" i "that player" to w solo ten sam gracz
+  },
+  onEscape: (state, ui) => crossDimensionalRampage(state, ui, 'Wolverine'),
+})
+
+// ---------- Wasteland ----------
+
+registerVillainAbilities('secret-wars-the-hulk-gang', {
+  onFight: (state, ui) => crossDimensionalRampage(state, ui, 'Hulk'),
+  onEscape: (state, ui) => crossDimensionalRampage(state, ui, 'Hulk'),
+})
+
+registerVillainAbilities('secret-wars-wasteland-kingpin', {
+  onEscape: async (state, _ui, self) => {
+    ascendVillainToMastermind(
+      state,
+      self,
+      'secret-wars-wasteland-kingpin-master-strike',
+      'Each player reveals an Instinct Hero or discards their hand and draws 5 cards.',
+    )
+  },
+})
+
+registerCardAbility('secret-wars-wasteland-kingpin-master-strike', async (state, { ui }) => {
+  if (revealCards(state, { type: 'instinct' }).some((card) => !!getCardData(state, card).hero)) return
+  for (const card of [...state.hand]) await discardCard(state, card.instanceId, ui)
+  drawCards(state, 5)
+})
+
+registerVillainAbilities('secret-wars-wasteland-hawkeye', {
+  onAmbush: async (state, ui, self) => {
+    const bystander = state.bystanders.pop()
+    if (bystander) await captureForMastermind(state, ui, bystander, self)
+  },
+  onFight: async (state, ui) => {
+    const choice = await ui.chooseOption(
+      [{ id: 'draw', label: 'Draw a card' }, { id: 'discard', label: 'Discard a card' }],
+      'Wasteland Hawkeye: draw a card or discard a card?',
+    )
+    if (choice === 'draw') {
+      drawCards(state, 1)
+    } else if (choice === 'discard' && state.hand.length > 0) {
+      const chosen = await ui.choose(state.hand, { prompt: 'Wasteland Hawkeye: discard a card', optional: false })
+      if (chosen) await discardCard(state, chosen.instanceId, ui)
+    }
+  },
+})
+
+registerVillainAbilities('secret-wars-wasteland-spider-girl', {
+  onFight: async (state, ui) => {
+    const [revealed] = await revealTopCards(state, ui, 1, 'Wasteland Spider-Girl')
+    if (!revealed) return
+    if ((getCardData(state, revealed).cost ?? 0) <= 2) state.ko.push(revealed)
+    else putCardsOnTop(state, [revealed])
   },
 })

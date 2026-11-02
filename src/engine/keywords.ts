@@ -9,6 +9,7 @@ import { getMastermindRule } from './mastermindRules'
 import { takeTopCards } from './deckOps'
 import { getStrengthModifier } from './strengthModifiers'
 import { shardAttackBonus } from './shards'
+import { getCardData } from './cardData'
 
 
 export function countPlayedThisTurn(
@@ -32,7 +33,7 @@ export function countDistinctHeroesPlayedThisTurn(
   const heroes = new Set<string>()
   for (const instance of state.cardsPlayedThisTurn) {
     if (instance.instanceId === excludeInstanceId) continue
-    const data = state.cards[instance.cardId]
+    const data = getCardData(state, instance)
     const { type, team } = effectiveTypeTeam(state, instance)
     if (filter.type && !type.includes(filter.type)) continue
     if (filter.team && !team.includes(filter.team)) continue
@@ -59,7 +60,7 @@ export function isShieldHero(data: CardData): boolean {
 export function countDistinctTeams(state: GameState, pile: CardInstance[]): number {
   const teams = new Set<string>()
   for (const c of pile) {
-    for (const t of state.cards[c.cardId].team ?? []) teams.add(t)
+    for (const t of getCardData(state, c).team ?? []) teams.add(t)
   }
   return teams.size
 }
@@ -68,7 +69,7 @@ export function countDistinctTeams(state: GameState, pile: CardInstance[]): numb
 export function countDistinctTypes(state: GameState, pile: CardInstance[]): number {
   const types = new Set<string>()
   for (const c of pile) {
-    for (const t of state.cards[c.cardId].type ?? []) types.add(t)
+    for (const t of getCardData(state, c).type ?? []) types.add(t)
   }
   return types.size
 }
@@ -144,7 +145,7 @@ export async function discardCard(
 export type CardFilter = { type?: string; team?: string; hero?: string; artifact?: boolean }
 
 function effectiveTypeTeam(state: GameState, instance: CardInstance): { type: string[]; team: string[] } {
-  const data = state.cards[instance.cardId]
+  const data = getCardData(state, instance)
   const copiedId = state.copiedCardIds?.[instance.instanceId]
   const copied = copiedId ? state.cards[copiedId] : undefined
   return {
@@ -154,7 +155,7 @@ function effectiveTypeTeam(state: GameState, instance: CardInstance): { type: st
 }
 
 function matchesFilter(state: GameState, instance: CardInstance, filter: CardFilter): boolean {
-  const data = state.cards[instance.cardId]
+  const data = getCardData(state, instance)
   if (data.kind === 'wound') return false
   if (filter.artifact && !isArtifactData(data)) return false
   const { type, team } = effectiveTypeTeam(state, instance)
@@ -208,24 +209,32 @@ export function hasPlayedCard(state: GameState, filter: CardFilter): boolean {
 }
 
 export function mostRecentHeroPlayed(state: GameState): CardInstance | undefined {
-  return [...state.cardsPlayedThisTurn].reverse().find((card) => !!state.cards[card.cardId].hero)
+  return [...state.cardsPlayedThisTurn].reverse().find((card) => !!getCardData(state, card).hero)
 }
 
+// Wyjątki: Hero, który jest daną postacią, ale nie ma jej imienia w swoim imieniu (Maestro = Hulk).
+// Zwykłe warianty ("Lady Thor", "Ultimate Thor") łapie samo wyszukiwanie, więc nie trzeba ich tu wpisywać.
+const RAMPAGE_EXCEPTIONS: Record<string, string[]> = {
+  hulk: ['maestro', 'nul, breaker of worlds'],
+  wolverine: ['weapon x', 'old man logan'],
+}
+
+function containsWord(text: string, word: string): boolean {
+  const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`(^|[^\\p{L}\\d])${escaped}($|[^\\p{L}\\d])`, 'iu').test(text)
+}
+
+/** Cross-Dimensional Rampage: karta pasuje, gdy imię jej Bohatera zawiera słowo kluczowe postaci
+ * ("Thor" pasuje do "Thor", "Lady Thor" i "Ultimate Thor"). Liczy się Bohater, nie nazwa karty. */
 export function matchesRampageCharacter(
   state: GameState,
   instance: CardInstance,
   character: string,
 ): boolean {
-  const data = state.cards[instance.cardId]
-  const names = [data.name, data.hero ?? ''].map((name) => name.toLowerCase())
-  const characterName = character.toLowerCase()
-  const aliases =
-    characterName === 'hulk'
-      ? ['hulk', 'maestro', 'nul, breaker of worlds']
-      : characterName === 'wolverine'
-        ? ['wolverine', 'weapon x', 'old man logan']
-        : [characterName]
-  return names.some((name) => aliases.some((alias) => name.includes(alias)))
+  const hero = getCardData(state, instance).hero
+  if (!hero) return false
+  const keywords = [character, ...(RAMPAGE_EXCEPTIONS[character.toLowerCase()] ?? [])]
+  return keywords.some((keyword) => containsWord(hero, keyword))
 }
 
 /** Cosmic Threat (jedna klasa, np. Heraldowie): -3 Attack za każdą kartę tej klasy w ręce i zagranych.
@@ -272,6 +281,7 @@ export function getEffectiveStrength(
     }
   }
 
+  total += state.enemyAttackModifierThisTurn ?? 0
   total += getScheme(state).villainStrengthModifier?.(state, instance) ?? 0
   for (const mastermind of state.masterminds ?? [state.mastermind]) {
     total += getMastermindRule(state, mastermind)?.villainStrengthModifier?.(state, instance) ?? 0

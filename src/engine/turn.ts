@@ -76,7 +76,7 @@ export function registerTeleportHook(cardId: string, fn: TeleportHook): void {
 /** Czy karta ma Teleport: własne słowo kluczowe albo nadane na tę turę (Azazel). */
 export function hasTeleport(state: GameState, instance: CardInstance): boolean {
   return (
-    (state.cards[instance.cardId].keywords ?? []).includes('teleport') ||
+    (getCardData(state, instance).keywords ?? []).includes('teleport') ||
     (state.teleportGrantedThisTurn ?? []).includes(instance.instanceId)
   )
 }
@@ -156,15 +156,11 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.recruitCountsAsAttackThisTurn = false
   state.cardsDrawnThisTurn = 0
   state.recruitGainedThisTurn = 0
-  state.heroesRecruitedThisTurn = 0
-  state.henchmenDefeatedThisTurn = 0
-  state.activeVillainDefeatHooks = []
   state.attackGainedThisTurn = 0
   state.pendingSurgeOfPower = 0
   state.masterStrikeAutoDrawUsedThisTurn = false
   state.teleportGrantedThisTurn = []
   state.focusUsesThisTurn = {}
-  state.oncePerTurnAbilitiesUsed = []
   state.artifactUsesThisTurn = {}
   state.shardAttackSuppressedThisTurn = []
   state.shardsAsRecruitThisTurn = false
@@ -172,25 +168,35 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.cancelFightEffectsThisTurn = false
   state.cosmicThreatUsedThisTurn = false
   state.hqRecruitBonuses = {}
-  state.hqCardCostReductions = {}
-  state.sidekicksRecruitedThisTurn = false
+  state.enemyAttackModifierThisTurn = state.nextTurnEnemyAttackModifier ?? 0
+  state.nextTurnEnemyAttackModifier = 0
 
   const drawAmount = HAND_SIZE + state.bonusDrawNextTurn
   state.bonusDrawNextTurn = 0
 
   if (state.extraTurnsQueued > 0) {
     state.extraTurnsQueued -= 1
+    state.skipVillainCardNextTurn = false // dodatkowa tura i tak nie ma fazy Villaina
     drawCards(state, drawAmount)
     addReservedCardToHand(state)
     addTeleportedCardsToHand(state)
     await discardAfterNewHand(state, ui)
+    if (state.nextTurnRecruitBonus) addRecruit(state, state.nextTurnRecruitBonus)
+    state.nextTurnRecruitBonus = 0
   } else {
     state.turn += 1
     drawCards(state, drawAmount)
     addReservedCardToHand(state)
     addTeleportedCardsToHand(state)
     await discardAfterNewHand(state, ui)
-    await villainPhase(state, ui)
+    if (state.nextTurnRecruitBonus) addRecruit(state, state.nextTurnRecruitBonus)
+    state.nextTurnRecruitBonus = 0
+    if (state.skipVillainCardNextTurn) {
+      state.skipVillainCardNextTurn = false
+      logEvent(state, 'Villain card skipped (Colossus changes the future)')
+    } else {
+      await villainPhase(state, ui)
+    }
   }
 
   // Standardowe dobranie ręki na start tury NIE liczy się jako "extra" karty

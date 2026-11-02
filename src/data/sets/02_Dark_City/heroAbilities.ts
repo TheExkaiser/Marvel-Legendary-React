@@ -313,7 +313,7 @@ registerCardAbility('hero-domino-specialized-ammunition', async (state, { ui }) 
   })
   if (!chosen) return
 
-  const data = state.cards[chosen.cardId]
+  const data = getCardData(state, chosen)
   if (!(await discardCardChecked(state, chosen.instanceId, ui))) return
 
   if (data.recruit !== undefined) addRecruit(state, 4)

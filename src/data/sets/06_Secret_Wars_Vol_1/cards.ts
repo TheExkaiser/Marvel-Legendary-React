@@ -100,186 +100,48 @@ export const ULTIMATE_SPIDER_MAN_CARDS: DeckEntry[] = [
   { count: 1, card: { id: 'secret-wars-ultimate-spider-man-hero-from-another-dimension', name: 'Hero from Another Dimension', hero: 'Ultimate Spider-Man', img: img('secret-wars-ultimate-spider-man-hero-from-another-dimension'), team: ['spider-friends'], type: ['covert'], attack: 0, cost: 2, text: 'You get +2 Attack for each other card you have played this turn that costs 1 or 2.' } },
 ]
 
-function deadlandsVillain(
-  id: string,
-  name: string,
-  strength: number,
-  vp: number,
-  text: string,
-  keywords: string[] = ['rise-of-the-living-dead'],
-): DeckEntry {
-  return {
-    count: 1,
-    card: {
-      id: `secret-wars-${id}`,
-      name,
-      img: img(id),
-      strength,
-      vp,
-      villainGroup: 'The Deadlands',
-      text,
-      keywords,
-    },
-  }
-}
-
 export const DEADLANDS_CARDS: DeckEntry[] = [
-  deadlandsVillain(
-    'zombie-baron-zemo',
-    'Zombie Baron Zemo',
-    6,
-    4,
-    'Ambush: Rise of the Living Dead.\nFight: For each of your Avengers Heroes, rescue a Bystander.',
-  ),
-  deadlandsVillain(
-    'zombie-loki',
-    'Zombie Loki',
-    8,
-    6,
-    'Ambush: Rise of the Living Dead.\nEscape: Loki ascends to become a new Mastermind. He gains the ability, "Master Strike: Each player reveals a Strength Hero or gains a Wound."',
-  ),
-  deadlandsVillain(
-    'zombie-madame-hydra',
-    'Zombie Madame Hydra',
-    4,
-    2,
-    'Ambush: Rise of the Living Dead.\nFight: KO one of your S.H.I.E.L.D. Heroes or HYDRA Allies.',
-  ),
-  deadlandsVillain(
-    'zombie-mr-sinister',
-    'Zombie Mr. Sinister',
-    7,
-    5,
-    'Ambush: Rise of the Living Dead.\nEscape: Sinister ascends to become a new Mastermind. He gains the ability, "Master Strike: Sinister captures a Bystander. Then, each player with exactly 6 cards reveals a Covert Hero or discards cards equal to the number of Bystanders Sinister has."',
-  ),
-  deadlandsVillain(
-    'zombie-modok',
-    'Zombie M.O.D.O.K.',
-    5,
-    3,
-    'Ambush: Rise of the Living Dead.\nFight: KO one of your Heroes with a Recruit icon.',
-  ),
-  deadlandsVillain(
-    'zombie-mysterio',
-    'Zombie Mysterio',
-    6,
-    6,
-    'Ambush: Rise of the Living Dead.\nEscape: Shuffle this card into the Mastermind’s face-down Tactics. It becomes a Mastermind Tactic that says, "Fight: Draw two cards."',
-  ),
-  deadlandsVillain(
-    'zombie-thanos',
-    'Zombie Thanos',
-    9,
-    6,
-    'Ambush: Rise of the Living Dead.\nEscape: Thanos ascends to become a new Mastermind. He gains the ability, "Master Strike: Each player reveals their hand and KOs one of their non-grey Heroes."',
-  ),
-  deadlandsVillain(
-    'zombie-venom',
-    'Zombie Venom',
-    5,
-    3,
-    'Ambush: Rise of the Living Dead.\nYou can’t defeat Zombie Venom unless you have a Covert Hero.\nEscape: Each player gains a Wound.',
-    ['rise-of-the-living-dead'],
-  ),
+  { count: 1, card: { id: 'secret-wars-zombie-baron-zemo', name: 'Zombie Baron Zemo', img: img('secret-wars-zombie-baron-zemo'), strength: 6, vp: 4, villainGroup: 'The Deadlands', text: 'Ambush: Rise of the Living Dead.\nFight: For each of your Avengers Heroes, rescue a Bystander.', keywords: ['rise-of-the-living-dead'] } },
+  { count: 1, card: { id: 'secret-wars-zombie-loki', name: 'Zombie Loki', img: img('secret-wars-zombie-loki'), strength: 8, vp: 6, villainGroup: 'The Deadlands', text: 'Ambush: Rise of the Living Dead.\nEscape: Loki ascends to become a new Mastermind. He gains the ability, "Master Strike: Each player reveals a Strength Hero or gains a Wound."', keywords: ['rise-of-the-living-dead'] } },
+  { count: 1, card: { id: 'secret-wars-zombie-madame-hydra', name: 'Zombie Madame Hydra', img: img('secret-wars-zombie-madame-hydra'), strength: 4, vp: 2, villainGroup: 'The Deadlands', text: 'Ambush: Rise of the Living Dead.\nFight: KO one of your S.H.I.E.L.D. Heroes or HYDRA Allies.', keywords: ['rise-of-the-living-dead'] } },
+  { count: 1, card: { id: 'secret-wars-zombie-mr-sinister', name: 'Zombie Mr. Sinister', img: img('secret-wars-zombie-mr-sinister'), strength: 7, vp: 5, villainGroup: 'The Deadlands', text: 'Ambush: Rise of the Living Dead.\nEscape: Sinister ascends to become a new Mastermind. He gains the ability, "Master Strike: Sinister captures a Bystander. Then, each player with exactly 6 cards reveals a Covert Hero or discards cards equal to the number of Bystanders Sinister has."', keywords: ['rise-of-the-living-dead'] } },
+  { count: 1, card: { id: 'secret-wars-zombie-modok', name: 'Zombie M.O.D.O.K.', img: img('secret-wars-zombie-modok'), strength: 5, vp: 3, villainGroup: 'The Deadlands', text: 'Ambush: Rise of the Living Dead.\nFight: KO one of your Heroes with a Recruit icon.', keywords: ['rise-of-the-living-dead'] } },
+  { count: 1, card: { id: 'secret-wars-zombie-mysterio', name: 'Zombie Mysterio', img: img('secret-wars-zombie-mysterio'), strength: 6, vp: 6, villainGroup: 'The Deadlands', text: 'Ambush: Rise of the Living Dead.\nEscape: Shuffle this card into the Mastermind’s face-down Tactics. It becomes a Mastermind Tactic that says, "Fight: Draw two cards."', keywords: ['rise-of-the-living-dead'] } },
+  { count: 1, card: { id: 'secret-wars-zombie-thanos', name: 'Zombie Thanos', img: img('secret-wars-zombie-thanos'), strength: 9, vp: 6, villainGroup: 'The Deadlands', text: 'Ambush: Rise of the Living Dead.\nEscape: Thanos ascends to become a new Mastermind. He gains the ability, "Master Strike: Each player reveals their hand and KOs one of their non-grey Heroes."', keywords: ['rise-of-the-living-dead'] } },
+  { count: 1, card: { id: 'secret-wars-zombie-venom', name: 'Zombie Venom', img: img('secret-wars-zombie-venom'), strength: 5, vp: 3, villainGroup: 'The Deadlands', text: 'Ambush: Rise of the Living Dead.\nYou can’t defeat Zombie Venom unless you have a Covert Hero.\nEscape: Each player gains a Wound.', keywords: ['rise-of-the-living-dead'] } },
 ]
 
-function secretWarsVillain(
-  id: string,
-  name: string,
-  group: string,
-  count: number,
-  strength: number,
-  vp: number,
-  text: string,
-): DeckEntry {
-  return {
-    count,
-    card: {
-      id: `secret-wars-${id}`,
-      name,
-      img: img(id),
-      strength,
-      vp,
-      villainGroup: group,
-      text,
-    },
-  }
-}
-
 export const DOMAIN_OF_APOCALYPSE_CARDS: DeckEntry[] = [
-  secretWarsVillain(
-    'apocalyptic-blink',
-    'Apocalyptic Blink',
-    'Domain of Apocalypse',
-    3,
-    5,
-    3,
-    'Fight: Reveal the top card of your deck. Draw it or Teleport it.',
-  ),
-  secretWarsVillain(
-    'apocalyptic-magneto',
-    'Apocalyptic Magneto',
-    'Domain of Apocalypse',
-    1,
-    8,
-    6,
-    'Fight: Gain an X-Men Hero from the HQ for free.\nEscape: Magneto ascends to become a new Mastermind. He gains the ability, "Master Strike: Each player reveals an X-Men Hero or discards down to four cards."',
-  ),
-  secretWarsVillain(
-    'apocalyptic-rogue',
-    'Apocalyptic Rogue',
-    'Domain of Apocalypse',
-    2,
-    6,
-    4,
-    'Fight: Reveal the top card of the Hero Deck. The player of your choice gains it.\nEscape: Reveal the top card of the Hero Deck. Each player reveals their hand and discards a card of that class.',
-  ),
-  secretWarsVillain(
-    'apocalyptic-weapon-x',
-    'Apocalyptic Weapon X',
-    'Domain of Apocalypse',
-    2,
-    7,
-    5,
-    'Fight: KO one of your Heroes.\nEscape: Cross-Dimensional Wolverine Rampage.',
-  ),
+  { count: 3, card: { id: 'secret-wars-apocalyptic-blink', name: 'Apocalyptic Blink', img: img('secret-wars-apocalyptic-blink'), strength: 5, vp: 3, villainGroup: 'Domain of Apocalypse', text: 'Fight: Reveal the top card of your deck. Draw it or Teleport it.' } },
+  { count: 1, card: { id: 'secret-wars-apocalyptic-magneto', name: 'Apocalyptic Magneto', img: img('secret-wars-apocalyptic-magneto'), strength: 8, vp: 6, villainGroup: 'Domain of Apocalypse', text: 'Fight: Gain an X-Men Hero from the HQ for free.\nEscape: Magneto ascends to become a new Mastermind. He gains the ability, "Master Strike: Each player reveals an X-Men Hero or discards down to four cards."' } },
+  { count: 2, card: { id: 'secret-wars-apocalyptic-rogue', name: 'Apocalyptic Rogue', img: img('secret-wars-apocalyptic-rogue'), strength: 6, vp: 4, villainGroup: 'Domain of Apocalypse', text: 'Fight: Reveal the top card of the Hero Deck. The player of your choice gains it.\nEscape: Reveal the top card of the Hero Deck. Each player reveals their hand and discards a card of that class.' } },
+  { count: 2, card: { id: 'secret-wars-apocalyptic-weapon-x', name: 'Apocalyptic Weapon X', img: img('secret-wars-apocalyptic-weapon-x'), strength: 7, vp: 5, villainGroup: 'Domain of Apocalypse', text: 'Fight: KO one of your Heroes.\nEscape: Cross-Dimensional Wolverine Rampage.' } },
 ]
 
 export const LIMBO_CARDS: DeckEntry[] = [
-  secretWarsVillain(
-    'inferno-colossus',
-    'Inferno Colossus',
-    'Limbo',
-    2,
-    5,
-    3,
-    'Ambush: The Mastermind captures a Bystander.\nFight: KO one of your Heroes.',
-  ),
-  secretWarsVillain(
-    'inferno-cyclops',
-    'Inferno Cyclops',
-    'Limbo',
-    2,
-    6,
-    4,
-    'Ambush: Inferno Cyclops captures a Bystander.\nEscape: The Mastermind captures all the Bystanders this Villain had. Each player still discards a card for each Bystander carried away.',
-  ),
-  secretWarsVillain(
-    'inferno-darkchilde',
-    'Inferno Darkchilde',
-    'Limbo',
-    2,
-    5,
-    3,
-    'Fight: Reveal the top card of your deck. KO it or Teleport it.\nEscape: Each player Teleports a random card from their hand.',
-  ),
-  secretWarsVillain(
-    'inferno-nightcrawler',
-    'Inferno Nightcrawler',
-    'Limbo',
-    2,
-    4,
-    2,
-    'Fight: Up to two cards in your hand that have a Recruit icon gain Teleport this turn.',
-  ),
+  { count: 2, card: { id: 'secret-wars-inferno-colossus', name: 'Inferno Colossus', img: img('secret-wars-inferno-colossus'), strength: 5, vp: 3, villainGroup: 'Limbo', text: 'Ambush: The Mastermind captures a Bystander.\nFight: KO one of your Heroes.' } },
+  { count: 2, card: { id: 'secret-wars-inferno-cyclops', name: 'Inferno Cyclops', img: img('secret-wars-inferno-cyclops'), strength: 6, vp: 4, villainGroup: 'Limbo', text: 'Ambush: Inferno Cyclops captures a Bystander.\nEscape: The Mastermind captures all the Bystanders this Villain had. Each player still discards a card for each Bystander carried away.' } },
+  { count: 2, card: { id: 'secret-wars-inferno-darkchilde', name: 'Inferno Darkchilde', img: img('secret-wars-inferno-darkchilde'), strength: 5, vp: 3, villainGroup: 'Limbo', text: 'Fight: Reveal the top card of your deck. KO it or Teleport it.\nEscape: Each player Teleports a random card from their hand.' } },
+  { count: 2, card: { id: 'secret-wars-inferno-nightcrawler', name: 'Inferno Nightcrawler', img: img('secret-wars-inferno-nightcrawler'), strength: 4, vp: 2, villainGroup: 'Limbo', text: 'Fight: Up to two cards in your hand that have a Recruit icon gain Teleport this turn.' } },
+]
+
+export const MANHATTAN_CARDS: DeckEntry[] = [
+  { count: 2, card: { id: 'secret-wars-ultimate-captain-america', name: 'Ultimate Captain America', img: img('secret-wars-ultimate-captain-america'), strength: 6, villainGroup: 'Manhattan (Earth-1610)', text: 'Fight: Gain this as a Hero.', keywords: ['villain-hero'] } },
+  { count: 2, card: { id: 'secret-wars-ultimate-captain-marvel', name: 'Ultimate Captain Marvel', img: img('secret-wars-ultimate-captain-marvel'), strength: 4, villainGroup: 'Manhattan (Earth-1610)', text: 'Fight: Gain this as a Hero.', keywords: ['villain-hero'] } },
+  { count: 2, card: { id: 'secret-wars-ultimate-thor', name: 'Ultimate Thor', img: img('secret-wars-ultimate-thor'), strength: 7, villainGroup: 'Manhattan (Earth-1610)', text: 'Fight: Gain this as a Hero.\nEscape: Cross-Dimensional Thor Rampage.', keywords: ['villain-hero'] } },
+  { count: 2, card: { id: 'secret-wars-ultimate-wasp', name: 'Ultimate Wasp', img: img('secret-wars-ultimate-wasp'), strength: 5, villainGroup: 'Manhattan (Earth-1610)', text: 'Fight: Gain this as a Hero.', keywords: ['villain-hero'] } },
+]
+
+export const SENTINEL_TERRITORIES_CARDS: DeckEntry[] = [
+  { count: 2, card: { id: 'secret-wars-colossus-of-future-past', name: 'Colossus of Future Past', img: img('secret-wars-colossus-of-future-past'), strength: 5, vp: 3, villainGroup: 'Sentinel Territories', text: "Fight: Colossus changes the future: Don't play a Villain card at the beginning of next turn." } },
+  { count: 2, card: { id: 'secret-wars-kate-pryde-of-future-past', name: 'Kate Pryde of Future Past', img: img('secret-wars-kate-pryde-of-future-past'), strength: 4, vp: 2, villainGroup: 'Sentinel Territories', text: "Fight: You get +1 Recruit. Then, Kate Pryde alters the future: At the beginning of the next player's turn, that player gets +1 Recruit." } },
+  { count: 2, card: { id: 'secret-wars-rachel-summers-of-future-past', name: 'Rachel Summers of Future Past', img: img('secret-wars-rachel-summers-of-future-past'), strength: 6, vp: 4, villainGroup: 'Sentinel Territories', text: "Fight: Rachel Summers alters the future: During the next player's turn, all Villains and the Mastermind get -1 Attack.\nEscape: This turn, all Villains and the Mastermind get +1 Attack." } },
+  { count: 2, card: { id: 'secret-wars-wolverine-of-future-past', name: 'Wolverine of Future Past', img: img('secret-wars-wolverine-of-future-past'), strength: 7, vp: 5, villainGroup: 'Sentinel Territories', text: "Fight: Wolverine alters the future: At the start of the next player's turn, you draw a card, and that player draws a card.\nEscape: Cross-Dimensional Wolverine Rampage." } },
+]
+
+export const WASTELAND_CARDS: DeckEntry[] = [
+  { count: 3, card: { id: 'secret-wars-the-hulk-gang', name: 'The Hulk Gang', img: img('secret-wars-the-hulk-gang'), strength: 5, vp: 3, villainGroup: 'Wasteland', text: 'Fight: Cross-Dimensional Hulk Rampage.\nEscape: Same effect.' } },
+  { count: 1, card: { id: 'secret-wars-wasteland-kingpin', name: 'Wasteland Kingpin', img: img('secret-wars-wasteland-kingpin'), strength: 11, vp: 6, villainGroup: 'Wasteland', text: 'Bribe\nEscape: Kingpin ascends to become a new Mastermind. He gains the ability, "Master Strike: Each player reveals an Instinct Hero or discards their hand and draws 5 cards."', keywords: ['bribe'] } },
+  { count: 2, card: { id: 'secret-wars-wasteland-hawkeye', name: 'Wasteland Hawkeye', img: img('secret-wars-wasteland-hawkeye'), strength: 6, vp: 4, villainGroup: 'Wasteland', text: 'Ambush: Wasteland Hawkeye captures a Bystander.\nFight: Choose one: Each other player draws a card, or each other player discards a card.' } },
+  { count: 2, card: { id: 'secret-wars-wasteland-spider-girl', name: 'Wasteland Spider-Girl', img: img('secret-wars-wasteland-spider-girl'), strength: 4, vp: 2, villainGroup: 'Wasteland', text: 'Fight: Reveal the top card of your deck. If it costs 2 or less, KO it.' } },
 ]
