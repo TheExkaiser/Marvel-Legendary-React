@@ -145,3 +145,15 @@ export const WASTELAND_CARDS: DeckEntry[] = [
   { count: 2, card: { id: 'secret-wars-wasteland-hawkeye', name: 'Wasteland Hawkeye', img: img('secret-wars-wasteland-hawkeye'), strength: 6, vp: 4, villainGroup: 'Wasteland', text: 'Ambush: Wasteland Hawkeye captures a Bystander.\nFight: Choose one: Each other player draws a card, or each other player discards a card.' } },
   { count: 2, card: { id: 'secret-wars-wasteland-spider-girl', name: 'Wasteland Spider-Girl', img: img('secret-wars-wasteland-spider-girl'), strength: 4, vp: 2, villainGroup: 'Wasteland', text: 'Fight: Reveal the top card of your deck. If it costs 2 or less, KO it.' } },
 ]
+
+export const GHOST_RACERS_CARDS: DeckEntry[] = [
+  { count: 10, card: { id: 'secret-wars-henchmen-ghost-racers', name: 'Ghost Racers', img: img('secret-wars-henchmen-ghost-racers'), strength: 3, vp: 1, henchman: true, text: 'Ambush: Rise of the Living Dead.\nFight: Reveal a Covert Hero or KO one of your Heroes with an Attack icon.', keywords: ['rise-of-the-living-dead'] } },
+]
+
+export const MODOKS_CARDS: DeckEntry[] = [
+  { count: 10, card: { id: 'secret-wars-henchmen-modoks', name: 'M.O.D.O.K.s', img: img('secret-wars-henchmen-modoks'), strength: 3, vp: 1, henchman: true, text: 'Fight: KO a Hero from your discard pile or the HQ. If that Hero has a Recruit icon, you get +1 Recruit.' } },
+]
+
+export const THOR_CORPS_CARDS: DeckEntry[] = [
+  { count: 10, card: { id: 'secret-wars-henchmen-thor-corps', name: 'Thor Corps', img: img('secret-wars-henchmen-thor-corps'), strength: 3, vp: 0, henchman: true, text: 'Fight: Gain this as a Hero.', keywords: ['villain-hero'] } },
+]

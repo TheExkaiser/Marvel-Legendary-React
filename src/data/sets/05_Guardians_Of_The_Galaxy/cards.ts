@@ -150,6 +150,7 @@ export const SUPREME_INTELLIGENCE_OF_THE_KREE: MastermindData = {
     img: img('mastermind-supreme-intelligence-of-the-kree'),
     strength: 9,
     vp: 6,
+    keywords: ['shard'],
     text: 'Always Leads: Kree Starforce. Master Strike: The Supreme Intelligence gains a Shard. Then each player reveals their hand and discards each card with cost equal to, or one higher than, the number of Shards on the Supreme Intelligence.',
   },
   tactics: [

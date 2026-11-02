@@ -101,6 +101,7 @@ export interface GameState {
   singleFightMasterminds?: string[]
   defeatedMastermindIds?: string[]
   mastermindAttackModifiers?: Record<string, number>
+  ascendedFromCardIds?: Record<string, string> // instanceId -> cardId Villaina, który wzniósł się na Mastermina
   pendingMasterStrikeMastermindId?: string
   stackedMasterStrikes?: CardInstance[] // Stryfe: Master Strike'i ułożone obok mastermina
   mysterioTacticIds?: string[] // Master Strike'i zamienione przez Mysterio w Tactics

@@ -1,13 +1,13 @@
 import { registerCardAbility } from '../../../engine/cardAbilities'
-import { chooseOneCard } from '../../../engine/abilityHelpers'
+import { chooseOneCard, revealOneOr } from '../../../engine/abilityHelpers'
 import { registerDefeatRequirement } from '../../../engine/villainRequirements'
 import { registerVillainAbilities } from '../../../engine/villainAbilities'
 import { drawCards, drawRevealed, putCardsOnTop } from '../../../engine/deckOps'
-import { discardCard, koCard, revealCards, revealTopCards } from '../../../engine/keywords'
+import { discardCard, isVillainCard, koCard, revealCards, revealTopCards } from '../../../engine/keywords'
 import { gainWound, rescueCard } from '../../../engine/wounds'
-import { ascendVillainToMastermind } from '../../../engine/ascension'
+import { ascendVillainToMastermind, ascendedOriginalCardId, revertAscension } from '../../../engine/ascension'
 import { enterCity } from '../../../engine/villainPhase'
-import { refillHq } from '../../../engine/recruit'
+import { koFromHq, refillHq } from '../../../engine/recruit'
 import { claimShardsOn } from '../../../engine/shards'
 import { hasTeleport, teleportCard } from '../../../engine/turn'
 import { shuffle } from '../../../engine/random'
@@ -22,10 +22,12 @@ const ID = 'secret-wars-zombie-'
 async function riseOfTheLivingDead(state: GameState, ui: UiAdapter): Promise<void> {
   const top = state.defeated[state.defeated.length - 1]
   if (!top) return
-  const data = state.cards[top.cardId]
-  if (!data.villainGroup || !(data.keywords ?? []).includes('rise-of-the-living-dead')) return
+  // Zombie, który wzniósł się na Mastermina i został pokonany jako Mastermind, też może powstać
+  const ascendedFrom = ascendedOriginalCardId(state, top)
+  const data = state.cards[ascendedFrom ?? top.cardId]
+  if (!isVillainCard(data) || !(data.keywords ?? []).includes('rise-of-the-living-dead')) return
   state.defeated.pop()
-  await enterCity(state, top, ui)
+  await enterCity(state, ascendedFrom ? revertAscension(state, top) : top, ui)
 }
 
 for (const suffix of [
@@ -501,4 +503,53 @@ registerVillainAbilities('secret-wars-wasteland-spider-girl', {
     if ((getCardData(state, revealed).cost ?? 0) <= 2) state.ko.push(revealed)
     else putCardsOnTop(state, [revealed])
   },
+})
+
+// ---------- Henchmen ----------
+
+registerVillainAbilities('secret-wars-henchmen-ghost-racers', {
+  onAmbush: (state, ui) => riseOfTheLivingDead(state, ui),
+  onFight: async (state, ui) => {
+    const covertHeroes = revealCards(state, { type: 'covert' }).filter((card) => !!getCardData(state, card).hero)
+    await revealOneOr(
+      ui,
+      covertHeroes,
+      'Ghost Racers: reveal a Covert Hero',
+      'Ghost Racers: revealed a Covert Hero',
+      async () => {
+        const heroes = [...state.hand, ...state.played, ...state.discard, ...(state.artifacts ?? [])].filter((card) => {
+          const data = getCardData(state, card)
+          return !!data.hero && data.attack !== undefined
+        })
+        const chosen = await chooseOneCard(ui, heroes, 'Ghost Racers: KO one of your Heroes with an Attack icon')
+        if (chosen) koCard(state, chosen.instanceId)
+      },
+    )
+  },
+})
+
+registerVillainAbilities('secret-wars-henchmen-modoks', {
+  onFight: async (state, ui) => {
+    const discardHeroes = state.discard.filter((card) => !!getCardData(state, card).hero)
+    const hqHeroes = state.hq.filter((card): card is CardInstance => !!card && !!getCardData(state, card).hero)
+    const chosen = await chooseOneCard(ui, [...discardHeroes, ...hqHeroes], 'M.O.D.O.K.s: KO a Hero from your discard pile or the HQ')
+    if (!chosen) return
+
+    const hqIndex = state.hq.findIndex((card) => card?.instanceId === chosen.instanceId)
+    if (hqIndex !== -1) {
+      koFromHq(state, hqIndex)
+      refillHq(state)
+    } else {
+      koCard(state, chosen.instanceId)
+    }
+    if (getCardData(state, chosen).recruit !== undefined) addRecruit(state, 1)
+  },
+})
+
+registerVillainHeroSide('secret-wars-henchmen-thor-corps', {
+  recruit: 2,
+  type: ['strength', 'ranged'],
+  team: ['avengers'],
+  conditionIcons: ['strength', 'ranged'],
+  conditionText: 'You get +1 Recruit.',
 })

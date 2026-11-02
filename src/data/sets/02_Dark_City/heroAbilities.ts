@@ -335,11 +335,6 @@ function isHero(state: GameState, c: CardInstance): boolean {
   return d.kind === undefined && d.villainGroup === undefined && !d.henchman
 }
 
-// Zagrywana karta nie jest jeszcze w cardsPlayedThisTurn, więc to są "other Heroes"
-function otherHeroesPlayed(state: GameState): number {
-  return state.cardsPlayedThisTurn.filter((c) => isHero(state, c)).length
-}
-
 // "Hero you have" = haveZone (ręka + zagrane + odrzucone)
 function distinctHeroCosts(state: GameState): number {
   const costs = new Set<number>()

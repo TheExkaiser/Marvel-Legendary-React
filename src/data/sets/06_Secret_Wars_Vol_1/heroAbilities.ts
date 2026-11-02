@@ -1,7 +1,7 @@
 import { registerCardAbility } from '../../../engine/cardAbilities'
 import { chooseOneCard, revealOneOr } from '../../../engine/abilityHelpers'
 import { getCardData } from '../../../engine/cardData'
-import { drawCards, drawRevealed, putCardsOnTop, revealTopAndDrawIf } from '../../../engine/deckOps'
+import { drawCards, drawRevealed, putCardsOnTop, revealTopAndDrawIf, takeTopCards } from '../../../engine/deckOps'
 import { revealCards, koCard, discardCard, revealTopCards, isVillainCard, countPlayedThisTurn, matchesRampageCharacter, mostRecentHeroPlayed, getEffectiveStrength, countBystandersInPile, isShieldHero, koFromVictoryPile, haveZone, countDistinctTypes } from '../../../engine/keywords'
 import { addAttack, addRecruit } from '../../../engine/resources'
 import { gainSidekicks } from '../../../engine/sidekicks'
@@ -46,7 +46,7 @@ registerCardAbility('secret-wars-apocalyptic-kitty-pryde-infiltrate-hq', async (
   state.heroDeck.unshift(chosen)
   refillHq(state)
 
-  const replacement = state.hq[index]
+  const replacement = state.hq[index] as CardInstance | null // po przypisaniu null TS zawęża slot do null, mimo że refillHq go uzupełnia
   if (replacement && state.cards[replacement.cardId].hero) {
     state.hqCardCostReductions = {
       ...state.hqCardCostReductions,
@@ -629,4 +629,8 @@ registerCardAbility('secret-wars-ultimate-thor', async (state) => {
 
 registerCardAbility('secret-wars-ultimate-wasp', async (state) => {
   if (countPlayedThisTurn(state, { type: 'covert' }) > 0) addAttack(state, 2)
+})
+
+registerCardAbility('secret-wars-henchmen-thor-corps', async (state) => {
+  if (hasPlayedEachType(state, ['strength', 'ranged'])) addRecruit(state, 1)
 })

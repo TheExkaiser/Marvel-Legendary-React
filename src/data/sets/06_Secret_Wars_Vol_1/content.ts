@@ -17,6 +17,9 @@ import {
   DEADLANDS_CARDS,
   DOMAIN_OF_APOCALYPSE_CARDS,
   LIMBO_CARDS,
+  GHOST_RACERS_CARDS,
+  MODOKS_CARDS,
+  THOR_CORPS_CARDS,
   MANHATTAN_CARDS,
   SENTINEL_TERRITORIES_CARDS,
   WASTELAND_CARDS,
@@ -59,7 +62,11 @@ export const SECRET_WARS_VOL_1_VILLAIN_GROUPS: CardGroup[] = [
   { id: 'secret-wars-sentinel-territories', name: 'Sentinel Territories', cards: SENTINEL_TERRITORIES_CARDS },
   { id: 'secret-wars-wasteland', name: 'Wasteland', cards: WASTELAND_CARDS },
 ]
-export const SECRET_WARS_VOL_1_HENCHMEN_GROUPS: CardGroup[] = []
+export const SECRET_WARS_VOL_1_HENCHMEN_GROUPS: CardGroup[] = [
+  { id: 'secret-wars-ghost-racers', name: 'Ghost Racers', cards: GHOST_RACERS_CARDS },
+  { id: 'secret-wars-modoks', name: 'M.O.D.O.K.s', cards: MODOKS_CARDS },
+  { id: 'secret-wars-thor-corps', name: 'Thor Corps', cards: THOR_CORPS_CARDS },
+]
 export const SECRET_WARS_VOL_1_BYSTANDER_GROUPS: CardGroup[] = [
   {
     id: 'secretwars_bystanders',
