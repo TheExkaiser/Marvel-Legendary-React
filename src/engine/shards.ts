@@ -4,8 +4,9 @@ import { assertPlaying, logEvent } from './common'
 import { addAttack, addRecruit } from './resources'
 import { getScheme } from './schemeRegistry'
 
-/** Czy w grze są karty operujące na Shardach (słowo kluczowe 'shard' w danych karty). Steruje widocznością licznika w UI. */
+/** Czy w grze są karty operujące na Shardach (słowo kluczowe 'shard' w danych karty) albo schemat korzystający z Shardów. Steruje widocznością licznika w UI. */
 export function gameUsesShards(state: GameState): boolean {
+  if (getScheme(state).shardSupplyLimit !== undefined) return true
   return Object.values(state.cards).some((card) => (card.keywords ?? []).includes('shard'))
 }
 
