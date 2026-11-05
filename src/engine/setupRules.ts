@@ -27,6 +27,8 @@ export function resolveRules(
   mastermind?: MastermindData,
 ): SetupRules {
   const rules = { ...DEFAULT_SETUP_RULES, ...gameMode.setupRules, ...scheme.setupRules }
+  rules.villainGroups += scheme.extraVillainGroups ?? 0
+  rules.henchmenGroups += scheme.extraHenchmenGroups ?? 0
   const led =
     ALWAYS_LEADS_ENABLED || mastermind?.alwaysLeadsForced
       ? mastermind?.alwaysLeads?.villainGroupId

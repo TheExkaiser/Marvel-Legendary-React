@@ -1,4 +1,4 @@
-import type { DeckEntry } from '../../../engine/types'
+import type { DeckEntry, MastermindData } from '../../../engine/types'
 
 const img = (id: string) => `/cards/secret-wars-vol-1/${id}.webp`
 
@@ -157,3 +157,83 @@ export const MODOKS_CARDS: DeckEntry[] = [
 export const THOR_CORPS_CARDS: DeckEntry[] = [
   { count: 10, card: { id: 'secret-wars-henchmen-thor-corps', name: 'Thor Corps', img: img('secret-wars-henchmen-thor-corps'), strength: 3, vp: 0, henchman: true, text: 'Fight: Gain this as a Hero.', keywords: ['villain-hero'] } },
 ]
+
+export const MADELYNE_PRYOR: MastermindData = {
+  card: {
+    id: 'secret-wars-madelyne-pryor-goblin-queen',
+    name: 'Madelyne Pryor, Goblin Queen',
+    img: img('secret-wars-madelyne-pryor-goblin-queen'),
+    strength: 10,
+    vp: 6,
+    text: 'Always Leads: Limbo. Bystanders captured by Madelyne are "Demon Goblin" Villains with 2 Attack. You can fight them to rescue them as Bystanders. You can\'t fight her while she has any Demon Goblins. Master Strike: Madelyne captures 4 Bystanders. If she already had any Bystanders before that, then each player gains a Wound.',
+  },
+  tactics: [
+    { id: 'secret-wars-madelyne-city-of-demon-goblins', name: 'City of Demon Goblins', img: img('secret-wars-madelyne-city-of-demon-goblins'), vp: 6, text: 'Fight: Madelyne captures five Bystanders.' },
+    { id: 'secret-wars-madelyne-corrupted-clone-of-jean-grey', name: 'Corrupted Clone of Jean Grey', img: img('secret-wars-madelyne-corrupted-clone-of-jean-grey'), vp: 6, text: 'Fight: Each other player reveals an X-Men Hero or gains a Wound.' },
+    { id: 'secret-wars-madelyne-everyones-a-demon-on-the-inside', name: "Everyone's a Demon on the Inside", img: img('secret-wars-madelyne-everyones-a-demon-on-the-inside'), vp: 6, text: "Fight: Madelyne captures a Bystander from each other player's Victory Pile." },
+    { id: 'secret-wars-madelyne-gather-the-harvest', name: 'Gather the Harvest', img: img('secret-wars-madelyne-gather-the-harvest'), vp: 6, text: 'Fight: For each Limbo Villain in the city and/or Escape Pile, Madelyne captures a Bystander.' },
+  ],
+  masterStrikeId: 'secret-wars-madelyne-pryor-goblin-queen-master-strike',
+  masterStrikeText: 'Madelyne captures 4 Bystanders. If she already had any Bystanders before that, then each player gains a Wound.',
+  alwaysLeads: { villainGroupId: 'secret-wars-limbo' },
+}
+
+export const NIMROD_SUPER_SENTINEL: MastermindData = {
+  card: {
+    id: 'secret-wars-nimrod-super-sentinel',
+    name: 'Nimrod, Super Sentinel',
+    img: img('secret-wars-nimrod-super-sentinel'),
+    strength: 6,
+    vp: 6,
+    text: "Always Leads: Sentinel Territories. You can't fight Nimrod unless you made at least 6 Recruit this turn. Master Strike: Each player who does not reveal a tech Hero must choose Recruit or Attack, then discard all their cards with that icon.",
+  },
+  tactics: [
+    { id: 'secret-wars-nimrod-adapt-and-destroy', name: 'Adapt and Destroy', img: img('secret-wars-nimrod-adapt-and-destroy'), vp: 6, text: 'Fight: Choose Recruit or Attack. Each other player reveals their hand and discards a card with that icon.' },
+    { id: 'secret-wars-nimrod-detect-mutation', name: 'Detect Mutation', img: img('secret-wars-nimrod-detect-mutation'), vp: 6, text: 'Fight: Choose Recruit or Attack. Then, reveal the top card of your deck. If that card has that icon, draw it and repeat this process.' },
+    { id: 'secret-wars-nimrod-scatter-the-mutants', name: 'Scatter the Mutants', img: img('secret-wars-nimrod-scatter-the-mutants'), vp: 6, text: 'Fight: Choose Recruit or Attack. Put all Heroes from the HQ with that icon on the bottom of the Hero Deck.' },
+    { id: 'secret-wars-nimrod-teleport-and-incarcerate', name: 'Teleport and Incarcerate', img: img('secret-wars-nimrod-teleport-and-incarcerate'), vp: 6, text: 'Fight: Choose Recruit or Attack. Then, reveal the top card of that Hero Deck. If that card has that icon, gain that card, and Teleport it.' },
+  ],
+  masterStrikeId: 'secret-wars-nimrod-super-sentinel-master-strike',
+  masterStrikeText: 'Each player who does not reveal a tech Hero must choose Recruit or Attack, then discard all their cards with that icon.',
+  alwaysLeads: { villainGroupId: 'secret-wars-sentinel-territories' },
+}
+
+export const WASTELAND_HULK: MastermindData = {
+  card: {
+    id: 'secret-wars-wasteland-hulk',
+    name: 'Wasteland Hulk',
+    img: img('secret-wars-wasteland-hulk'),
+    strength: 7,
+    vp: 6,
+    text: "Always Leads: Wasteland. Wasteland Hulk gets +3 Attack for each of his Mastermind Tactics among all players' Victory Piles. Master Strike: Cross-Dimensional Hulk Rampage.",
+  },
+  tactics: [
+    { id: 'secret-wars-wasteland-hulk-brutal-beating', name: 'Brutal Beating', img: img('secret-wars-wasteland-hulk-brutal-beating'), vp: 6, text: 'Fight: Each other player counts the number of Wounds in their discard pile, then discards that many cards.' },
+    { id: 'secret-wars-wasteland-hulk-memories-of-pain', name: 'Memories of Pain', img: img('secret-wars-wasteland-hulk-memories-of-pain'), vp: 6, text: 'Fight: Each other player puts two Wounds from their discard pile on top of their deck.' },
+    { id: 'secret-wars-wasteland-hulk-radioactive-regeneration', name: 'Radioactive Regeneration', img: img('secret-wars-wasteland-hulk-radioactive-regeneration'), vp: 6, text: 'Fight: KO up to two Wounds from your hand and/or discard pile.' },
+    { id: 'secret-wars-wasteland-hulk-revert-to-bruce-banner', name: 'Revert to Bruce Banner', img: img('secret-wars-wasteland-hulk-revert-to-bruce-banner'), vp: 6, text: 'Fight: You gain a tech Hero from the HQ for free.' },
+  ],
+  masterStrikeId: 'secret-wars-wasteland-hulk-master-strike',
+  masterStrikeText: 'Cross-Dimensional Hulk Rampage.',
+  alwaysLeads: { villainGroupId: 'secret-wars-wasteland' },
+}
+
+export const ZOMBIE_GREEN_GOBLIN: MastermindData = {
+  card: {
+    id: 'secret-wars-zombie-green-goblin',
+    name: 'Zombie Green Goblin',
+    img: img('secret-wars-zombie-green-goblin'),
+    strength: 11,
+    vp: 6,
+    text: 'Always Leads: The Deadlands. Zombie Green Goblin gets +1 Attack for each Hero in the KO pile that costs 7 or more. Master Strike: Rise of the Living Dead. KO each Hero in the HQ that costs 7 or more. Then, each player discards a card for each Hero in the KO pile that costs 7 or more.',
+  },
+  tactics: [
+    { id: 'secret-wars-zombie-green-goblin-army-of-cadavers', name: 'Army of Cadavers', img: img('secret-wars-zombie-green-goblin-army-of-cadavers'), vp: 6, text: 'Fight: Rise of the Living Dead (this effect never makes Mastermind Tactics return.) Then, each other player discards a card for each Villain in the city that has "Rise of the Living Dead."' },
+    { id: 'secret-wars-zombie-green-goblin-the-hungry-dead', name: 'The Hungry Dead', img: img('secret-wars-zombie-green-goblin-the-hungry-dead'), vp: 6, text: 'Fight: Rise of the Living Dead (this effect never makes Mastermind Tactics return.) Then, each other player gains a Wound if there are any Villains in the city with "Rise of the Living Dead."' },
+    { id: 'secret-wars-zombie-green-goblin-love-to-have-you-for-dinner', name: 'Love to Have You for Dinner', img: img('secret-wars-zombie-green-goblin-love-to-have-you-for-dinner'), vp: 6, text: 'Fight: Rise of the Living Dead (this effect never makes Mastermind Tactics return.) Then, reveal the top 5 cards of the Hero Deck. KO all those Heroes that cost 7 or more. Put the rest on the bottom of the Hero Deck in random order.' },
+    { id: 'secret-wars-zombie-green-goblin-reign-of-terror', name: 'Reign of Terror', img: img('secret-wars-zombie-green-goblin-reign-of-terror'), vp: 6, text: 'Fight: Rise of the Living Dead (this effect never makes Mastermind Tactics return.) Then, put all Heroes from the HQ that cost 6 or less on the bottom of the Hero Deck.' },
+  ],
+  masterStrikeId: 'secret-wars-zombie-green-goblin-master-strike',
+  masterStrikeText: 'Rise of the Living Dead. KO each Hero in the HQ that costs 7 or more. Then, each player discards a card for each Hero in the KO pile that costs 7 or more.',
+  alwaysLeads: { villainGroupId: 'secret-wars-the-deadlands' },
+}

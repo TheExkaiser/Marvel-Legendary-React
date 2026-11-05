@@ -3,10 +3,10 @@ import { chooseOneCard, revealOneOr } from '../../../engine/abilityHelpers'
 import { registerDefeatRequirement } from '../../../engine/villainRequirements'
 import { registerVillainAbilities } from '../../../engine/villainAbilities'
 import { drawCards, drawRevealed, putCardsOnTop } from '../../../engine/deckOps'
-import { discardCard, isVillainCard, koCard, revealCards, revealTopCards } from '../../../engine/keywords'
+import { discardCard, koCard, revealCards, revealTopCards } from '../../../engine/keywords'
 import { gainWound, rescueCard } from '../../../engine/wounds'
-import { ascendVillainToMastermind, ascendedOriginalCardId, revertAscension } from '../../../engine/ascension'
-import { enterCity } from '../../../engine/villainPhase'
+import { ascendVillainToMastermind } from '../../../engine/ascension'
+import { riseOfTheLivingDead } from '../../../engine/riseOfTheLivingDead'
 import { koFromHq, refillHq } from '../../../engine/recruit'
 import { claimShardsOn } from '../../../engine/shards'
 import { hasTeleport, teleportCard } from '../../../engine/turn'
@@ -18,17 +18,6 @@ import type { CardInstance, GameState } from '../../../engine/types'
 import type { UiAdapter } from '../../../engine/ui'
 
 const ID = 'secret-wars-zombie-'
-
-async function riseOfTheLivingDead(state: GameState, ui: UiAdapter): Promise<void> {
-  const top = state.defeated[state.defeated.length - 1]
-  if (!top) return
-  // Zombie, który wzniósł się na Mastermina i został pokonany jako Mastermind, też może powstać
-  const ascendedFrom = ascendedOriginalCardId(state, top)
-  const data = state.cards[ascendedFrom ?? top.cardId]
-  if (!isVillainCard(data) || !(data.keywords ?? []).includes('rise-of-the-living-dead')) return
-  state.defeated.pop()
-  await enterCity(state, ascendedFrom ? revertAscension(state, top) : top, ui)
-}
 
 for (const suffix of [
   'baron-zemo',

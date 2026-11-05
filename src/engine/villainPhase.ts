@@ -107,6 +107,8 @@ export async function resolveMasterStrike(
   ui: UiAdapter,
 ): Promise<void> {
   await ui.revealCard(card, 'Odkryto: Master Strike!')
+  state.masterStrikesResolved = (state.masterStrikesResolved ?? 0) + 1
+  if (getScheme(state).trackMasterStrikes) state.counters['Master Strikes'] = state.masterStrikesResolved
 
   await runMasterStrikeReactions(state, ui)
 

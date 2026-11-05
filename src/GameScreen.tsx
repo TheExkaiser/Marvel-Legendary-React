@@ -43,7 +43,7 @@ import { KeywordsMenu } from './components/KeywordsMenu'
 import { NumberPrompt } from './components/NumberPrompt'
 import { StackedMasterStrikes } from './components/StackedMasterStrikes'
 import { hasTeleport } from './engine/turn'
-import { fightDemonGoblin, canAffordVillain, canAffordMastermind, canAffordMastermindTarget, canAffordDemonGoblin } from './engine/combat'
+import { fightDemonGoblin, canAffordVillain, canAffordMastermind, canAffordMastermindTarget, canAffordDemonGoblin, captiveVillainInfo, canAffordMastermindCaptive, fightMastermindCaptive, nextToMastermindInfo, canAffordNextToMastermind, fightNextToMastermind } from './engine/combat'
 import { SchemeToken } from './components/SchemeToken'
 import { canFocus, activateFocus } from './engine/focus'
 import { hqCardCost, canAffordHqCard, canAffordOfficer, canAffordSidekick, recruitSidekick } from './engine/recruit'
@@ -171,6 +171,8 @@ function GameScreen({
   }, [state.attack, state.recruit, victoryPoints, playerShards])
   
   const mastermindCaptives = state.captives[state.mastermind.instanceId]?.length ?? 0
+  const captiveVillains = captiveVillainInfo(state)
+  const nextToMastermind = nextToMastermindInfo(state)
   
   const discardTop =
     state.discard.length > 0
@@ -401,6 +403,25 @@ function GameScreen({
                 label="Demon Goblins (2 Attack)"
                 onClick={() => act(fightDemonGoblin)}
                 highlight={canAffordDemonGoblin(state) ? 'attack' : undefined}
+              />
+            )}
+            {nextToMastermind && (
+              <DeckPile
+                count={nextToMastermind.count}
+                deckId="mastermind-henchmen"
+                topCard={state.cards[nextToMastermind.top.cardId]}
+                label={`Next to the Mastermind (${nextToMastermind.strength} Attack)`}
+                onClick={() => act(fightNextToMastermind)}
+                highlight={canAffordNextToMastermind(state) ? 'attack' : undefined}
+              />
+            )}
+            {captiveVillains && (
+              <DeckPile
+                count={captiveVillains.count}
+                deckId="mastermind-demon-goblins"
+                label={`Demon Goblins (${captiveVillains.attack} Attack)`}
+                onClick={() => act(fightMastermindCaptive)}
+                highlight={canAffordMastermindCaptive(state) ? 'attack' : undefined}
               />
             )}
           </div>

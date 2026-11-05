@@ -167,6 +167,11 @@ export interface GameState {
   hqRecruitBonuses?: Record<string, number> // Underground Riches: jednorazowa pula Recruit do wydania na Bohaterów w polu HQ pod daną lokacją (klucz: nazwa z CITY_NAMES, reset w endTurn)
   hqCardCostReductions?: Record<string, number> // Infiltrate HQ: discount tied to the replacement Hero instance
   schemeTwists?: CardInstance[] // Twisty odłożone obok Scheme'u
+  masterStrikesResolved?: number // ile Master Strike'ów już się rozpatrzyło w tej grze
+  extraHenchmenCardIds?: string[] // id kart dodatkowej grupy henchmenów (Annihilation Wave)
+  extraMasterminds?: MastermindData[] // losowi dodatkowi Mastermindowie (Master of Tyrants, Dark Alliance)
+  mastermindTacticReserve?: Record<string, CardInstance[]> // Tactics, które Mastermind jeszcze dostanie (Dark Alliance)
+  mastermindHenchmen?: CardInstance[] // henchmeni leżący obok Mastermina, których można pokonać (wierzch = koniec)
   mastermindSchemeTwists?: CardInstance[] // Twisty odłożone obok Masterminda przez Scheme
   burrowingVillainId?: string // Burrow: instanceId Villaina, który po tej walce wraca do Streets zamiast do Victory Pile (ustawia onFight, czyta combat.ts)
   returnVillainToCity?: { instanceId: string; cityIndex: number } // Feast: Carrion returns to the space where it was fought
@@ -187,6 +192,8 @@ export interface GameState {
 }
 
 export interface GameSetup {
+  extraMasterminds?: MastermindData[]
+  extraHenchmenCardIds?: string[]
   startingCards: DeckEntry[]
   heroCards: DeckEntry[]
   officerCards: DeckEntry
@@ -211,6 +218,13 @@ export interface SchemeDef {
   img: string
   twistCount: number
   shardSupplyLimit?: number
+  extraVillainGroups?: number // ile grup Villainów ponad wartość z trybu gry (np. "add an extra Villain Group")
+  // Dodatkowa grupa henchmenów (ostatnia wybrana) działa jak osobna grupa schematu (Build an Army of Annihilation);
+  // jej karty id trafiają do state.extraHenchmenCardIds
+  extraHenchmenGroups?: number
+  // Ile losowych INNYCH Mastermindów dołącza do gry (ich karty trafiają do state.cards, a dane do state.extraMasterminds)
+  extraMasterminds?: number
+  trackMasterStrikes?: boolean // pokazuje w panelu licznik rozpatrzonych Master Strike'ów (Crush Them With My Bare Hands)
   escapeLimit?: number
   text?: string
 

@@ -11,6 +11,10 @@ export interface MastermindRule {
   fightStrengthOptions?: (state: GameState) => number[]
   woundsToDeckTop?: boolean // Mephisto: zdobyte Rany trafiają na wierzch talii zamiast do odrzuconych
   captivesSurviveFight?: boolean // Thanos: Bound Souls pozostają przy Mastermindzie po walce
+  // Dodatkowy warunek walki z tym Mastermindem (Nimrod: min. 6 Recruit w tej turze, Madelyne: brak Demon Goblinów). false = nie można walczyć
+  canFight?: (state: GameState, mastermind: CardInstance) => boolean
+  // Jeńcy-Bystanderzy tego Mastermina są Villainami o takim Attack, które można pokonać i uratować (Madelyne: Demon Goblins)
+  captiveVillainAttack?: number
 }
 
 const rules = new Map<string, MastermindRule>()

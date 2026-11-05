@@ -62,8 +62,8 @@ export const THEMATIC_SETUPS: ThematicSetup[] = [
   {
     id: 'secret-wars-vol-1-complete',
     name: 'Secret Wars Vol. 1 — Complete Set',
-    schemeIds: [],
-    mastermindIds: [],
+    schemeIds: ['secret_wars_crush_them_with_my_bare_hands', 'secret_wars_corrupt_the_next_generation_of_heroes', 'secret_wars_build_an_army_of_annihilation', 'secret_wars_master_of_tyrants', 'secret_wars_dark_alliance'],
+    mastermindIds: ['secret-wars-madelyne-pryor-goblin-queen', 'secret-wars-nimrod-super-sentinel', 'secret-wars-wasteland-hulk', 'secret-wars-zombie-green-goblin'],
     heroPoolIds: ['secret-wars-apocalyptic-kitty-pryde', 'secret-wars-black-bolt', 'secret-wars-black-panther', 'secret-wars-captain-marvel', 'secret-wars-dr-strange', 'secret-wars-lady-thor', 'secret-wars-magik', 'secret-wars-maximus', 'secret-wars-namor', 'secret-wars-old-man-logan', 'secret-wars-proxima-midnight', 'secret-wars-superior-iron-man', 'secret-wars-thanos', 'secret-wars-ultimate-spider-man'],
     villainGroupIds: ['secret-wars-the-deadlands', 'secret-wars-domain-of-apocalypse', 'secret-wars-limbo', 'secret-wars-manhattan', 'secret-wars-sentinel-territories', 'secret-wars-wasteland'],
     henchmenGroupIds: ['secret-wars-ghost-racers', 'secret-wars-modoks', 'secret-wars-thor-corps'],

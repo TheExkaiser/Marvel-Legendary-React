@@ -1,5 +1,6 @@
 import type { CardGroup, GameModeDef, GameSetup, SetData, SetupChoices, SetupRules, DeckEntry } from './types'
 import { resolveRules } from './setupRules'
+import { shuffle } from './random'
 
 /** Szuka elementu po id; getId mówi, skąd wziąć id (masterminda mają je w card.id). */
 function pick<T>(items: T[], getId: (item: T) => string, id: string, what: string): T {
@@ -109,6 +110,14 @@ export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: Ga
   const henchmen = choices.henchmenGroupIds.map((id) =>
     pick(henchmenPool, (g) => g.id, id, 'henchmen group'),
   )
+  // Dodatkowa grupa henchmenów schematu to OSTATNIA wybrana; scheme wyjmuje jej karty z talii (po id)
+  const extraHenchmenCardIds = scheme.extraHenchmenGroups
+    ? henchmen.slice(-scheme.extraHenchmenGroups).flatMap((g) => g.cards.map((entry) => entry.card.id))
+    : undefined
+  // Losowi INNI Mastermindowie dla schematów, które ich potrzebują
+  const extraMasterminds = scheme.extraMasterminds
+    ? shuffle(sets.flatMap((s) => s.masterminds).filter((m) => m.card.id !== mastermind.card.id)).slice(0, scheme.extraMasterminds)
+    : undefined
   const villainDeckHeroes = choices.villainDeckHeroIds.map((id) =>
     pick(heroPool, (g) => g.id, id, 'villain deck hero'),
   )
@@ -149,5 +158,7 @@ export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: Ga
     scheme,
     gameMode,
     twist: shared.twist,
+    extraMasterminds,
+    extraHenchmenCardIds,
   }
 }

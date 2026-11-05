@@ -32,6 +32,7 @@ function buildCardIndex(setup: GameSetup): Record<string, CardData> {
     mastermind.card,
     ...mastermind.tactics,
     ...(mastermind.extraCards ?? []),
+    ...(setup.extraMasterminds ?? []).flatMap((m) => [m.card, ...m.tactics, ...(m.extraCards ?? [])]),
   ]
 
   const cards: Record<string, CardData> = {}
@@ -120,6 +121,9 @@ export function createGameState(setup: GameSetup): GameState {
     masterminds: [{ instanceId: mastermind.card.id, cardId: mastermind.card.id }],
     tactics: shuffle(mastermind.tactics.map((t) => ({ instanceId: t.id, cardId: t.id }))),
     mastermindTactics: {},
+    mastermindTacticReserve: {},
+    extraMasterminds: setup.extraMasterminds,
+    extraHenchmenCardIds: setup.extraHenchmenCardIds,
     mastermindStrikeIds: { [mastermind.card.id]: mastermind.masterStrikeId },
     singleFightMasterminds: [],
     defeatedMastermindIds: [],

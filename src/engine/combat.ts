@@ -110,6 +110,7 @@ export function canAffordMastermindTarget(state: GameState, mastermind: CardInst
     : state.mastermindTactics?.[mastermind.instanceId] ?? []
   if (!isSingleFight && tactics.length === 0) return false
   const rule = getMastermindRule(state, mastermind)
+  if (rule?.canFight && !rule.canFight(state, mastermind)) return false
   const strengths =
     rule?.fightStrengthOptions?.(state) ?? [getEffectiveStrength(state, mastermind) ?? 0]
   const additionalCost = mastermind.instanceId === state.mastermind.instanceId
@@ -121,6 +122,27 @@ export function canAffordMastermindTarget(state: GameState, mastermind: CardInst
       availableAttack(state, mastermind.cardId) >= strength &&
       (additionalCost === 0 || totalAttackOrRecruit >= strength + additionalCost),
   )
+}
+
+/** Jeńcy-Bystanderzy Mastermina, którzy są Villainami do pokonania (Madelyne: Demon Goblins). undefined, gdy nie ma takich. */
+export function captiveVillainInfo(state: GameState): { mastermind: CardInstance; attack: number; count: number } | undefined {
+  for (const mastermind of state.masterminds ?? [state.mastermind]) {
+    const attack = getMastermindRule(state, mastermind)?.captiveVillainAttack
+    if (attack === undefined) continue
+    const count = (state.captives[mastermind.instanceId] ?? []).filter((card) => state.cards[card.cardId].kind === 'bystander').length
+    if (count > 0) return { mastermind, attack, count }
+  }
+  return undefined
+}
+
+/** Czy gracza stać na jeńca Mastermina (te same warunki co w fightMastermindCaptive). */
+export function canAffordMastermindCaptive(state: GameState): boolean {
+  if (state.status !== 'playing') return false
+  const info = captiveVillainInfo(state)
+  if (!info) return false
+  const captives = state.captives[info.mastermind.instanceId] ?? []
+  const goblin = captives.find((card) => state.cards[card.cardId].kind === 'bystander')
+  return !!goblin && availableAttack(state, goblin.cardId) >= info.attack
 }
 
 /** Czy gracza stać na Demon Goblina (te same warunki co w fightDemonGoblin). */
@@ -592,4 +614,71 @@ export async function fightDemonGoblin(state: GameState, ui: UiAdapter): Promise
   // Uratowany jako Bystander: trafia do Victory Pool i liczy się jako "rescue" (Jean Grey itp.)
   await rescueCard(state, goblin, ui)
   await resolveVillainDefeatHooks(state, ui, goblin)
+}
+
+/** Madelyne Pryor: za Attack równy `captiveVillainAttack` ratujesz jednego z jej jeńców (Demon Goblin). */
+export async function fightMastermindCaptive(state: GameState, ui: UiAdapter): Promise<void> {
+  assertPlaying(state)
+  const info = captiveVillainInfo(state)
+  if (!info) throw new Error('Nie ma Demon Goblinów do pokonania')
+
+  const captives = state.captives[info.mastermind.instanceId] ?? []
+  const index = captives.findIndex((card) => state.cards[card.cardId].kind === 'bystander')
+  const goblin = captives[index]
+  if (availableAttack(state, goblin.cardId) < info.attack) {
+    throw new Error(`Za mało attack: masz ${availableAttack(state, goblin.cardId)}, siła ${info.attack}`)
+  }
+
+  await spendAttack(state, info.attack, ui, goblin.cardId)
+  captives.splice(index, 1)
+  if (captives.length === 0) delete state.captives[info.mastermind.instanceId]
+  logEvent(state, `Defeated: Demon Goblin (${state.cards[goblin.cardId].name})`)
+
+  // Demon Goblin jest Villainem, więc działają bonusy "za pokonanie Villaina" (bez lokacji, bo stoi poza miastem)
+  addRecruit(state, state.defeatRecruitBonus ?? 0)
+  for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) await rescueBystander(state, ui)
+
+  await rescueCard(state, goblin, ui)
+  await resolveVillainDefeatHooks(state, ui, goblin)
+}
+
+/** Henchmeni leżący obok Mastermina (Build an Army of Annihilation): wierzchni jest do pokonania. */
+export function nextToMastermindInfo(state: GameState): { count: number; top: CardInstance; strength: number } | undefined {
+  const pile = state.mastermindHenchmen ?? []
+  const top = pile[pile.length - 1]
+  if (!top) return undefined
+  return { count: pile.length, top, strength: getEffectiveStrength(state, top) ?? 0 }
+}
+
+export function canAffordNextToMastermind(state: GameState): boolean {
+  if (state.status !== 'playing') return false
+  const info = nextToMastermindInfo(state)
+  return !!info && availableAttack(state, info.top.cardId) >= info.strength
+}
+
+/** Pokonuje wierzchniego henchmana leżącego obok Mastermina: jak zwykły Villain (efekt Fight, Victory Pile), ale bez miasta. */
+export async function fightNextToMastermind(state: GameState, ui: UiAdapter): Promise<void> {
+  assertPlaying(state)
+  const info = nextToMastermindInfo(state)
+  if (!info) throw new Error('Obok Mastermina nie ma henchmenów')
+  const henchman = info.top
+  if (availableAttack(state, henchman.cardId) < info.strength) {
+    throw new Error(`Za mało attack: masz ${availableAttack(state, henchman.cardId)}, siła ${info.strength}`)
+  }
+
+  await spendAttack(state, info.strength, ui, henchman.cardId)
+  state.mastermindHenchmen = (state.mastermindHenchmen ?? []).slice(0, -1)
+
+  const fightEffectsResolved = await resolveVillainFightEffects(state, ui, henchman)
+  const toDiscard = fightEffectsResolved && goesToDiscard(state, henchman.cardId)
+  await runArtifactReactions(state, ui, 'villain-defeated')
+  if (toDiscard) gainToDiscard(state, henchman)
+  else state.defeated.push(henchman)
+  logEvent(state, `Defeated: ${state.cards[henchman.cardId].name} (next to the Mastermind)`)
+
+  addRecruit(state, state.defeatRecruitBonus ?? 0)
+  for (let i = 0; i < (state.defeatRescueBonus ?? 0); i++) await rescueBystander(state, ui)
+
+  await getScheme(state).afterVillainDefeated?.(state, henchman, ui)
+  await resolveVillainDefeatHooks(state, ui, henchman)
 }
