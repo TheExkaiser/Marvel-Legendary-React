@@ -37,6 +37,10 @@ export default function DevNoticePopup() {
             <img src={`${import.meta.env.BASE_URL}icons/sets/guardians_of_the_galaxy.png`} alt="" />
             <strong>Guardians of the Galaxy</strong>
           </div>
+          <div className="dev-notice-set">
+            <img src={`${import.meta.env.BASE_URL}icons/sets/secret_wars_vol_1.png`} alt="" />
+            <strong>Secret Wars Volume 1</strong>
+          </div>
         </div>
         <p>Minor undiscovered bugs may still occur.</p>
         <p className="dev-notice-hint">Click anywhere to close</p>
