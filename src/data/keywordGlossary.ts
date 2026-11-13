@@ -280,4 +280,112 @@ export const KEYWORD_GLOSSARY: KeywordEntry[] = [
       },
     ],
   },
+  {
+    id: 'spectrum',
+    name: 'Spectrum',
+    tooltip: 'You can use a Spectrum ability only if you have at least 3 classes of Hero among the cards you played this turn and the cards in your hand.',
+    appearsOn: (c) => hasKeyword(c, 'spectrum') || hasCardText(c, /\bSpectrum\b/),
+    blocks: [
+      {
+        type: 'text',
+        text: `Some cards have abilities like \"Spectrum: Draw a card.\" You can use a card's Spectrum abilities only if you have at least 3 classes of Hero.`,
+      },
+      {
+        type: 'text',
+        text: `Grey S.H.I.E.L.D. Heroes, HYDRA Allies, New Recruits and Sidekicks don't have classes, so they don't help.`,
+      },
+      {
+        type: 'text',
+        text: `You can count all the classes you have among cards you played this turn and cards in your hand.`,
+      },
+    ],
+  },
+  {
+    id: 'patrol',
+    name: 'Patrol',
+    tooltip: 'You can use the ability only if that place (city space, Escape Pile or Victory Pile) has no cards in it when you play the card.',
+    appearsOn: (c) => hasKeyword(c, 'patrol') || hasCardText(c, /\bPatrol\b/),
+    blocks: [
+      {
+        type: 'text',
+        text: `Some cards have abilities like \"Patrol the Sewers: If it's empty, rescue a Bystander.\" When you play that card, you can use that ability only if that city space has no cards in it.`,
+      },
+      {
+        type: 'text',
+        text: `If that city space becomes empty later in the turn, it's too late to use the Patrol ability.`,
+      },
+      {
+        type: 'text',
+        text: `This can also say \"Fight: Patrol the Bank: If it's empty, you get +2 Recruit. If it's not, you get +2 Attack.\"`,
+      },
+      {
+        type: 'text',
+        text: `Other cards let you patrol even stranger places, like the Escape Pile or a Victory Pile. Similarly, you can use those Patrol abilities if that place has no cards in it.`,
+      },
+      {
+        type: 'text',
+        text: `If a Mastermind or Scheme causes a city space not to exist, you can't patrol that space.`,
+      },
+    ],
+  },
+  {
+    id: 'circle-of-kung-fu',
+    name: 'Circle of Kung-Fu',
+    tooltip: 'During your turn, this Villain has +N Attack unless you reveal a Hero that costs N or more.',
+    appearsOn: (c) => hasKeyword(c, 'circle-of-kung-fu') || hasCardText(c, /\bCircle of (Kung|Quack)-Fu\b/),
+    blocks: [
+      {
+        type: 'text',
+        text: `\"5th Circle of Kung-Fu\" means \"During your turn, this Villain has +5 Attack unless you reveal a Hero that costs 5 or more.\"`,
+      },
+      {
+        type: 'text',
+        text: `Likewise, the 7th Circle gets +7 Attack unless you reveal a Hero that costs 7 or more, etc.`,
+      },
+      {
+        type: 'text',
+        text: `If a Villain or Mastermind already has a Circle of Kung-Fu, and a Scheme gives them another one, only count the highest circle - don't add them up.`,
+      },
+      {
+        type: 'text',
+        text: `(\"Quack-Fu\" is the same rule.)`,
+      },
+    ],
+  },
+  {
+    id: 'fateful-resurrection',
+    name: 'Fateful Resurrection',
+    tooltip: 'Fight: Reveal the top card of the Villain Deck. If it is a Scheme Twist or Master Strike, this Villain reenters the city.',
+    appearsOn: (c) => hasKeyword(c, 'fateful-resurrection') || hasCardText(c, /\bFateful Resurrection\b/),
+    blocks: [
+      {
+        type: 'text',
+        text: `On a Villain card, \"Fight: Fateful Resurrection\" means \"Fight: Reveal the top card of the Villain Deck. If it's a Scheme Twist or Master Strike, this Villain reenters the city.\"`,
+      },
+      {
+        type: 'text',
+        text: `If a Villain resurrects this way, you still rescue its Bystanders and do its other Fight effects. The Villain pushes into the Sewers and does any Ambush abilities as normal.`,
+      },
+      {
+        type: 'text',
+        text: `If a Mastermind Tactic resurrects this way, shuffle it back into the other face down Tactics.`,
+      },
+      {
+        type: 'text',
+        text: `If a Villain that has ascended to become a Mastermind resurrects this way, it stays a Mastermind and does not reenter the city.`,
+      },
+    ],
+  },
+  {
+    id: 'charge',
+    name: 'Charge',
+    tooltip: 'After this Villain enters the Sewers, it charges forward an extra space, pushing other Villains forward.',
+    appearsOn: (c) => hasKeyword(c, 'charge') || hasCardText(c, /\bCharge one space\b/),
+    blocks: [
+      {
+        type: 'text',
+        text: `\"Ambush: Charge one space\" means \"(After this Villain enters the Sewers,) it charges forward an extra space, pushing other Villains forward.\"`,
+      },
+    ],
+  },
 ]
