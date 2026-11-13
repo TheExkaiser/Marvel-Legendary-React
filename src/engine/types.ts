@@ -166,6 +166,7 @@ export interface GameState {
   newHandDiscardCount?: number // Force of Eternity: ile kart odrzucić po dobraniu nowej ręki na koniec tury
   hqRecruitBonuses?: Record<string, number> // Underground Riches: jednorazowa pula Recruit do wydania na Bohaterów w polu HQ pod daną lokacją (klucz: nazwa z CITY_NAMES, reset w endTurn)
   hqCardCostReductions?: Record<string, number> // Infiltrate HQ: discount tied to the replacement Hero instance
+  hqCardCostReductionsThisTurn?: Record<string, number> // Upside-down Thinking: obniżka kosztu Bohatera w HQ tylko do końca tury (klucz: instanceId, reset w endTurn)
   schemeTwists?: CardInstance[] // Twisty odłożone obok Scheme'u
   masterStrikesResolved?: number // ile Master Strike'ów już się rozpatrzyło w tej grze
   extraHenchmenCardIds?: string[] // id kart dodatkowej grupy henchmenów (Annihilation Wave)

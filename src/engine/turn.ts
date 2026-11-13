@@ -168,6 +168,7 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.cancelFightEffectsThisTurn = false
   state.cosmicThreatUsedThisTurn = false
   state.hqRecruitBonuses = {}
+  state.hqCardCostReductionsThisTurn = {}
   state.enemyAttackModifierThisTurn = state.nextTurnEnemyAttackModifier ?? 0
   state.nextTurnEnemyAttackModifier = 0
   state.sidekicksRecruitedThisTurn = false

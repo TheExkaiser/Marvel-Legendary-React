@@ -69,7 +69,8 @@ export function hqCardCost(state: GameState, index: number): number {
   if (!data.hero) return data.cost ?? 0
   const bonus = state.hqRecruitBonuses?.[CITY_NAMES[index]] ?? 0
   const cardReduction = state.hqCardCostReductions?.[instance.instanceId] ?? 0
-  return Math.max(0, (data.cost ?? 0) - bonus - cardReduction)
+  const turnReduction = state.hqCardCostReductionsThisTurn?.[instance.instanceId] ?? 0
+  return Math.max(0, (data.cost ?? 0) - bonus - cardReduction - turnReduction)
 }
 
 /** Czy gracza stać na kartę w polu HQ o danym indeksie. Te same warunki co w recruitHero, ale bez wykonywania akcji (podświetlanie w UI). */
@@ -147,6 +148,7 @@ export function recruitHero(state: GameState, instanceId: string): void {
   }
   state.hq[index] = null
   if (state.hqCardCostReductions) delete state.hqCardCostReductions[instance.instanceId]
+  if (state.hqCardCostReductionsThisTurn) delete state.hqCardCostReductionsThisTurn[instance.instanceId]
   if (!isBystander) placeRecruitedCard(state, instance) // Bystandera ratuje recruitHeroWithUi: rescueCard jest async i wymaga ui
   logEvent(state, isBystander ? `Rescued: ${data.name}` : `Recruited: ${data.name}`)
   refillHq(state)
