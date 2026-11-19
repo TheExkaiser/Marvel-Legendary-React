@@ -11,6 +11,7 @@ import './villainAbilities'
 import './mastermindRules'
 import './masterStrikeAbilities'
 import './tacticAbilities'
+import './bystanderAbilities'
 import { SECRET_WARS_VOL_2_SCHEMES } from './schemes'
 
 export const SECRET_WARS_VOL_2_SET: SetData = {

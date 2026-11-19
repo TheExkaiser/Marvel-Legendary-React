@@ -423,6 +423,12 @@ export async function fightVillain(
 
   await spendAttack(state, strength, ui, villain.cardId)
 
+  // Mastermind stojący w mieście (King Hyperion): walka z nim to zdobycie Tactica, a sam zostaje w mieście
+  if ((state.masterminds ?? [state.mastermind]).some((mastermind) => mastermind.instanceId === villain.instanceId)) {
+    await claimTactic(state, ui, villain)
+    return
+  }
+
   const fightEffectsResolved = await resolveVillainFightEffects(state, ui, villain)
   const toDiscard = fightEffectsResolved && goesToDiscard(state, villain.cardId)
 
@@ -504,7 +510,9 @@ async function claimTactic(state: GameState, ui: UiAdapter, mastermind: CardInst
   }
 
   const returned = tactics.some((t) => t.instanceId === tactic.instanceId)
-  if (!returned) state.defeated.push(tactic)
+  // Tactic zdobyty jako Hero (Shiklah's Husband, Deadpool) leży już u gracza i nie trafia do Victory Pile
+  const gained = [...state.discard, ...state.hand, ...state.deck].some((card) => card.instanceId === tactic.instanceId)
+  if (!returned && !gained) state.defeated.push(tactic)
 
   logEvent(state, `Tactic claimed: ${state.cards[tactic.cardId].name}`)
 
@@ -681,4 +689,14 @@ export async function fightNextToMastermind(state: GameState, ui: UiAdapter): Pr
 
   await getScheme(state).afterVillainDefeated?.(state, henchman, ui)
   await resolveVillainDefeatHooks(state, ui, henchman)
+}
+
+/** Czy stać Cię na walkę z kartą spoza miasta za podany Attack (Invade the Inferno). Liczy się tak jak w zwykłej walce. */
+export function canPayAttackCost(state: GameState, amount: number, cardId: string): boolean {
+  return availableAttack(state, cardId) >= amount
+}
+
+/** Wydaje Attack na walkę z kartą spoza miasta, tak jak zwykła walka (Invade the Inferno). */
+export async function payAttackCost(state: GameState, amount: number, ui: UiAdapter, cardId: string): Promise<void> {
+  await spendAttack(state, amount, ui, cardId)
 }

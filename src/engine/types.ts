@@ -167,6 +167,10 @@ export interface GameState {
   hqRecruitBonuses?: Record<string, number> // Underground Riches: jednorazowa pula Recruit do wydania na Bohaterów w polu HQ pod daną lokacją (klucz: nazwa z CITY_NAMES, reset w endTurn)
   hqCardCostReductions?: Record<string, number> // Infiltrate HQ: discount tied to the replacement Hero instance
   hqCardCostReductionsThisTurn?: Record<string, number> // Upside-down Thinking: obniżka kosztu Bohatera w HQ tylko do końca tury (klucz: instanceId, reset w endTurn)
+  koPileAtTurnStart?: string[] // instanceId kart w KO Pile na początku tury; "KO'd this turn" = reszta (Rise from the Ashes)
+  oncePerTurnUsed?: Record<string, boolean> // zdolności "once this turn" (Invade the Inferno), klucz dowolny, reset w endTurn
+  villainPhaseActive?: boolean // true tylko podczas fazy Villaina ("it is not your turn", Guerrilla Warfare)
+  setAsideUntilVillainPhaseEnds?: CardInstance[] // karty odłożone na bok w fazie Villaina, wracają do ręki na jej koniec
   schemeTwists?: CardInstance[] // Twisty odłożone obok Scheme'u
   masterStrikesResolved?: number // ile Master Strike'ów już się rozpatrzyło w tej grze
   extraHenchmenCardIds?: string[] // id kart dodatkowej grupy henchmenów (Annihilation Wave)

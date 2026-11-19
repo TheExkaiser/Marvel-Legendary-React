@@ -3,12 +3,35 @@ import type { UiAdapter } from './ui'
 import { shuffle } from './random'
 import { logEvent } from './common'
 
+type ShuffleHook = (state: GameState, card: CardInstance) => void
+
+const shuffleHooks = new Map<string, ShuffleHook>()
+
+/** Zdolność karty odpalana po przetasowaniu talii, w której ta karta leży (Muscle Memory). */
+export function registerShuffleHook(cardId: string, hook: ShuffleHook): void {
+  shuffleHooks.set(cardId, hook)
+}
+
+function afterDeckShuffled(state: GameState): void {
+  for (const card of [...state.deck]) shuffleHooks.get(card.cardId)?.(state, card)
+}
+
 /** Jeśli talia jest pusta, tasuje stos odrzuconych w nową talię. Zwraca false, gdy nie ma z czego. */
 function reshuffleDiscardIntoDeck(state: GameState): boolean {
   if (state.discard.length === 0) return false
   state.deck = shuffle(state.discard)
   state.discard = []
+  afterDeckShuffled(state)
   return true
+}
+
+/** Tasuje stos odrzuconych razem z talią w jedną talię (Shuffling Footwork). */
+export function shuffleDiscardIntoDeck(state: GameState): void {
+  if (state.discard.length === 0) return
+  state.deck = shuffle([...state.deck, ...state.discard])
+  state.discard = []
+  logEvent(state, 'Discard pile shuffled into the deck')
+  afterDeckShuffled(state)
 }
 
 /** Dobiera karty z talii; gdy talia się skończy, tasuje stos odrzuconych w nową talię. */

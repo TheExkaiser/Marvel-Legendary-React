@@ -161,6 +161,7 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.masterStrikeAutoDrawUsedThisTurn = false
   state.teleportGrantedThisTurn = []
   state.focusUsesThisTurn = {}
+  state.oncePerTurnUsed = {}
   state.artifactUsesThisTurn = {}
   state.shardAttackSuppressedThisTurn = []
   state.shardsAsRecruitThisTurn = false
@@ -197,11 +198,24 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
       state.skipVillainCardNextTurn = false
       logEvent(state, 'Villain card skipped (Colossus changes the future)')
     } else {
-      await villainPhase(state, ui)
+      // Faza Villaina to "nie Twoja tura" (Guerrilla Warfare); odłożone w niej karty wracają do ręki na jej koniec
+      state.villainPhaseActive = true
+      try {
+        await villainPhase(state, ui)
+      } finally {
+        state.villainPhaseActive = false
+      }
+      if (state.setAsideUntilVillainPhaseEnds?.length) {
+        state.hand.push(...state.setAsideUntilVillainPhaseEnds)
+        state.setAsideUntilVillainPhaseEnds = []
+      }
     }
   }
 
   // Standardowe dobranie ręki na start tury NIE liczy się jako "extra" karty
   // (Berserker Rage, ewentualne przyszłe karty tego typu) — licznik startuje od zera dopiero teraz.
   state.cardsDrawnThisTurn = 0
+
+  // Stan KO Pile na początku tury (po fazie Villaina), żeby wiedzieć, co zostało KO'd w tej turze (Rise from the Ashes)
+  state.koPileAtTurnStart = state.ko.map((card) => card.instanceId)
 }
