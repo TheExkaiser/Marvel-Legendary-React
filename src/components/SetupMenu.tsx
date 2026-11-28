@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { CardGroup, GameSetup, SetData, SetupChoices } from '../engine/types'
 import { buildSetup, getHeroRealNameConflicts, getSetupProblems } from '../engine/buildSetup'
 import { DEFAULT_SETUP_RULES, resolveRules, withLedGroup } from '../engine/setupRules'
@@ -12,13 +12,14 @@ import { useSettings } from '../useSettings'
 import { teamIcon, teamName } from '../data/teams'
 import { THEMATIC_SETUPS, type ThematicSetup } from '../data/thematicSetups'
 import './SetupMenu.css'
+import { readSetupPreferences, writeSetupPreferences, type SetupPreferences, type SetupSortMode } from '../setupPreferences'
 
 interface SetupMenuProps {
   sets: SetData[]
   onStart: (setup: GameSetup, logMeta: GameLogMeta) => void
 }
 
-type SortMode = 'alpha' | 'set' | 'team'
+type SortMode = SetupSortMode
 // Kategoria = jedna lista kafelków z własnym wyborem. Zakładka = jedna albo kilka kategorii.
 type CategoryId = 'mastermind' | 'heroes' | 'deckHeroes' | 'villains' | 'henchmen' | 'bystanders'
 type TabId = 'mastermind' | 'heroes' | 'deckHeroes' | 'villains' | 'henchmen' | 'extras'
@@ -248,29 +249,52 @@ function Tile({ name, icon, team, checked, disabled, locked, onToggle }: TilePro
 
 export function SetupMenu({ sets, onStart }: SetupMenuProps) {
   const { settings, updateSetting } = useSettings()
-  const [enabledSetIds, setEnabledSetIds] = useState<string[]>(() => sets.map((s) => s.id))
+  const [savedPreferences] = useState(() => readSetupPreferences())
+  const [enabledSetIds, setEnabledSetIds] = useState<string[]>(() => {
+    const saved = savedPreferences.enabledSetIds?.filter((id) => sets.some((set) => set.id === id))
+    return saved && saved.length > 0 ? saved : sets.map((s) => s.id)
+  })
   const [choices, setChoices] = useState<SetupChoices>(() => {
     const pending = consumePendingSetupChoices()
     const base = pending ? pruneChoices(pending, sets, GAME_MODES) : EMPTY_CHOICES
     return {
       ...base,
-      gameModeId: base.gameModeId || GAME_MODES[0]?.id || '',
-      sidekicksEnabled: pending ? base.sidekicksEnabled : settings.sidekicksEnabled,
+      gameModeId: base.gameModeId || savedPreferences.gameModeId || GAME_MODES[0]?.id || '',
+      sidekicksEnabled: pending ? base.sidekicksEnabled : savedPreferences.sidekicksEnabled ?? settings.sidekicksEnabled,
       excludedBystanderGroupIds: pending
         ? base.excludedBystanderGroupIds
-        : settings.excludedBystanderGroupIds,
+        : savedPreferences.excludedBystanderGroupIds ?? settings.excludedBystanderGroupIds,
+      heroSelectionMode: pending ? base.heroSelectionMode : savedPreferences.heroSelectionMode ?? base.heroSelectionMode,
+      uniqueHeroRealNames: pending ? base.uniqueHeroRealNames : savedPreferences.uniqueHeroRealNames ?? base.uniqueHeroRealNames,
     }
   })
   const [historyOpen, setHistoryOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [tabState, setTab] = useState<TabId>('mastermind')
-  const [sortMode, setSortMode] = useState<SortMode>('alpha')
-  const [query, setQuery] = useState('')
-  const [teamFilter, setTeamFilter] = useState<string[]>([])
-  const [setFilter, setSetFilter] = useState('')
-  const [selectedOnly, setSelectedOnly] = useState(false)
+  const [sortMode, setSortMode] = useState<SortMode>(savedPreferences.sortMode ?? 'alpha')
+  const [query, setQuery] = useState(savedPreferences.query ?? '')
+  const [teamFilter, setTeamFilter] = useState<string[]>(savedPreferences.teamFilter ?? [])
+  const [setFilter, setSetFilter] = useState(savedPreferences.setFilter ?? '')
+  const [selectedOnly, setSelectedOnly] = useState(savedPreferences.selectedOnly ?? false)
   const [thematicOpen, setThematicOpen] = useState(false)
   const [setDisablePrompt, setSetDisablePrompt] = useState<SetDisablePrompt | null>(null)
+
+  useEffect(() => {
+    const preferences: SetupPreferences = {
+      enabledSetIds,
+      gameModeId: choices.gameModeId,
+      sidekicksEnabled: choices.sidekicksEnabled,
+      excludedBystanderGroupIds: choices.excludedBystanderGroupIds,
+      heroSelectionMode: choices.heroSelectionMode ?? 'full-random',
+      uniqueHeroRealNames: choices.uniqueHeroRealNames ?? true,
+      sortMode,
+      teamFilter,
+      setFilter,
+      selectedOnly,
+      query,
+    }
+    writeSetupPreferences(preferences)
+  }, [choices.gameModeId, choices.sidekicksEnabled, choices.excludedBystanderGroupIds, choices.heroSelectionMode, choices.uniqueHeroRealNames, enabledSetIds, sortMode, teamFilter, setFilter, selectedOnly, query])
 
   // Pula do wyboru = suma zaznaczonych zestawów
   const activeSets = useMemo(() => sets.filter((s) => enabledSetIds.includes(s.id)), [sets, enabledSetIds])

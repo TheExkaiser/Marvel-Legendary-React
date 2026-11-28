@@ -4,6 +4,7 @@ import { koFromHq, refillHq } from './recruit'
 import { drawCards } from './deckOps'
 import { escapeVillain, playNextVillainDeckCardOfKind, playTopVillainCard } from './villainPhase'
 import { isCityDestroyed } from './cityLayout'
+import { logEvent } from './common'
 
 /** Id kart startowych — patrz data/sets/01_Core_Set/cards.ts (STARTING_CARDS). */
 const STARTING_CARD_IDS = ['shield-agent', 'shield-trooper']
@@ -83,4 +84,33 @@ export async function debugMoveAllVillainsToLeft(state: GameState, ui: UiAdapter
 
 export function debugDrawCard(state: GameState): void {
   drawCards(state, 1)
+}
+
+/** DEBUG: kup po jednej kopii każdego różnego Hero dostępnego obecnie w HQ lub talii Hero.
+ * Zakup nie kosztuje Recruitu; karty trafiają do discardu, a HQ zostaje uzupełnione. */
+export function debugBuyUniqueHeroes(state: GameState): void {
+  const candidates = [
+    ...state.hq.filter((card): card is CardInstance => !!card),
+    ...state.heroDeck,
+  ].filter((card) => !!state.cards[card.cardId]?.hero)
+
+  const boughtIds = new Set<string>()
+  let bought = 0
+  for (const candidate of candidates) {
+    if (boughtIds.has(candidate.cardId)) continue
+    const hqIndex = state.hq.findIndex((card) => card?.instanceId === candidate.instanceId)
+    if (hqIndex !== -1) {
+      state.hq[hqIndex] = null
+    } else {
+      const deckIndex = state.heroDeck.findIndex((card) => card.instanceId === candidate.instanceId)
+      if (deckIndex === -1) continue
+      state.heroDeck.splice(deckIndex, 1)
+    }
+    state.discard.push(candidate)
+    boughtIds.add(candidate.cardId)
+    bought += 1
+  }
+
+  refillHq(state)
+  logEvent(state, `Debug: bought ${bought} unique Hero${bought === 1 ? '' : 'es'} from HQ and Hero Deck`)
 }

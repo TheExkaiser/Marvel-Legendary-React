@@ -256,7 +256,13 @@ export const KEYWORD_GLOSSARY: KeywordEntry[] = [
   {
     id: 'cross-dimensional-rampage',
     name: 'Cross-Dimensional Rampage',
-    aliases: ['Cross-Dimensional Hulk Rampage', 'Cross-Dimensional Wolverine Rampage', 'Cross-Dimensional Thor Rampage'],
+    aliases: [
+      'Cross-Dimensional Hulk Rampage',
+      'Cross-Dimensional Wolverine Rampage',
+      'Cross-Dimensional Thor Rampage',
+      'Cross-Dimensional Deadpool Rampage',
+      'Cross-Dimensional Colossus Rampage',
+    ],
     tooltip: 'Reveal a matching Hero or card from your Victory Pile, or gain a Wound.',
     appearsOn: (c) =>
       hasKeyword(c, 'cross-dimensional-rampage') ||

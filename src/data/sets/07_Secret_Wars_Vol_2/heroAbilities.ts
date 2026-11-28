@@ -4,7 +4,7 @@ import { adjacentCityIndexes } from '../../../engine/cityLayout'
 import { CITY_NAMES } from '../../../engine/constants'
 import { getCardData } from '../../../engine/cardData'
 import { logEvent } from '../../../engine/common'
-import { drawCards, drawRevealed, putCardsOnTop, registerShuffleHook, revealTopAndDrawIf, revealTopCard, shuffleDiscardIntoDeck } from '../../../engine/deckOps'
+import { drawCards, drawRevealed, putCardsOnTop, registerShuffleHook, revealTopAndDrawIf, revealTopCard, shuffleDiscardIntoDeck, takeTopCards } from '../../../engine/deckOps'
 import {
   countBystandersInPile,
   countDistinctTeams,
@@ -598,7 +598,8 @@ registerCardAbility('secret-wars-2-silk-silk-stalking', async (state, { ui }) =>
 // Spectrum: odkryj 4 górne karty, dowolne z nich o łącznym koszcie do 2 weź do ręki, resztę odłóż (oryginalna kolejność, bez UI wyboru)
 registerCardAbility('secret-wars-2-silk-borrowed-cloaking-device', async (state, { ui }) => {
   if (!canUseSpectrum(state)) return
-  const rest = await revealTopCards(state, ui, 4, 'Borrowed Cloaking Device')
+  const rest = takeTopCards(state, 4)
+  if (rest.length > 0) await ui.showCards(rest, 'Borrowed Cloaking Device: revealed cards')
   let budget = 2
   while (rest.length > 0) {
     const options = rest.filter((card) => (state.cards[card.cardId].cost ?? 0) <= budget)

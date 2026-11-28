@@ -14,6 +14,7 @@ import {
   debugEscapeAllVillainsFromCity,
   debugMoveAllVillainsToLeft,
   debugDrawCard,
+  debugBuyUniqueHeroes,
   addAttack,
   addRecruit,
 } from '../engine/game'
@@ -71,6 +72,7 @@ export function DebugPanel({ state, act }: DebugPanelProps) {
         <div className="debug-actions">
           <button onClick={() => act(debugReplaceAllHeroesInHq)}>Replace all Heroes</button>
           <button onClick={() => act(debugKoAllHeroesFromHq)}>KO all Heroes</button>
+          <button onClick={() => act(debugBuyUniqueHeroes)}>Buy one of each unique Hero</button>
         </div>
       </section>
 

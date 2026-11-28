@@ -140,7 +140,7 @@ export const SENTINEL_TERRITORIES_CARDS: DeckEntry[] = [
 ]
 
 export const WASTELAND_CARDS: DeckEntry[] = [
-  { count: 3, card: { id: 'secret-wars-the-hulk-gang', name: 'The Hulk Gang', img: img('secret-wars-the-hulk-gang'), strength: 5, vp: 3, villainGroup: 'Wasteland', text: 'Fight: Cross-Dimensional Hulk Rampage.\nEscape: Same effect.' } },
+  { count: 3, card: { id: 'secret-wars-the-hulk-gang', name: 'The Hulk Gang', img: img('secret-wars-the-hulk-gang'), strength: 5, vp: 3, villainGroup: 'Wasteland', text: 'Fight: Cross-Dimensional Hulk Rampage.\nEscape: Cross-Dimensional Hulk Rampage.' } },
   { count: 1, card: { id: 'secret-wars-wasteland-kingpin', name: 'Wasteland Kingpin', img: img('secret-wars-wasteland-kingpin'), strength: 11, vp: 6, villainGroup: 'Wasteland', text: 'Bribe\nEscape: Kingpin ascends to become a new Mastermind. He gains the ability, "Master Strike: Each player reveals an Instinct Hero or discards their hand and draws 5 cards."', keywords: ['bribe'] } },
   { count: 2, card: { id: 'secret-wars-wasteland-hawkeye', name: 'Wasteland Hawkeye', img: img('secret-wars-wasteland-hawkeye'), strength: 6, vp: 4, villainGroup: 'Wasteland', text: 'Ambush: Wasteland Hawkeye captures a Bystander.\nFight: Choose one: Each other player draws a card, or each other player discards a card.' } },
   { count: 2, card: { id: 'secret-wars-wasteland-spider-girl', name: 'Wasteland Spider-Girl', img: img('secret-wars-wasteland-spider-girl'), strength: 4, vp: 2, villainGroup: 'Wasteland', text: 'Fight: Reveal the top card of your deck. If it costs 2 or less, KO it.' } },

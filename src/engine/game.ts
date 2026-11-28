@@ -21,6 +21,7 @@ export {
   debugEscapeAllVillainsFromCity,
   debugMoveAllVillainsToLeft,
   debugDrawCard,
+  debugBuyUniqueHeroes,
 } from './debug'
 export { peekTopCard } from './deckOps'
 export { addRecruit, addAttack } from './resources'

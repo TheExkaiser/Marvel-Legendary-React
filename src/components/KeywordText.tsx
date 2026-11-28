@@ -22,7 +22,7 @@ const KEYWORD_PATTERN = new RegExp(
 const TOOLTIP_WIDTH = 300
 
 // Pogrubione słowo kluczowe. Najechanie (albo kliknięcie/tap na telefonie) pokazuje okienko z opisem.
-function KeywordTerm({ entry }: { entry: KeywordEntry }) {
+function KeywordTerm({ entry, label }: { entry: KeywordEntry; label: string }) {
   const ref = useRef<HTMLElement>(null)
   const [rect, setRect] = useState<DOMRect | null>(null)
 
@@ -50,7 +50,7 @@ function KeywordTerm({ entry }: { entry: KeywordEntry }) {
           else show()
         }}
       >
-        {entry.name}
+        {label}
       </strong>
       {rect &&
         createPortal(
@@ -79,8 +79,10 @@ export function KeywordText({ text }: { text: string }) {
     <>
       {parts.map((part, i) => {
         // split z grupą przechwytującą daje na nieparzystych miejscach dopasowane słowa kluczowe
-        const entry = i % 2 === 1 ? TERMS.find((t) => t.term === part)?.entry : undefined
-        return entry ? <KeywordTerm key={i} entry={entry} /> : <Fragment key={i}>{part}</Fragment>
+        const match = i % 2 === 1 ? TERMS.find((t) => t.term === part) : undefined
+        return match
+          ? <KeywordTerm key={i} entry={match.entry} label={match.term} />
+          : <Fragment key={i}>{part}</Fragment>
       })}
     </>
   )
