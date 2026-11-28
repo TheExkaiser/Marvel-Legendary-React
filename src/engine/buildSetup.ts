@@ -118,6 +118,9 @@ export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: Ga
   const extraMasterminds = scheme.extraMasterminds
     ? shuffle(sets.flatMap((s) => s.masterminds).filter((m) => m.card.id !== mastermind.card.id)).slice(0, scheme.extraMasterminds)
     : undefined
+  const ambitionCards = scheme.ambitionCards
+    ? shuffle(sets.flatMap((s) => s.ambitions ?? [])).slice(0, scheme.ambitionCards)
+    : undefined
   const villainDeckHeroes = choices.villainDeckHeroIds.map((id) =>
     pick(heroPool, (g) => g.id, id, 'villain deck hero'),
   )
@@ -160,5 +163,6 @@ export function buildSetup(choices: SetupChoices, sets: SetData[], gameModes: Ga
     twist: shared.twist,
     extraMasterminds,
     extraHenchmenCardIds,
+    ambitionCards,
   }
 }

@@ -10,7 +10,7 @@ export interface CardData {
   recruit?: number
   strength?: number
   vp?: number
-  kind?: 'wound' | 'bystander' | 'twist' | 'masterstrike' | 'token'
+  kind?: 'wound' | 'bystander' | 'twist' | 'masterstrike' | 'token' | 'ambition'
   team?: string[]
   type?: string[]
   text?: string
@@ -217,6 +217,7 @@ export interface GameSetup {
   scheme: SchemeDef
   gameMode: GameModeDef
   twist: CardData
+  ambitionCards?: CardData[]
 }
 
 export interface SchemeDef {
@@ -231,6 +232,7 @@ export interface SchemeDef {
   extraHenchmenGroups?: number
   // Ile losowych INNYCH Mastermindów dołącza do gry (ich karty trafiają do state.cards, a dane do state.extraMasterminds)
   extraMasterminds?: number
+  ambitionCards?: number
   trackMasterStrikes?: boolean // pokazuje w panelu licznik rozpatrzonych Master Strike'ów (Crush Them With My Bare Hands)
   escapeLimit?: number
   text?: string
@@ -261,7 +263,7 @@ export interface SchemeDef {
   afterVillainDefeated?: (state: GameState, villain: CardInstance, ui: UiAdapter) => void | Promise<void>
   // Po efekcie Fight zdobytego Tactica, jeszcze przed tym, jak trafi do Victory Pile (The Fountain of Eternal Life: Tactics mają Fateful Resurrection)
   afterTacticClaimed?: (state: GameState, tactic: CardInstance, mastermind: CardInstance, ui: UiAdapter) => void | Promise<void>
-  onVillainEscaped?: (state: GameState, villain: CardInstance, lostCaptives: CardInstance[]) => void
+  onVillainEscaped?: (state: GameState, villain: CardInstance, lostCaptives: CardInstance[]) => void | Promise<void>
   checkLoss?: (state: GameState) => boolean
 
   villainStrengthModifier?: (state: GameState, instance: CardInstance) => number
@@ -328,6 +330,7 @@ export interface SetData {
   villainGroups: CardGroup[]
   henchmenGroups: CardGroup[]
   bystanderGroups: CardGroup[] // grupy Bystanderów do wyboru w setupie (zwykli w Core Set, specjalni w dodatkach)
+  ambitions?: CardData[]
   sidekickCards?: DeckEntry
   masterminds: MastermindData[]
   shared?: SharedCards   // tylko zestawy, które je dostarczają (Core Set)

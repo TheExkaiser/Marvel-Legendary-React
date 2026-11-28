@@ -33,6 +33,7 @@ function buildCardIndex(setup: GameSetup): Record<string, CardData> {
     ...mastermind.tactics,
     ...(mastermind.extraCards ?? []),
     ...(setup.extraMasterminds ?? []).flatMap((m) => [m.card, ...m.tactics, ...(m.extraCards ?? [])]),
+    ...(setup.ambitionCards ?? []),
   ]
 
   const cards: Record<string, CardData> = {}
@@ -64,6 +65,13 @@ export function createGameState(setup: GameSetup): GameState {
   const masterStrikes = buildDeck([
     { card: setup.masterStrikeCard, count: setup.masterStrikeCount },
   ])
+  const ambitions = (setup.ambitionCards ?? []).map((card) => ({
+    ...card,
+    kind: 'ambition' as const,
+    strength: card.strength ?? card.attack ?? 0,
+    villainGroup: 'Ambitions',
+    vp: 4,
+  }))
 
   const state: GameState = {
     cards: buildCardIndex(setup),
@@ -89,6 +97,7 @@ export function createGameState(setup: GameSetup): GameState {
     villainDeck: shuffle([
       ...buildDeck(villainCards),
       ...buildDeck(villainDeckHeroCards),
+      ...ambitions.map((card) => ({ instanceId: card.id, cardId: card.id })),
       ...bystandersForVillainDeck,
       ...twists,
       ...masterStrikes,

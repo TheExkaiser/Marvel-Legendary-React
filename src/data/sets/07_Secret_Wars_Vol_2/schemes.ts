@@ -11,7 +11,9 @@ import { schemeCircleOfKungFuBonus } from '../../../engine/kungFu'
 import { shuffle } from '../../../engine/random'
 import { fatefulResurrectionTactic } from '../../../engine/tacticReturn'
 import type { UiAdapter } from '../../../engine/ui'
-import { enterCity, playTopVillainCard } from '../../../engine/villainPhase'
+import { enterCity, escapeVillain, playTopVillainCard } from '../../../engine/villainPhase'
+import { gainVillainAsHero } from '../../../engine/cardData'
+import { CITY_NAMES } from '../../../engine/constants'
 
 // Secret Wars: Twisty 1-3 dodają do gry po jednym losowym innym Mastermindzie z jednym Tacticiem
 // (wzorzec Dark Alliance z Vol. 1; extraMasterminds losuje ich w setupie, tu wchodzą do gry).
@@ -241,6 +243,96 @@ const THE_GOD_EMPEROR_OF_BATTLEWORLD: SchemeDef = {
   checkLoss: (state) => state.twistsRevealed >= 8 && livingMasterminds(state).length > 0,
 }
 
+const THE_MARK_OF_KHONSHU: SchemeDef = {
+  id: 'secret_wars_2_the_mark_of_khonshu',
+  name: 'The Mark of Khonshu',
+  img: '',
+  twistCount: 10,
+  setupRules: {
+    villainDeckHeroes: 1,
+    requiredHenchmenGroups: ['secret-wars-2-khonshu-guardians'],
+  },
+  text:
+    'Setup: 10 Twists. Always include Khonshu Guardians. Add all fourteen cards for an extra Hero to the Villain Deck.\n' +
+    'Special Rules: Heroes in the Villain Deck are Khonshu Guardian Villains with Attack equal to their printed cost. While in the Sewers, Rooftops, or Bridge, they have double Attack. When defeated, gain them as Heroes.\n' +
+    'Twist: Play two cards from the Villain Deck.\nEvil Wins: When 7 Khonshu Guardians escape.',
+  onVillainDeckCard: (state, card) => {
+    const data = state.cards[card.cardId]
+    if (!data.hero) return false
+    state.instanceOverrides = {
+      ...state.instanceOverrides,
+      [card.instanceId]: { data: { hero: undefined, villainGroup: 'Khonshu Guardians', strength: data.cost ?? 0 } },
+    }
+    return false
+  },
+  villainBaseStrengthOverride: (state, instance) => {
+    const base = state.cards[instance.cardId]
+    return base.hero ? (base.cost ?? 0) : undefined
+  },
+  villainStrengthModifier: (state, instance) => {
+    const data = state.cards[instance.cardId]
+    if (!data.hero) return 0
+    const index = state.city.findIndex((card) => card?.instanceId === instance.instanceId)
+    return index >= 0 && ['Sewers', 'Rooftops', 'Bridge'].includes(CITY_NAMES[index])
+      ? (data.cost ?? 0)
+      : 0
+  },
+  onVillainDefeated: (state, villain) => {
+    const data = state.cards[villain.cardId]
+    if (data.hero) {
+      state.discard.push(villain)
+      gainVillainAsHero(state, villain, { attack: data.attack, recruit: data.recruit, cost: data.cost })
+    } else state.defeated.push(villain)
+  },
+  onVillainEscaped: (state, villain) => {
+    const data = state.cards[villain.cardId]
+    if (data.hero || data.villainGroup === 'Khonshu Guardians') {
+      state.counters['Khonshu Guardians Escaped'] = (state.counters['Khonshu Guardians Escaped'] ?? 0) + 1
+    }
+  },
+  onTwist: async (_state, _twistNumber, ui) => {
+    await playTopVillainCard(_state, ui)
+    await playTopVillainCard(_state, ui)
+  },
+  checkLoss: (state) => (state.counters['Khonshu Guardians Escaped'] ?? 0) >= 7,
+}
+
+const SINISTER_AMBITIONS: SchemeDef = {
+  id: 'secret_wars_2_sinister_ambitions',
+  name: 'Sinister Ambitions',
+  img: '',
+  twistCount: 6,
+  keepsTwistCard: true,
+  ambitionCards: 10,
+  text:
+    'Setup: 6 Twists. Add 10 random Ambition cards to the Villain Deck.\n' +
+    'Special Rules: Ambitions are Villains with their printed Attack, +1 Attack for each Twist stacked next to this Scheme, and 4 VP. When an Ambition escapes, resolve its effect.\n' +
+    'Twists 1-5: Stack this Twist next to the Scheme. Play another card from the Villain Deck.\n' +
+    'Twist 6: Each Ambition Villain in the city escapes.\nEvil Wins: When 4 Ambition Villains escape.',
+  villainStrengthModifier: (state, instance) =>
+    state.cards[instance.cardId].kind === 'ambition' ? (state.schemeTwists?.length ?? 0) : 0,
+  onTwist: async (state, twistNumber, ui, twist) => {
+    if (twistNumber <= 5) {
+      state.schemeTwists = [...(state.schemeTwists ?? []), twist]
+      await playTopVillainCard(state, ui)
+      return
+    }
+    const ambitions = state.city.filter((card): card is CardInstance => !!card && state.cards[card.cardId].kind === 'ambition')
+    for (const ambition of ambitions) {
+      const index = state.city.findIndex((card) => card?.instanceId === ambition.instanceId)
+      if (index !== -1) {
+        state.city[index] = null
+        await escapeVillain(state, ambition, ui)
+      }
+    }
+  },
+  onVillainEscaped: async (state, villain) => {
+    if (state.cards[villain.cardId].kind !== 'ambition') return
+    state.counters['Ambitions Escaped'] = (state.counters['Ambitions Escaped'] ?? 0) + 1
+  },
+  checkLoss: (state) => (state.counters['Ambitions Escaped'] ?? 0) >= 4,
+}
+
 export const SECRET_WARS_VOL_2_SCHEMES: SchemeDef[] = [
   SECRET_WARS,
   DEADLANDS_HORDES_CHARGE_THE_WALL,
@@ -248,4 +340,6 @@ export const SECRET_WARS_VOL_2_SCHEMES: SchemeDef[] = [
   THE_FOUNTAIN_OF_ETERNAL_LIFE,
   ENTHRONE_THE_BARONS_OF_BATTLEWORLD,
   THE_GOD_EMPEROR_OF_BATTLEWORLD,
+  THE_MARK_OF_KHONSHU,
+  SINISTER_AMBITIONS,
 ]

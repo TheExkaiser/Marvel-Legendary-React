@@ -2,6 +2,7 @@ import type { CardInstance, GameState } from './types'
 import type { UiAdapter } from './ui'
 import { activeCityIndexes } from './cityLayout'
 import { escapeVillain } from './villainPhase'
+import { isVillainCard } from './keywords'
 
 /** Charge: Villain szarżuje o `spaces` pól do przodu (w stronę Bridge), pchając Villainów przed sobą.
  * Kto zostanie wypchnięty z Bridge, ucieka. Zniszczone pola nie istnieją i są pomijane. */
@@ -36,7 +37,7 @@ export async function chargeAllVillains(state: GameState, ui: UiAdapter, spaces:
   const active = activeCityIndexes(state)
   const moving = active.flatMap((index, position) => {
     const card = state.city[index]
-    return card ? [{ card, position }] : []
+    return card && isVillainCard(state.cards[card.cardId]) ? [{ card, position }] : []
   })
   for (const { position } of moving) state.city[active[position]] = null
   const escaping: CardInstance[] = []

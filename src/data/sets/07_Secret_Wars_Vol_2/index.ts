@@ -5,6 +5,7 @@ import {
   SECRET_WARS_VOL_2_VILLAIN_GROUPS,
   SECRET_WARS_VOL_2_HENCHMEN_GROUPS,
   SECRET_WARS_VOL_2_BYSTANDER_GROUPS,
+  SECRET_WARS_VOL_2_AMBITIONS,
 } from './content'
 import './heroAbilities'
 import './villainAbilities'
@@ -12,6 +13,7 @@ import './mastermindRules'
 import './masterStrikeAbilities'
 import './tacticAbilities'
 import './bystanderAbilities'
+import './ambitionAbilities'
 import { SECRET_WARS_VOL_2_SCHEMES } from './schemes'
 
 export const SECRET_WARS_VOL_2_SET: SetData = {
@@ -23,4 +25,5 @@ export const SECRET_WARS_VOL_2_SET: SetData = {
   henchmenGroups: SECRET_WARS_VOL_2_HENCHMEN_GROUPS,
   masterminds: SECRET_WARS_VOL_2_MASTERMINDS,
   bystanderGroups: SECRET_WARS_VOL_2_BYSTANDER_GROUPS,
+  ambitions: SECRET_WARS_VOL_2_AMBITIONS,
 }

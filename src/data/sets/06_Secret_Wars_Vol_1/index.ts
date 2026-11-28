@@ -6,6 +6,7 @@ import {
   SECRET_WARS_VOL_1_HENCHMEN_GROUPS,
   SECRET_WARS_VOL_1_BYSTANDER_GROUPS,
   SIDEKICK_CARD,
+  SECRET_WARS_VOL_1_AMBITIONS,
 } from './content'
 import './heroAbilities'
 import './villainAbilities'
@@ -24,4 +25,5 @@ export const SECRET_WARS_VOL_1_SET: SetData = {
   masterminds: SECRET_WARS_VOL_1_MASTERMINDS,
   bystanderGroups: SECRET_WARS_VOL_1_BYSTANDER_GROUPS,
   sidekickCards: SIDEKICK_CARD,
+  ambitions: SECRET_WARS_VOL_1_AMBITIONS,
 }

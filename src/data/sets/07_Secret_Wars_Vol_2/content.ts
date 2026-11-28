@@ -1,4 +1,5 @@
 import type { CardGroup, MastermindData } from '../../../engine/types'
+import { SECRET_WARS_VOL_2_AMBITIONS } from './ambitions'
 import {
   AGENT_VENOM_CARDS,
   ARKON_THE_MAGNIFICENT_CARDS,
@@ -73,3 +74,5 @@ export const SECRET_WARS_VOL_2_MASTERMINDS: MastermindData[] = [
   SHIKLAH_THE_DEMON_BRIDE,
   SPIDER_QUEEN,
 ]
+
+export { SECRET_WARS_VOL_2_AMBITIONS }

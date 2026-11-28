@@ -33,6 +33,31 @@
 .additional-mastermind {
   pointer-events: auto;
   text-align: center;
+  position: relative;
+  width: 72px;
+  transition: width 0.18s;
+}
+
+/* Dodatkowi Mastermindowie są miniaturami, żeby Secret Wars (do 6 kart) nie
+   rozpychał planszy. CardView zachowuje normalny zoom przez lupkę/klik. */
+.additional-mastermind .card {
+  width: 72px;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.45);
+}
+
+.additional-mastermind:hover {
+  z-index: 20;
+}
+
+.additional-mastermind:hover .card {
+  transform: scale(1.45);
+  transform-origin: center top;
+}
+
+.additional-mastermind .markers {
+  min-height: 18px;
+  font-size: 10px;
+  white-space: nowrap;
 }
 
 .zone-title {
@@ -178,6 +203,20 @@
   .additional-masterminds {
     right: calc(100% + 4px);
     gap: 3px;
+  }
+
+  .additional-mastermind,
+  .additional-mastermind .card {
+    width: 48px;
+  }
+
+  .additional-mastermind .markers {
+    min-height: 12px;
+    font-size: 7px;
+  }
+
+  .additional-mastermind:hover .card {
+    transform: scale(1.7);
   }
 
 }

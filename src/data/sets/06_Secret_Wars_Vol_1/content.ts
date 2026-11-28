@@ -1,4 +1,6 @@
 import type { CardGroup, DeckEntry, MastermindData } from '../../../engine/types'
+import { SECRET_WARS_VOL_1_AMBITIONS } from './ambitions'
+export { SECRET_WARS_VOL_1_AMBITIONS }
 import {
   APOCALYPTIC_KITTY_PRYDE_CARDS,
   BLACK_BOLT_CARDS,

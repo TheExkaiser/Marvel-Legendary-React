@@ -18,6 +18,7 @@ function tacticPile(state: GameState, mastermindCardId: string): CardInstance[] 
 export function returnTacticToPile(state: GameState, mastermindCardId: string, tactic: CardInstance): void {
   const pile = tacticPile(state, mastermindCardId)
   if (!pile) return
+  if (pile.some((card) => card.instanceId === tactic.instanceId)) return
   pile.push(tactic)
   pile.splice(0, pile.length, ...shuffle([...pile]))
 }

@@ -323,7 +323,7 @@ export async function koFromHandOrDiscard(state: GameState, ui: UiAdapter, promp
 }
 
 export function isVillainCard(data: CardData): boolean {
-  return data.villainGroup !== undefined || data.henchman === true
+  return data.villainGroup !== undefined || data.henchman === true || data.kind === 'ambition'
 }
 
 export function isArtifactData(data: CardData): boolean {

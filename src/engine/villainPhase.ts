@@ -160,7 +160,7 @@ export async function escapeVillain(state: GameState, villain: CardInstance, ui:
   }
   delete state.captives[villain.instanceId]
 
-  getScheme(state).onVillainEscaped?.(state, villain, lost)
+  await getScheme(state).onVillainEscaped?.(state, villain, lost)
 
   const escapeAbilities = getVillainAbilities(villain.cardId)
   if (escapeAbilities?.onEscape) {
