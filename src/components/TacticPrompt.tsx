@@ -1,4 +1,5 @@
 import type { CardInstance, GameState } from '../engine/types'
+import { KeywordText } from './KeywordText'
 
 interface TacticPromptProps {
   state: GameState
@@ -16,7 +17,7 @@ export function TacticPrompt({ state, card, onClose }: TacticPromptProps) {
         <div className="zoom-body">
           {data.img && <img src={data.img} alt={data.name} className="zoom-image" />}
           <div className="zoom-details">
-            {data.text && <p>{data.text}</p>}
+            {data.text && <p><KeywordText text={data.text} /></p>}
           </div>
         </div>
         <p className="dismiss-hint">Press anywhere to close</p>

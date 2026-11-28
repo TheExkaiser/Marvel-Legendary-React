@@ -257,7 +257,14 @@ export function getEffectiveStrength(
   const baseOverride = getScheme(state).villainBaseStrengthOverride?.(state, instance)
   if (baseOverride !== undefined) base = baseOverride
 
-  const cardStrengthModifier = getStrengthModifier(instance.cardId)
+  // Ascension nadaje karcie nowe `cardId`, ale część stałych zdolności
+  // oryginalnego Villaina nadal wpływa na jego siłę jako Masterminda
+  // (np. 5th Circle of Kung-Fu Deadpoola).
+  const cardStrengthModifier =
+    getStrengthModifier(instance.cardId) ??
+    (state.ascendedFromCardIds?.[instance.instanceId]
+      ? getStrengthModifier(state.ascendedFromCardIds[instance.instanceId])
+      : undefined)
   // Dynamic Villains such as Doppelganger have no printed Strength. Their
   // card-specific modifier supplies the complete current value.
   if (base === undefined && !cardStrengthModifier) return undefined

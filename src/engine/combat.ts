@@ -513,6 +513,9 @@ async function claimTactic(state: GameState, ui: UiAdapter, mastermind: CardInst
 
   await getScheme(state).afterTacticClaimed?.(state, tactic, mastermind, ui)
 
+  // Tactic może zostać zwrócony przez własny efekt albo przez regułę Scheme'u
+  // (np. Fateful Resurrection). Sprawdzamy to dopiero po obu hookach; wcześniej
+  // Scheme hook wykonywał się już po odłożeniu Tactica do Victory Pile.
   const returned = tactics.some((t) => t.instanceId === tactic.instanceId)
   // Tactic zdobyty jako Hero (Shiklah's Husband, Deadpool) leży już u gracza i nie trafia do Victory Pile
   const gained = [...state.discard, ...state.hand, ...state.deck].some((card) => card.instanceId === tactic.instanceId)

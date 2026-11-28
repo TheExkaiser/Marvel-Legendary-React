@@ -2,9 +2,10 @@ import { registerWoundReplacement } from '../../../engine/replacements'
 import { drawCards } from '../../../engine/game'
 
 registerWoundReplacement('hero-captain-america-diving-block', async (state, ui, self) => {
-  const choice = await ui.chooseOption(
+  const choice = await ui.chooseOptionWithCard(
+    self,
     [
-      { id: 'reveal', label: 'Ujawnij Diving Block: dobierz kartę zamiast rany' },
+      { id: 'reveal', label: 'Dobierz kartę zamiast rany' },
       { id: 'no', label: 'Zdobądź ranę normalnie' },
     ],
     'Zdobywasz ranę',

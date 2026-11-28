@@ -46,3 +46,5 @@ export function withLedGroup(ids: string[], mastermind: MastermindData | undefin
   if (!led || ids.includes(led)) return ids
   return [...ids.slice(0, Math.max(0, max - 1)), led]
 }
+
+/** Po wyborze Masterminda z wymuszonym Always Leads dokleja jego grupę henchmenów. */

@@ -22,6 +22,7 @@ interface CardViewProps {
   dimmed?: boolean // przyciemnienie: zwykłe zagrane karty w Played (Focus i aktywne Artifacty zostają jasne)
   shards?: number // liczba Shardów leżących na złoczyńcy / masterminedzie
   artifactButtons?: { label: string; onClick: () => void }[] // przyciski zdolności "raz na turę" artefaktu
+  faceDown?: boolean // pokaż rewers zamiast treści karty, np. gdy Hyperion jest w mieście
 }
 
 function ConditionLine({ data }: { data: CardData }) {
@@ -215,7 +216,7 @@ function CapturedCardThumbnail({ data }: { data: CardData }) {
 const HOLD_MS = 450 // jak długo trzymać kartę, żeby otworzyć zoom
 const HOLD_MOVE_TOLERANCE = 10 // px; większy ruch palca = to scroll, nie hold
 
-export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, strengthResource, capturedCards, focusButton, effectiveCost, costResource, highlight, dimmed, shards, artifactButtons }: CardViewProps) {
+export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, strengthResource, capturedCards, focusButton, effectiveCost, costResource, highlight, dimmed, shards, artifactButtons, faceDown }: CardViewProps) {
   const [zoomed, setZoomed] = useState(false)
   const capturedCount = capturedCards?.length ?? 0
 
@@ -245,7 +246,7 @@ export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, s
       <div
         className={['card', onClick ? 'clickable' : '', highlight ? `highlight-${highlight}` : '', dimmed ? 'card-dimmed' : ''].filter(Boolean).join(' ')}
         onClick={onClick ? handleClick : undefined}
-        title={data.name}
+        title={faceDown ? 'Mastermind card back' : data.name}
         data-flip-id={flipId}
         data-flip-from={flipFrom}
         onPointerDown={(e) => {
@@ -276,7 +277,7 @@ export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, s
           setZoomed(true)
         }}
       >
-        <button
+        {!faceDown && <button
           className="zoom-button"
           onClick={(e) => {
             e.stopPropagation() // żeby kliknięcie lupki nie odpaliło też onClick karty
@@ -284,14 +285,16 @@ export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, s
           }}
         >
           🔍
-        </button>
+        </button>}
 
-        <CapturedBadge count={capturedCount} />
-        <ShardBadge count={shards ?? 0} hasCapturedCards={capturedCount > 0} />
-        <AttackModifierBadge data={data} effectiveStrength={effectiveStrength} strengthResource={strengthResource} />
-        <CostModifierBadge data={data} effectiveCost={effectiveCost} costResource={costResource} />
+        {!faceDown && <>
+          <CapturedBadge count={capturedCount} />
+          <ShardBadge count={shards ?? 0} hasCapturedCards={capturedCount > 0} />
+          <AttackModifierBadge data={data} effectiveStrength={effectiveStrength} strengthResource={strengthResource} />
+          <CostModifierBadge data={data} effectiveCost={effectiveCost} costResource={costResource} />
+        </>}
 
-        {focusButton && (
+        {!faceDown && focusButton && (
           <button
             className="focus-button"
             onClick={(e) => {
@@ -303,9 +306,11 @@ export function CardView({ data, onClick, flipId, flipFrom, effectiveStrength, s
           </button>
         )}
 
-        <ArtifactButtons buttons={artifactButtons} />
+        {!faceDown && <ArtifactButtons buttons={artifactButtons} />}
 
-        {data.img ? (
+        {faceDown ? (
+          <img src={`${import.meta.env.BASE_URL}cardback.png`} alt="Mastermind card back" />
+        ) : data.img ? (
           <CardImage src={data.img} alt={data.name} />
         ) : (
           <div className="card-text">

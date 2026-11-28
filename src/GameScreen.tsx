@@ -182,13 +182,16 @@ function GameScreen({
   const teleported = state.teleported ?? []
   const teleportTop =
     teleported.length > 0 ? state.cards[teleported[teleported.length - 1].cardId] : undefined
+  // Escaped obejmuje zarówno uciekłych Villainów, jak i Bystanderów, którzy
+  // uciekli razem z nimi albo zostali odłożeni bezpośrednio do Escape Pile.
+  const escapedCards = [...state.escaped, ...state.escapedBystanders]
 
   const pileViews = {
     victory: { title: 'Victory Pool', cards: state.defeated },
     ko: { title: "KO'd cards", cards: state.ko },
     discard: { title: 'Discard', cards: state.discard },
     teleport: { title: 'Teleport', cards: teleported },
-    escaped: { title: 'Escaped Villains', cards: state.escaped },
+    escaped: { title: 'Escaped', cards: escapedCards },
   }
 
   // Stałe panele i przyciski potrafią przejąć wheel jako obszar interaktywny.
@@ -290,6 +293,10 @@ function GameScreen({
               !(state.defeatedMastermindIds ?? []).includes(mastermind.instanceId),
             ).map((mastermind) => (
               <div className="additional-mastermind" key={mastermind.instanceId}>
+                {(() => {
+                  const faceDown = mastermind.cardId === 'secret-wars-2-king-hyperion' &&
+                    state.city.some((card) => card?.instanceId === mastermind.instanceId)
+                  return <>
                 <div className="markers">
                   {state.singleFightMasterminds?.includes(mastermind.instanceId)
                     ? 'Mastermind'
@@ -297,12 +304,13 @@ function GameScreen({
                 </div>
                 <CardView
                   data={state.cards[mastermind.cardId]}
-                  onClick={() => act((s, ui) => fightMastermind(s, ui, mastermind.instanceId))}
-                  highlight={canAffordMastermindTarget(state, mastermind) ? 'attack' : undefined}
+                  onClick={faceDown ? undefined : () => act((s, ui) => fightMastermind(s, ui, mastermind.instanceId))}
+                  highlight={faceDown ? undefined : canAffordMastermindTarget(state, mastermind) ? 'attack' : undefined}
                   effectiveStrength={getEffectiveStrength(state, mastermind)}
                   strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
                   capturedCards={getCapturedCards(state, mastermind.instanceId)}
                   shards={shardsOn(state, mastermind)}
+                  faceDown={faceDown}
                 />
                 {mastermindStackTop(state, mastermind.instanceId) && (
                   <DeckPile
@@ -314,19 +322,27 @@ function GameScreen({
                     highlight={canAffordMastermindStack(state, mastermind.instanceId) ? 'buy' : undefined}
                   />
                 )}
+                  </>
+                })()}
               </div>
             ))}
           </div>
           <div className="zone-title">Tactics: {state.tactics.length}</div>
           <CardView
             data={state.cards[state.mastermind.cardId]}
-            onClick={() => act(fightMastermind)}
+            onClick={(() => {
+              const hyperionInCity = state.mastermind.cardId === 'secret-wars-2-king-hyperion' &&
+                state.city.some((card) => card?.instanceId === state.mastermind.instanceId)
+              return hyperionInCity ? undefined : () => act(fightMastermind)
+            })()}
             highlight={canAffordMastermind(state) ? 'attack' : undefined}
             effectiveStrength={getEffectiveStrength(state, state.mastermind)}
             strengthResource={negativeZoneActive ? 'recruit' : 'attack'}
             capturedCards={getCapturedCards(state, state.mastermind.instanceId)}
             shards={shardsOn(state, state.mastermind)}
             artifactButtons={mastermindActions}
+            faceDown={state.mastermind.cardId === 'secret-wars-2-king-hyperion' &&
+              state.city.some((card) => card?.instanceId === state.mastermind.instanceId)}
           />
           {state.mastermind.cardId === 'mastermind-thanos' && (
             <div className="markers">Bound Souls: {mastermindCaptives}</div>
@@ -359,7 +375,7 @@ function GameScreen({
               role="button"
               tabIndex={0}
             >
-              Escaped: {state.escaped.length}
+              Escaped: {escapedCards.length}
             </span>)
             {(state.schemeTokens ?? []).map((t) => (
               <SchemeToken key={t.instanceId} data={state.cards[t.cardId]} />

@@ -386,7 +386,10 @@ export const KEYWORD_GLOSSARY: KeywordEntry[] = [
     id: 'charge',
     name: 'Charge',
     tooltip: 'After this Villain enters the Sewers, it charges forward an extra space, pushing other Villains forward.',
-    appearsOn: (c) => hasKeyword(c, 'charge') || hasCardText(c, /\bCharge one space\b/),
+    // Hyperion's text uses the conjugated form "charges three spaces", while
+    // Villain cards usually use the imperative "Charge one space".
+    aliases: ['charges'],
+    appearsOn: (c) => hasKeyword(c, 'charge') || hasCardText(c, /\bcharges?\s+(?:one|two|three|\d+)\s+spaces?\b/i),
     blocks: [
       {
         type: 'text',

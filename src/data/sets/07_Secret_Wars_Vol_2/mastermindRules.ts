@@ -12,7 +12,8 @@ registerCircleOfKungFu(IMMORTAL_EMPEROR_ZHENG_ZHU.card.id, 7)
 // Spider-Queen: +1 Attack za każdego Bystandera w Escape Pile
 registerStrengthModifier(SPIDER_QUEEN.card.id, (state) => state.escapedBystanders.length)
 
-// King Hyperion: gdy stoi w mieście, nie walczy się z nim z pola Mastermina (walka w mieście zdobywa Tactic, patrz combat.ts)
+// Gdy Hyperion jest w mieście, walczy się z jego kartą jako z Villainem.
+// Gdy nie ma go w mieście, można walczyć z nim normalnie jako z Mastermindem.
 registerMastermindRule(KING_HYPERION.card.id, {
   canFight: (state, mastermind) => !state.city.some((card) => card?.instanceId === mastermind.instanceId),
 })
