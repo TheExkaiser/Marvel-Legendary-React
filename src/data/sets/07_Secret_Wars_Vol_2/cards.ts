@@ -203,3 +203,62 @@ export const SPIDER_QUEEN: MastermindData = {
   masterStrikeText: 'Each player puts a Spider-Infected from their Victory Pile into an empty city space. Any player who cannot do so gains a Wound.',
   alwaysLeads: { henchmenGroupId: 'secret-wars-2-spider-infected' },
 }
+
+// ---------- Grupy Villainów ----------
+
+export const DEADPOOLS_SECRET_SECRET_WARS_CARDS: DeckEntry[] = [
+  { count: 1, card: { id: 'secret-wars-2-deadpool', name: 'Deadpool', img: img('secret-wars-2-deadpool'), strength: 5, vp: 5, villainGroup: "Deadpool's Secret Secret Wars", text: '5th Circle of Kung-Fu\nFight: Fateful Resurrection\nEscape: Deadpool ascends to become a new Mastermind. He gains the ability, "Master Strike: Each player reveals a Hero with an odd-numbered cost or gains a Wound." (0 is even).' } },
+  { count: 2, card: { id: 'secret-wars-2-doop', name: 'Doop', img: img('secret-wars-2-doop'), strength: 2, vp: 2, villainGroup: "Deadpool's Secret Secret Wars", text: "You can't fight Doop if there is a Villain in an adjacent city space." } },
+  { count: 2, card: { id: 'secret-wars-2-howard-the-duck', name: 'Howard the Duck', img: img('secret-wars-2-howard-the-duck'), strength: 1, vp: 4, villainGroup: "Deadpool's Secret Secret Wars", text: 'Ambush: Howard the Duck captures (the heart of) a Bystander.\n7th Circle of Quack-Fu' } },
+  { count: 3, card: { id: 'secret-wars-2-pink-sphinx', name: 'Pink Sphinx', img: img('secret-wars-2-pink-sphinx'), strength: 4, vp: 2, villainGroup: "Deadpool's Secret Secret Wars", text: 'Fight: Spectrum: KO one of your Heroes.' } },
+]
+
+export const GUARDIANS_OF_KNOWHERE_CARDS: DeckEntry[] = [
+  { count: 1, card: { id: 'secret-wars-2-angela', name: 'Angela', img: img('secret-wars-2-angela'), strength: 7, vp: 5, villainGroup: 'Guardians of Knowhere', text: 'Fight: Fateful Resurrection\nEscape: Angela ascends to become a new Mastermind. She gains the ability, "Master Strike: Each player KOs a Hero from their discard pile that costs 1 or more."' } },
+  { count: 2, card: { id: 'secret-wars-2-drax-the-destroyer', name: 'Drax the Destroyer', img: img('secret-wars-2-drax-the-destroyer'), strength: 5, vp: 4, villainGroup: 'Guardians of Knowhere', text: 'Fight: Reveal the top card of your deck. KO it or put it back. Fateful Resurrection.' } },
+  { count: 1, card: { id: 'secret-wars-2-gamora', name: 'Gamora', img: img('secret-wars-2-gamora'), strength: 6, vp: 4, villainGroup: 'Guardians of Knowhere', text: "Ambush: Charge one space.\nFight: (After this goes to your victory pile.) Patrol the Sewers: If it's empty, each other player gains a Wound.\nEscape: Each player gains a Wound." } },
+  { count: 2, card: { id: 'secret-wars-2-groot', name: 'Groot', img: img('secret-wars-2-groot'), strength: 5, vp: 4, villainGroup: 'Guardians of Knowhere', text: 'Fight: Fateful Resurrection. If Groot resurrects this way, then he becomes Tiny Dancing Groot with Attack 1 and no abilities for the rest of the turn.' } },
+  { count: 2, card: { id: 'secret-wars-2-rocket-raccoon', name: 'Rocket Raccoon', img: img('secret-wars-2-rocket-raccoon'), strength: 4, vp: 2, villainGroup: 'Guardians of Knowhere', text: "Fight: (After this goes to your Victory Pile.) Patrol the Bank: If it's empty, draw a card. If it's not empty, KO one of your Heroes." } },
+]
+
+export const KUN_LUN_CARDS: DeckEntry[] = [
+  { count: 2, card: { id: 'secret-wars-2-laughing-skull', name: 'Laughing Skull', img: img('secret-wars-2-laughing-skull'), strength: 5, vp: 5, villainGroup: "K'un-Lun", text: '5th Circle of Kung-Fu\nEscape: Each player reveals a Hero that costs 5 or more, or they discard a card.' } },
+  { count: 2, card: { id: 'secret-wars-2-rand-kai', name: "Rand K'ai", img: img('secret-wars-2-rand-kai'), strength: 6, vp: 6, villainGroup: "K'un-Lun", text: '6th Circle of Kung-Fu\nEscape: Each player reveals a Hero that costs 6 or more, or they gain a wound.' } },
+  { count: 2, card: { id: 'secret-wars-2-razor-fist', name: 'Razor Fist', img: img('secret-wars-2-razor-fist'), strength: 3, vp: 3, villainGroup: "K'un-Lun", text: '3rd Circle of Kung-Fu\nFight: For each of your Heroes that costs 3, KO one of your Heroes.' } },
+  { count: 2, card: { id: 'secret-wars-2-red-sai', name: 'Red Sai', img: img('secret-wars-2-red-sai'), strength: 4, vp: 4, villainGroup: "K'un-Lun", text: '4th Circle of Kung-Fu\nFight: Draw a card for each of your Heroes that costs 4.' } },
+]
+
+export const MONSTER_METROPOLIS_CARDS: DeckEntry[] = [
+  { count: 2, card: { id: 'secret-wars-2-bug-shiklahs-dragon', name: "Bug, Shiklah's Dragon", img: img('secret-wars-2-bug-shiklahs-dragon'), strength: 4, vp: 3, villainGroup: 'Monster Metropolis', text: 'Fight: KO a card from your discard pile. Fateful Resurrection' } },
+  { count: 2, card: { id: 'secret-wars-2-ghost-deadpool', name: 'Ghost Deadpool', img: img('secret-wars-2-ghost-deadpool'), strength: 5, vp: 5, villainGroup: 'Monster Metropolis', text: 'Fight: Fateful Resurrection. Then, Cross-Dimensional Deadpool Rampage\nEscape: Cross-Dimensional Deadpool Rampage' } },
+  { count: 2, card: { id: 'secret-wars-2-man-thing', name: 'Man-Thing', img: img('secret-wars-2-man-thing'), strength: 5, vp: 4, villainGroup: 'Monster Metropolis', text: 'Ambush: Each Monster Metropolis Villain captures a Bystander.\nFight: Fateful Resurrection' } },
+  { count: 2, card: { id: 'secret-wars-2-marcus-symbiote-centaur', name: 'Marcus Symbiote Centaur', img: img('secret-wars-2-marcus-symbiote-centaur'), strength: 3, vp: 3, villainGroup: 'Monster Metropolis', text: 'Ambush: Charge two spaces.\nWhen in the Sewers, Rooftops or Bridge, he is in "wolf form" and gets +3 Attack.' } },
+]
+
+export const UTOPOLIS_CARDS: DeckEntry[] = [
+  { count: 3, card: { id: 'secret-wars-2-doctor-spectrum', name: 'Doctor Spectrum', img: img('secret-wars-2-doctor-spectrum'), strength: 6, vp: 4, villainGroup: 'Utopolis', text: "Ambush: Charge one space.\nFight: Spectrum: KO a card from your discard pile.\nEscape: Each player who doesn't have Spectrum discards a card." } },
+  { count: 2, card: { id: 'secret-wars-2-nighthawk', name: 'Nighthawk', img: img('secret-wars-2-nighthawk'), strength: 4, vp: 4, villainGroup: 'Utopolis', text: 'While in the Sewers, Rooftops or Bridge, Nighthawk gains +4 Attack.\nEscape: Nighthawk becomes a Scheme Twist that takes effect immediately.' } },
+  { count: 1, card: { id: 'secret-wars-2-warrior-woman', name: 'Warrior Woman', img: img('secret-wars-2-warrior-woman'), strength: 8, vp: 6, villainGroup: 'Utopolis', text: "Ambush: Charge one space.\nEscape: Warrior Woman ascends to become a new Mastermind. She gains the ability, \"Master Strike: Patrol the Bank: If there's a Villain there, each player discards a card with a Recruit icon.\"" } },
+  { count: 2, card: { id: 'secret-wars-2-whizzer', name: 'Whizzer', img: img('secret-wars-2-whizzer'), strength: 5, vp: 3, villainGroup: 'Utopolis', text: "Ambush: Charge three spaces.\nFight: (After he goes to your victory pile.) Patrol the Bridge: If there's a Villain there, each other player gains a Wound.\nEscape: Each player gains a Wound." } },
+]
+
+export const X_MEN_92_CARDS: DeckEntry[] = [
+  { count: 2, card: { id: 'secret-wars-2-92-beast', name: "'92 Beast", img: img('secret-wars-2-92-beast'), strength: 5, villainGroup: "X-Men '92", text: 'Ambush: Charge one space.\nFight: Gain this as a Hero.', keywords: ['villain-hero'] } },
+  { count: 3, card: { id: 'secret-wars-2-92-jubilee', name: "'92 Jubilee", img: img('secret-wars-2-92-jubilee'), strength: 4, villainGroup: "X-Men '92", text: 'Fight: Gain this as a Hero.', keywords: ['villain-hero'] } },
+  { count: 1, card: { id: 'secret-wars-2-92-professor-x', name: "'92 Professor X", img: img('secret-wars-2-92-professor-x'), strength: 8, vp: 6, villainGroup: "X-Men '92", text: "Escape: '92 Professor X ascends to become a new Mastermind. He gains the ability, \"Master Strike: Stack the two heroes from the HQ with the highest cost next to '92 Professor X. He gets +1 Attack for each Hero stacked there. Players can recruit the top card of the stack.\"" } },
+  { count: 2, card: { id: 'secret-wars-2-92-wolverine', name: "'92 Wolverine", img: img('secret-wars-2-92-wolverine'), strength: 7, villainGroup: "X-Men '92", text: 'Fight: Gain this as a Hero.\nEscape: Cross-Dimensional Wolverine Rampage', keywords: ['villain-hero'] } },
+]
+
+// ---------- Grupy Henchmenów (w grze jest ich tyle, ile wynika z trybu gry i Schematu, a w talii leży po 10 kart) ----------
+
+export const KHONSHU_GUARDIANS_CARDS: DeckEntry[] = [
+  { count: 10, card: { id: 'secret-wars-2-henchmen-khonshu-guardians', name: 'Khonshu Guardians', img: img('secret-wars-2-henchmen-khonshu-guardians'), strength: 3, vp: 1, henchman: true, text: 'While in the Sewers, Rooftops or Bridge, this is in "wolf form" and gets +2 Attack.\nFight: KO one of your Heroes.' } },
+]
+
+export const MAGMA_MEN_CARDS: DeckEntry[] = [
+  { count: 10, card: { id: 'secret-wars-2-henchmen-magma-men', name: 'Magma Men', img: img('secret-wars-2-henchmen-magma-men'), strength: 3, vp: 1, henchman: true, text: 'Fight: KO one of your Heroes.\nFateful Resurrection' } },
+]
+
+export const SPIDER_INFECTED_CARDS: DeckEntry[] = [
+  { count: 10, card: { id: 'secret-wars-2-henchmen-spider-infected', name: 'Spider-Infected', img: img('secret-wars-2-henchmen-spider-infected'), strength: 3, vp: 1, henchman: true, text: 'Ambush: This captures a Bystander.\nFight: The next Hero you gain this turn has Wall-Crawl.' } },
+]

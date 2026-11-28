@@ -29,3 +29,21 @@ export async function chargeVillain(
     if (moving) await escapeVillain(state, moving, ui)
   }
 }
+
+/** Każda karta w mieście szarżuje jednocześnie o `spaces` pól do przodu (Deadlands Hordes Charge the Wall).
+ * Wszystkie przesuwają się o tyle samo, więc nie pchają się nawzajem. Kto wyjdzie poza Bridge, ucieka (od najbliższego Bridge). */
+export async function chargeAllVillains(state: GameState, ui: UiAdapter, spaces: number): Promise<void> {
+  const active = activeCityIndexes(state)
+  const moving = active.flatMap((index, position) => {
+    const card = state.city[index]
+    return card ? [{ card, position }] : []
+  })
+  for (const { position } of moving) state.city[active[position]] = null
+  const escaping: CardInstance[] = []
+  for (const { card, position } of moving) {
+    const target = position - spaces
+    if (target < 0) escaping.push(card)
+    else state.city[active[target]] = card
+  }
+  for (const card of escaping) await escapeVillain(state, card, ui)
+}

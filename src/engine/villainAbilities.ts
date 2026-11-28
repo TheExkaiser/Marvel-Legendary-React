@@ -10,6 +10,8 @@ export interface VillainAbilities {
   ) => Promise<void>
   onFeast?: (state: GameState, ui: UiAdapter, self: CardInstance, feasted: CardInstance) => Promise<void>
   onFight?: (state: GameState, ui: UiAdapter, self: CardInstance) => Promise<void>
+  /** Po tym, jak Villain trafił do Victory Pile ("Fight: (After this goes to your Victory Pile.)", Fateful Resurrection). */
+  onDefeated?: (state: GameState, ui: UiAdapter, self: CardInstance) => Promise<void>
   onEscape?: (
     state: GameState,
     ui: UiAdapter,

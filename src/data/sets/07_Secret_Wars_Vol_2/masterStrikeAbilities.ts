@@ -4,12 +4,17 @@ import { getCardData } from '../../../engine/cardData'
 import { chargeVillain } from '../../../engine/charge'
 import { isCityDestroyed } from '../../../engine/cityLayout'
 import { CITY_NAMES } from '../../../engine/constants'
-import { revealCards } from '../../../engine/keywords'
+import { discardCard, koCard, revealCards } from '../../../engine/keywords'
+import { patrolCitySpace } from '../../../engine/patrol'
 import { shuffle } from '../../../engine/random'
 import { enterCity, revealTopVillainCards } from '../../../engine/villainPhase'
+import { logEvent } from '../../../engine/common'
+import { refillHq } from '../../../engine/recruit'
+import type { CardInstance } from '../../../engine/types'
 import { gainWound } from '../../../engine/wounds'
 import { IMMORTAL_EMPEROR_ZHENG_ZHU, KING_HYPERION, SHIKLAH_THE_DEMON_BRIDE, SPIDER_QUEEN } from './cards'
 import { discardDownTo, isSpiderInfected } from './tacticAbilities'
+import { ANGELA_STRIKE_ID, DEADPOOL_STRIKE_ID, PROFESSOR_X_STRIKE_ID, WARRIOR_WOMAN_STRIKE_ID } from './villainAbilities'
 
 // Zheng-Zhu: ujawnij Bohatera kosztującego 7 lub więcej albo odrzuć do 3 kart
 registerCardAbility(IMMORTAL_EMPEROR_ZHENG_ZHU.masterStrikeId, async (state, { ui }) => {
@@ -63,4 +68,69 @@ registerCardAbility(SPIDER_QUEEN.masterStrikeId, async (state, { ui }) => {
   }
   state.defeated.splice(state.defeated.findIndex((card) => card.instanceId === chosen.instanceId), 1)
   state.city[target] = chosen
+})
+
+// ---------- Master Strike'i Villainów, którzy wznieśli się na Mastermina ----------
+
+// Deadpool: ujawnij Bohatera z nieparzystym kosztem (0 jest parzyste) albo Wound
+registerCardAbility(DEADPOOL_STRIKE_ID, async (state, { ui }) => {
+  const odd = revealCards(state).filter((card) => {
+    const data = getCardData(state, card)
+    return !!data.hero && (data.cost ?? 0) % 2 === 1
+  })
+  await revealOneOr(
+    ui,
+    odd,
+    'Master Strike: reveal a Hero with an odd-numbered cost',
+    'Revealed a Hero with an odd-numbered cost',
+    () => gainWound(state, ui),
+  )
+})
+
+// Angela: KO Bohatera z discardu kosztującego 1 lub więcej
+registerCardAbility(ANGELA_STRIKE_ID, async (state, { ui }) => {
+  const heroes = state.discard.filter((card) => {
+    const data = getCardData(state, card)
+    return !!data.hero && (data.cost ?? 0) >= 1
+  })
+  const chosen = await chooseOneCard(ui, heroes, 'Master Strike: KO a Hero from your discard pile that costs 1 or more')
+  if (chosen) koCard(state, chosen.instanceId)
+})
+
+// Warrior Woman: Patrol the Bank, jeśli stoi tam Villain, odrzuć kartę z ikoną Recruit
+registerCardAbility(WARRIOR_WOMAN_STRIKE_ID, async (state, { ui }) => {
+  if (patrolCitySpace(state, 'Bank') !== 'occupied') return
+  const options = state.hand.filter((card) => getCardData(state, card).recruit !== undefined)
+  const chosen = await chooseOneCard(ui, options, 'Master Strike: discard a card with a Recruit icon')
+  if (chosen) await discardCard(state, chosen.instanceId, ui)
+})
+
+// '92 Professor X: dwóch Bohaterów z HQ o najwyższym koszcie trafia na stos obok niego (remis wybiera gracz).
+// Kolejność stosu: pierwszy (najdroższy) leży na dole, drugi na wierzchu. +1 Attack za każdego Bohatera na stosie
+// to mastermindAttackModifiers; rekrutacja z wierzchu stosu: recruitFromMastermindStack (recruit.ts).
+registerCardAbility(PROFESSOR_X_STRIKE_ID, async (state, { ui }) => {
+  const entry = Object.entries(state.mastermindStrikeIds ?? {}).find(([, strikeId]) => strikeId === PROFESSOR_X_STRIKE_ID)
+  if (!entry) return
+  const mastermindId = entry[0]
+  const cost = (card: CardInstance): number => state.cards[card.cardId].cost ?? 0
+  const stacked: CardInstance[] = []
+  for (let n = 0; n < 2; n++) {
+    const heroes = state.hq.flatMap((card) => (card && getCardData(state, card).hero ? [card] : []))
+    if (heroes.length === 0) break
+    const highest = Math.max(...heroes.map(cost))
+    const chosen = await chooseOneCard(
+      ui,
+      heroes.filter((card) => cost(card) === highest),
+      "Master Strike: stack the Hero with the highest cost next to '92 Professor X",
+    )
+    if (!chosen) break
+    state.hq[state.hq.findIndex((card) => card?.instanceId === chosen.instanceId)] = null
+    stacked.push(chosen)
+  }
+  const stack = state.mastermindHeroStacks?.[mastermindId] ?? []
+  stack.push(...stacked)
+  state.mastermindHeroStacks = { ...state.mastermindHeroStacks, [mastermindId]: stack }
+  state.mastermindAttackModifiers = { ...state.mastermindAttackModifiers, [mastermindId]: stack.length }
+  refillHq(state)
+  if (stacked.length > 0) logEvent(state, `'92 Professor X: stacked ${stacked.map((card) => state.cards[card.cardId].name).join(', ')}`)
 })

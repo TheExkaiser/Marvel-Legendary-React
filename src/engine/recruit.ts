@@ -167,8 +167,11 @@ export async function recruitHeroWithUi(state: GameState, instanceId: string, ui
     await rescueCard(state, instance, ui)
     return
   }
+  // Spider-Infected: "the next Hero you gain this turn has Wall-Crawl" (znacznik zużywa pierwszy zrekrutowany Bohater)
+  const grantedWallCrawl = !!data.hero && state.nextHeroHasWallCrawlThisTurn === true
+  if (grantedWallCrawl) state.nextHeroHasWallCrawlThisTurn = false
   const hasWallCrawl =
-    (data.keywords ?? []).includes('wall-crawl') || getScheme(state).allHeroesHaveWallCrawl === true
+    (data.keywords ?? []).includes('wall-crawl') || getScheme(state).allHeroesHaveWallCrawl === true || grantedWallCrawl
   if (!data.hero || !hasWallCrawl) return
 
   const recruited = [...state.hand, ...state.discard].find((card) => card.instanceId === instanceId)
@@ -231,5 +234,47 @@ export function recruitOfficer(state: GameState): void {
     gainShards(state, cost) // I Am Groot: Officer też jest Bohaterem
   }
   placeRecruitedCard(state, instance)
+  logEvent(state, `Recruited: ${data.name}`)
+}
+
+/** Wierzchni Bohater ze stosu obok wzniesionego Mastermina ('92 Professor X): można go rekrutować. */
+export function mastermindStackTop(state: GameState, mastermindId: string): CardInstance | undefined {
+  const stack = state.mastermindHeroStacks?.[mastermindId] ?? []
+  return stack[stack.length - 1]
+}
+
+export function canAffordMastermindStack(state: GameState, mastermindId: string): boolean {
+  const top = mastermindStackTop(state, mastermindId)
+  if (state.status !== 'playing' || !top) return false
+  const available = heroesCostAttack(state) ? state.attack : state.recruit
+  return available >= (state.cards[top.cardId].cost ?? 0)
+}
+
+/** Rekrutuje wierzchniego Bohatera ze stosu obok Mastermina. Bohater trafia do discardu jak po zwykłej rekrutacji z HQ,
+ * a Mastermind traci 1 Attack za zdjętą kartę. */
+export function recruitFromMastermindStack(state: GameState, mastermindId: string): void {
+  assertPlaying(state)
+  const stack = state.mastermindHeroStacks?.[mastermindId] ?? []
+  const card = stack[stack.length - 1]
+  if (!card) throw new Error('There are no Heroes stacked next to this Mastermind')
+  const data = state.cards[card.cardId]
+  const cost = data.cost ?? 0
+  const payWithAttack = heroesCostAttack(state)
+  const available = payWithAttack ? state.attack : state.recruit
+  if (available < cost) {
+    throw new Error(`Not enough ${payWithAttack ? 'attack' : 'recruit'}: you have ${available}, cost ${cost}`)
+  }
+
+  if (payWithAttack) state.attack -= cost
+  else state.recruit -= cost
+  state.heroesRecruitedThisTurn = (state.heroesRecruitedThisTurn ?? 0) + 1
+  claimShardsOn(state, card)
+  if (state.shardsOnNextRecruitThisTurn) {
+    state.shardsOnNextRecruitThisTurn = false
+    gainShards(state, cost)
+  }
+  stack.pop()
+  state.mastermindAttackModifiers = { ...state.mastermindAttackModifiers, [mastermindId]: stack.length }
+  placeRecruitedCard(state, card)
   logEvent(state, `Recruited: ${data.name}`)
 }

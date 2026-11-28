@@ -72,6 +72,8 @@ async function resolveVillainDefeatHooks(
     if (!(state.activeVillainDefeatHooks ?? []).includes(card.instanceId)) continue
     await villainDefeatHooks.get(card.cardId)?.(state, ui, card, villain)
   }
+  // Zdolność samego Villaina po trafieniu do Victory Pile (Gamora, Rocket, Whizzer, Fateful Resurrection)
+  await getVillainAbilities(villain.cardId)?.onDefeated?.(state, ui, villain)
 }
 
 function enemiesCostRecruit(state: GameState): boolean {
@@ -90,7 +92,7 @@ function availableAttack(state: GameState, cardId: string): number {
 /** Czy gracza stać na walkę z tym Villainem. Te same warunki co w fightVillain, ale bez wykonywania akcji (podświetlanie w UI). */
 export function canAffordVillain(state: GameState, villain: CardInstance): boolean {
   if (state.status !== 'playing') return false
-  if (!canDefeatVillain(state, villain.cardId)) return false
+  if (!canDefeatVillain(state, villain.cardId, villain)) return false
   const strength = getEffectiveStrength(state, villain) ?? 0
   return availableAttack(state, villain.cardId) >= strength
 }
@@ -360,7 +362,7 @@ export async function defeatVillainFromDeck(
   assertPlaying(state)
   const villain = state.villainDeck[state.villainDeck.length - 1]
   if (!villain) return false
-  if (!canDefeatVillain(state, villain.cardId)) return false
+  if (!canDefeatVillain(state, villain.cardId, villain)) return false
 
   if (payAttack) {
     const strength = getEffectiveStrength(state, villain) ?? 0
@@ -412,7 +414,7 @@ export async function fightVillain(
   if (cityIndex === -1 && !isHqVillain) throw new Error(`Złoczyńcy ${instanceId} nie ma w mieście`)
 
   const villain = isHqVillain ? state.hq[hqIndex]! : state.city[cityIndex]!
-  if (!canDefeatVillain(state, villain.cardId)) {
+  if (!canDefeatVillain(state, villain.cardId, villain)) {
     throw new Error('Nie możesz teraz pokonać tego złoczyńcy (niespełniony warunek)')
   }
 
@@ -469,7 +471,7 @@ export async function defeatVillainFree(state: GameState, instanceId: string, ui
   if (index === -1) throw new Error(`Złoczyńcy ${instanceId} nie ma w mieście`)
 
   const villain = state.city[index]!
-  if (!canDefeatVillain(state, villain.cardId)) {
+  if (!canDefeatVillain(state, villain.cardId, villain)) {
     throw new Error('Nie możesz teraz pokonać tego złoczyńcy (niespełniony warunek)')
   }
 
@@ -508,6 +510,8 @@ async function claimTactic(state: GameState, ui: UiAdapter, mastermind: CardInst
   if (ability && !(await fightEffectCancelled(state, ui, tactic))) {
     await asEnemyEffect(state, () => ability(state, { self: tactic, ui }))
   }
+
+  await getScheme(state).afterTacticClaimed?.(state, tactic, mastermind, ui)
 
   const returned = tactics.some((t) => t.instanceId === tactic.instanceId)
   // Tactic zdobyty jako Hero (Shiklah's Husband, Deadpool) leży już u gracza i nie trafia do Victory Pile

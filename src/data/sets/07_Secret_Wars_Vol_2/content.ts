@@ -21,6 +21,15 @@ import {
   KING_HYPERION,
   SHIKLAH_THE_DEMON_BRIDE,
   SPIDER_QUEEN,
+  DEADPOOLS_SECRET_SECRET_WARS_CARDS,
+  GUARDIANS_OF_KNOWHERE_CARDS,
+  KUN_LUN_CARDS,
+  MONSTER_METROPOLIS_CARDS,
+  UTOPOLIS_CARDS,
+  X_MEN_92_CARDS,
+  KHONSHU_GUARDIANS_CARDS,
+  MAGMA_MEN_CARDS,
+  SPIDER_INFECTED_CARDS,
 } from './cards'
 
 export const SECRET_WARS_VOL_2_HEROES: CardGroup[] = [
@@ -42,8 +51,19 @@ export const SECRET_WARS_VOL_2_HEROES: CardGroup[] = [
   { id: 'secret-wars-2-time-traveling-jean-grey', name: 'Time-Traveling Jean Grey', cards: TIME_TRAVELING_JEAN_GREY_CARDS },
 ]
 
-export const SECRET_WARS_VOL_2_VILLAIN_GROUPS: CardGroup[] = []
-export const SECRET_WARS_VOL_2_HENCHMEN_GROUPS: CardGroup[] = []
+export const SECRET_WARS_VOL_2_VILLAIN_GROUPS: CardGroup[] = [
+  { id: 'secret-wars-2-deadpools-secret-secret-wars', name: "Deadpool's Secret Secret Wars", cards: DEADPOOLS_SECRET_SECRET_WARS_CARDS },
+  { id: 'secret-wars-2-guardians-of-knowhere', name: 'Guardians of Knowhere', cards: GUARDIANS_OF_KNOWHERE_CARDS },
+  { id: 'secret-wars-2-kun-lun', name: "K'un-Lun", cards: KUN_LUN_CARDS },
+  { id: 'secret-wars-2-monster-metropolis', name: 'Monster Metropolis', cards: MONSTER_METROPOLIS_CARDS },
+  { id: 'secret-wars-2-utopolis', name: 'Utopolis', cards: UTOPOLIS_CARDS },
+  { id: 'secret-wars-2-x-men-92', name: "X-Men '92", cards: X_MEN_92_CARDS },
+]
+export const SECRET_WARS_VOL_2_HENCHMEN_GROUPS: CardGroup[] = [
+  { id: 'secret-wars-2-khonshu-guardians', name: 'Khonshu Guardians', cards: KHONSHU_GUARDIANS_CARDS },
+  { id: 'secret-wars-2-magma-men', name: 'Magma Men', cards: MAGMA_MEN_CARDS },
+  { id: 'secret-wars-2-spider-infected', name: 'Spider-Infected', cards: SPIDER_INFECTED_CARDS },
+]
 export const SECRET_WARS_VOL_2_BYSTANDER_GROUPS: CardGroup[] = [
   { id: 'secretwars2_bystanders', name: 'Secret Wars Vol. 2 Bystanders', cards: BYSTANDER_CARDS },
 ]

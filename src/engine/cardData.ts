@@ -22,7 +22,7 @@ export function gainVillainAsHero(
         hero: base.name,
         attack: opts.attack ?? base.strength ?? 0,
         recruit: opts.recruit,
-        cost: opts.cost ?? 0,
+        cost: opts.cost ?? base.strength ?? 0, // koszt Bohatera = domyślny Attack Villaina
         strength: undefined,
         villainGroup: undefined,
         henchman: undefined,
@@ -69,7 +69,7 @@ export function gainVillainWithHeroSide(state: GameState, instance: CardInstance
         hero: base.name,
         attack: side.attack,
         recruit: side.recruit,
-        cost: side.cost ?? 0,
+        cost: side.cost ?? base.strength ?? 0, // koszt Bohatera = domyślny Attack Villaina (karta bez siły, np. Tactic, ma 0)
         strength: undefined,
         villainGroup: undefined,
         henchman: undefined,

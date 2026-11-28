@@ -162,6 +162,7 @@ export async function endTurn(state: GameState, ui: UiAdapter): Promise<void> {
   state.teleportGrantedThisTurn = []
   state.focusUsesThisTurn = {}
   state.oncePerTurnUsed = {}
+  state.nextHeroHasWallCrawlThisTurn = false
   state.artifactUsesThisTurn = {}
   state.shardAttackSuppressedThisTurn = []
   state.shardsAsRecruitThisTurn = false

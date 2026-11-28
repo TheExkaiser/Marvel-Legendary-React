@@ -1,5 +1,5 @@
 import { logEvent } from '../../../engine/common'
-import { circleOfKungFuBonus } from '../../../engine/kungFu'
+import { registerCircleOfKungFu } from '../../../engine/kungFu'
 import { registerMastermindRule } from '../../../engine/mastermindRules'
 import { registerStrengthModifier } from '../../../engine/strengthModifiers'
 import { registerVillainAbilities } from '../../../engine/villainAbilities'
@@ -7,7 +7,7 @@ import { gainWound } from '../../../engine/wounds'
 import { IMMORTAL_EMPEROR_ZHENG_ZHU, KING_HYPERION, SPIDER_QUEEN } from './cards'
 
 // 7th Circle of Kung-Fu: +7 Attack w Twojej turze, chyba że ujawnisz Bohatera kosztującego 7 lub więcej
-registerStrengthModifier(IMMORTAL_EMPEROR_ZHENG_ZHU.card.id, (state) => circleOfKungFuBonus(state, 7))
+registerCircleOfKungFu(IMMORTAL_EMPEROR_ZHENG_ZHU.card.id, 7)
 
 // Spider-Queen: +1 Attack za każdego Bystandera w Escape Pile
 registerStrengthModifier(SPIDER_QUEEN.card.id, (state) => state.escapedBystanders.length)

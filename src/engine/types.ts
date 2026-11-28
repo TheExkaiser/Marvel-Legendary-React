@@ -168,7 +168,9 @@ export interface GameState {
   hqCardCostReductions?: Record<string, number> // Infiltrate HQ: discount tied to the replacement Hero instance
   hqCardCostReductionsThisTurn?: Record<string, number> // Upside-down Thinking: obniżka kosztu Bohatera w HQ tylko do końca tury (klucz: instanceId, reset w endTurn)
   koPileAtTurnStart?: string[] // instanceId kart w KO Pile na początku tury; "KO'd this turn" = reszta (Rise from the Ashes)
+  nextHeroHasWallCrawlThisTurn?: boolean // Spider-Infected: następny zdobyty (zrekrutowany) Bohater ma w tej turze Wall-Crawl
   oncePerTurnUsed?: Record<string, boolean> // zdolności "once this turn" (Invade the Inferno), klucz dowolny, reset w endTurn
+  mastermindHeroStacks?: Record<string, CardInstance[]> // Bohaterowie ułożeni obok wzniesionego Mastermina ('92 Professor X), klucz: instanceId Mastermina, wierzch = koniec
   villainPhaseActive?: boolean // true tylko podczas fazy Villaina ("it is not your turn", Guerrilla Warfare)
   setAsideUntilVillainPhaseEnds?: CardInstance[] // karty odłożone na bok w fazie Villaina, wracają do ręki na jej koniec
   schemeTwists?: CardInstance[] // Twisty odłożone obok Scheme'u
@@ -257,6 +259,8 @@ export interface SchemeDef {
 
   onVillainEntered?: (state: GameState, villain: CardInstance) => void
   afterVillainDefeated?: (state: GameState, villain: CardInstance, ui: UiAdapter) => void | Promise<void>
+  // Po efekcie Fight zdobytego Tactica, jeszcze przed tym, jak trafi do Victory Pile (The Fountain of Eternal Life: Tactics mają Fateful Resurrection)
+  afterTacticClaimed?: (state: GameState, tactic: CardInstance, mastermind: CardInstance, ui: UiAdapter) => void | Promise<void>
   onVillainEscaped?: (state: GameState, villain: CardInstance, lostCaptives: CardInstance[]) => void
   checkLoss?: (state: GameState) => boolean
 

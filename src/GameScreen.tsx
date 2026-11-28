@@ -46,7 +46,7 @@ import { hasTeleport } from './engine/turn'
 import { fightDemonGoblin, canAffordVillain, canAffordMastermind, canAffordMastermindTarget, canAffordDemonGoblin, captiveVillainInfo, canAffordMastermindCaptive, fightMastermindCaptive, nextToMastermindInfo, canAffordNextToMastermind, fightNextToMastermind } from './engine/combat'
 import { SchemeToken } from './components/SchemeToken'
 import { canFocus, activateFocus } from './engine/focus'
-import { hqCardCost, canAffordHqCard, canAffordOfficer, canAffordSidekick, recruitSidekick } from './engine/recruit'
+import { hqCardCost, canAffordHqCard, canAffordOfficer, canAffordSidekick, recruitSidekick, canAffordMastermindStack, mastermindStackTop, recruitFromMastermindStack } from './engine/recruit'
 
 
 // ---------- Stałe ----------
@@ -304,6 +304,16 @@ function GameScreen({
                   capturedCards={getCapturedCards(state, mastermind.instanceId)}
                   shards={shardsOn(state, mastermind)}
                 />
+                {mastermindStackTop(state, mastermind.instanceId) && (
+                  <DeckPile
+                    count={state.mastermindHeroStacks?.[mastermind.instanceId]?.length ?? 0}
+                    deckId={`mastermind-stack-${mastermind.instanceId}`}
+                    topCard={state.cards[mastermindStackTop(state, mastermind.instanceId)!.cardId]}
+                    label="Stacked Heroes (recruit the top card)"
+                    onClick={() => act((s) => recruitFromMastermindStack(s, mastermind.instanceId))}
+                    highlight={canAffordMastermindStack(state, mastermind.instanceId) ? 'buy' : undefined}
+                  />
+                )}
               </div>
             ))}
           </div>

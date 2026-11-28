@@ -217,7 +217,7 @@ export async function enterCity(state: GameState, villain: CardInstance, ui: UiA
 }
 
 /** Scheme Twist: licznik, popup, efekt scheme'u, ewentualny hook Game Mode. */
-async function resolveTwist(
+export async function resolveTwist(
   state: GameState,
   twist: CardInstance,
   ui: UiAdapter,
